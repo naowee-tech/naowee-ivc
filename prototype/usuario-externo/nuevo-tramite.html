@@ -128,7 +128,7 @@
 
     /* Page title block (Doug v1.1.5 — title vive en el body antes del stepper,
        igual que en dashboard.html. Patrón project v2.1). */
-    .page-title-block { margin-bottom: 4px; max-width: 880px; margin-left: auto; margin-right: auto; }
+    .page-title-block { margin-bottom: 4px; max-width: 880px; margin-left: auto; margin-right: auto; text-align: left; }
     .page-title {
       margin: 0;
       font-size: 28px;
@@ -145,6 +145,12 @@
     }
     /* Constrain stepper a misma anchura que las wizard-cards. */
     .ivc-stepper { max-width: 880px; margin-left: auto; margin-right: auto; margin-bottom: 28px; }
+
+    /* v1.1.6 fix #3 — helpers IVC-scoped (sustituyen inline styles en messages).
+       El DS .naowee-message ya hereda font-size/padding canónicos; aquí solo
+       agregamos contexto de layout específico de esta página. */
+    .ivc-message--block { margin-bottom: 18px; }
+    .ivc-message--inline { margin-bottom: 0; flex: 1; }
   </style>
 </head>
 <body>
@@ -194,13 +200,13 @@
         <div class="naowee-card__body">
           <!-- Info message canónico DS — .naowee-message + variant `--informative`.
                Antes el helper "Pre-seleccionado..." iba como `.naowee-input-helper`. -->
-          <div class="naowee-message naowee-message--informative" style="margin-bottom:18px">
+          <div class="naowee-message naowee-message--informative ivc-message--block">
             <div class="naowee-message__header">
               <span class="naowee-message__icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
               </span>
               <div class="naowee-message__content">
-                <p class="naowee-message__title" style="font-size:14px">Tipo de trámite pre-seleccionado para esta demo</p>
+                <p class="naowee-message__title">Tipo de trámite pre-seleccionado para esta demo</p>
                 <p class="naowee-message__text">En el sistema real, el Usuario elige entre Otorgamiento, Renovación o Actualización del Reconocimiento Deportivo.</p>
               </div>
             </div>
@@ -234,17 +240,25 @@
               </div>
             </div>
 
-            <!-- Disciplina deportiva (select editable) -->
-            <div class="naowee-textfield">
-              <label class="naowee-textfield__label naowee-textfield__label--required" for="disciplina">Disciplina deportiva</label>
-              <div class="naowee-textfield__input-wrap">
-                <select class="naowee-textfield__input" id="disciplina">
-                  <option>Atletismo</option>
-                  <option>Ciclismo</option>
-                  <option>Natación</option>
-                  <option>Voleibol</option>
-                </select>
-              </div>
+            <!-- Disciplina deportiva (DS .naowee-dropdown — v1.1.6 fix #1:
+                 reemplaza native <select> que renderizaba el dropdown nativo
+                 de Chrome. DS provee trigger + menu + option (line 2192+). -->
+            <div class="naowee-dropdown" data-dropdown id="disciplina-dropdown">
+              <label class="naowee-dropdown__label" for="disciplina-trigger">Disciplina deportiva</label>
+              <button type="button" class="naowee-dropdown__trigger" id="disciplina-trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="naowee-dropdown__value">Atletismo</span>
+                <span class="naowee-dropdown__controls">
+                  <span class="naowee-dropdown__chevron">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </span>
+                </span>
+              </button>
+              <ul class="naowee-dropdown__menu" role="listbox">
+                <li class="naowee-dropdown__option naowee-dropdown__option--selected" role="option" data-value="atletismo">Atletismo</li>
+                <li class="naowee-dropdown__option" role="option" data-value="ciclismo">Ciclismo</li>
+                <li class="naowee-dropdown__option" role="option" data-value="natacion">Natación</li>
+                <li class="naowee-dropdown__option" role="option" data-value="voleibol">Voleibol</li>
+              </ul>
             </div>
 
             <!-- Domicilio principal -->
@@ -265,7 +279,7 @@
           </div>
         </div>
         <div class="wizard-footer">
-          <a class="naowee-btn naowee-btn--mute" href="dashboard.html">← Cancelar</a>
+          <button type="button" class="naowee-btn naowee-btn--mute" onclick="location.href='dashboard.html'">← Cancelar</button>
           <button type="button" class="naowee-btn naowee-btn--loud" id="btnStep1Next">
             Continuar a Documentos →
           </button>
@@ -283,13 +297,13 @@
         </div>
         <div class="naowee-card__body">
           <div class="docs-section-title">
-            <div class="naowee-message naowee-message--informative" style="margin-bottom: 0; flex: 1">
+            <div class="naowee-message naowee-message--informative ivc-message--inline">
               <div class="naowee-message__header">
                 <span class="naowee-message__icon">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                 </span>
                 <div class="naowee-message__content">
-                  <p class="naowee-message__title" style="font-size:14px">Demo · Haz click en cada documento para simular la carga</p>
+                  <p class="naowee-message__title">Demo · Haz click en cada documento para simular la carga</p>
                   <p class="naowee-message__text">En el sistema real, esto abre un picker de archivos con validación de extensión, tamaño y firma.</p>
                 </div>
               </div>
@@ -463,6 +477,48 @@
         window.location.href = 'tramite-detalle.html';
       }, 1400);
     }
+
+    /* v1.1.6 fix #1 — Dropdown widget canónico (DS .naowee-dropdown).
+       Open/close + selection. DS solo provee CSS; el behavior es app-level. */
+    document.querySelectorAll('[data-dropdown]').forEach(function (dd) {
+      var trigger = dd.querySelector('.naowee-dropdown__trigger');
+      var menu = dd.querySelector('.naowee-dropdown__menu');
+      var value = dd.querySelector('.naowee-dropdown__value');
+
+      trigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var isOpen = dd.classList.contains('naowee-dropdown--open');
+        if (isOpen) {
+          dd.classList.remove('naowee-dropdown--open');
+          trigger.setAttribute('aria-expanded', 'false');
+        } else {
+          dd.classList.add('naowee-dropdown--open');
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      menu.querySelectorAll('.naowee-dropdown__option').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          menu.querySelectorAll('.naowee-dropdown__option').forEach(function (o) {
+            o.classList.remove('naowee-dropdown__option--selected');
+          });
+          opt.classList.add('naowee-dropdown__option--selected');
+          value.textContent = opt.textContent;
+          dd.classList.remove('naowee-dropdown--open');
+          trigger.setAttribute('aria-expanded', 'false');
+        });
+      });
+    });
+
+    document.addEventListener('click', function (e) {
+      document.querySelectorAll('[data-dropdown]').forEach(function (dd) {
+        if (!dd.contains(e.target)) {
+          dd.classList.remove('naowee-dropdown--open');
+          var trig = dd.querySelector('.naowee-dropdown__trigger');
+          if (trig) trig.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
   </script>
 </body>
 </html>

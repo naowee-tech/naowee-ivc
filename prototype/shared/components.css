@@ -147,71 +147,13 @@
   50% { box-shadow: 0 0 0 4px rgba(255, 117, 0, 0); }
 }
 
-/* ───── Messages (info/caution/error/success banners — patrón DS canónico).
-   v1.1.4 — alineado al patrón `.naowee-message__header` del DS Naowee
-   (design-system.css líneas 2971-3083). Wrapper outer + header row + content. */
-.naowee-message {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px 16px;
-  border-radius: var(--radius-lg);
-  border: 1px solid;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-/* Header: icon + title/content lado a lado (patrón DS) */
-.naowee-message__header {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  width: 100%;
-}
-
-.naowee-message__icon {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-full);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: currentColor;
-  color: var(--surface);
-  margin-top: 1px;
-}
-.naowee-message__icon svg { color: inherit; }
-
-.naowee-message__content { flex: 1; min-width: 0; }
-.naowee-message__title { font-weight: 700; margin: 0 0 2px; color: var(--text-primary); }
-.naowee-message__text { margin: 0; color: var(--text-secondary); font-weight: 500; }
-
-/* v1.1.4 — variant `--info` renombrado a `--informative` (nombre canónico
-   del DS Naowee; ver design-system.css línea 3077). */
-.naowee-message--informative {
-  background: var(--blue-bg);
-  border-color: var(--blue-border);
-  color: var(--blue-info);
-}
-
-.naowee-message--caution {
-  background: var(--orange-bg);
-  border-color: var(--orange-border);
-  color: var(--accent);
-}
-
-.naowee-message--error {
-  background: var(--red-bg);
-  border-color: var(--red-border);
-  color: var(--red);
-}
-
-.naowee-message--success {
-  background: var(--green-bg);
-  border-color: var(--green-border);
-  color: var(--green);
-}
+/* ───── Messages (info/caution/error/success banners).
+   v1.1.6 — REMOVIDO override completo. El DS YA expone `.naowee-message`,
+   `__header`, `__icon`, `__content`, `__title`, `__text`, `__body`, `__action`,
+   `__dismiss`, `__thumbnail` y variants `--informative/--positive/--caution/
+   --negative` desde design-system.css líneas 2971-3096. Igual que pasó con
+   `.naowee-card` en v1.1.5: el override peleaba contra el DS y rompía los
+   variants (informative, caution, etc). Dejar al DS hacer su trabajo. */
 
 /* ───── Tabs (segmented) ───── */
 .naowee-tabs {

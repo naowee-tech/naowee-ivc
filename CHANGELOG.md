@@ -6,6 +6,43 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.1.6] — 2026-05-21
+
+> 🔧 **Fix 4 issues UI del wizard.** Removida otra override fatal de `.naowee-message` que rompía el DS (mismo patrón del bug v1.1.5 con `.naowee-card`). Dropdown nativo de Chrome reemplazado por `.naowee-dropdown` canónico del DS con widget JS open/close + selection.
+
+### Removed
+- Override completo de `.naowee-message`, `__header`, `__icon`, `__content`, `__title`, `__text` y variants `--informative/--caution/--error/--success` en `prototype/shared/components.css` (líneas 150-214) — el DS las expone correctamente desde design-system.css 2971-3096; el override las rompía.
+- Inline styles `font-size:14px` en `.naowee-message__title` (nuevo-tramite.html × 2, tramite-detalle.html × 1) — el DS ya define la tipografía canónica.
+- Inline style `margin-bottom:18px` en message instance (nuevo-tramite.html) — reemplazado por helper `.ivc-message--block`.
+- Inline style `margin-bottom:0;flex:1` en docs-section message — reemplazado por helper `.ivc-message--inline`.
+- Native `<select class="naowee-textfield__input" id="disciplina">` en nuevo-tramite.html que renderizaba el dropdown nativo de Chrome.
+- `<a class="naowee-btn naowee-btn--mute">` para "Cancelar" — el `a:hover { text-decoration: underline }` global lo subrayaba.
+
+### Fixed (Doug feedback 2026-05-21 — round 5)
+- **#1** Disciplina deportiva: ahora usa `.naowee-dropdown` canónico del DS (line 2192+) con `__trigger`, `__value`, `__chevron`, `__menu`, `__option`, `__option--selected`. Widget JS minimal para open/close + selection. No más dropdown nativo de Chrome.
+- **#2** Title "Nuevo trámite" alineado a la izquierda — agregado `text-align: left` explícito a `.page-title-block` en nuevo-tramite.html (defensa contra herencia).
+- **#3** Info messages usan el DS canónico sin override + sin inline styles. El DS expone los variants `--informative/--positive/--caution/--negative` desde design-system.css 3077-3084.
+- **#4** Botón Cancelar es ahora `<button type="button" onclick="location.href='dashboard.html'">` — semánticamente correcto (Cancelar es una acción, no navegación) y evita el underline del `a:hover` global de tokens.css.
+
+### Added
+- `.ivc-message--block` y `.ivc-message--inline` (helpers IVC-scoped) en nuevo-tramite.html — sustituyen los inline styles de layout sobre `.naowee-message`. No tocan tipografía/padding (eso lo gobierna el DS); solo aportan contexto layout específico de la página.
+- Widget JS para `[data-dropdown]` en nuevo-tramite.html — open/close + selection + click-outside. El DS provee solo CSS; el behavior es app-level (canónico-adjacent).
+
+### Changed
+- `prototype/shared/components.css`: tamaño 783 → ~730 líneas. Block de message overrides (líneas 150-214, 65 líneas) sustituido por comentario docstring de 7 líneas indicando que el DS lo expone.
+- `prototype/usuario-externo/nuevo-tramite.html`: select native → `.naowee-dropdown` widget (+25 líneas HTML, +45 líneas JS). `.page-title-block` con `text-align: left` explícito. Botón Cancelar pasa de `<a>` a `<button onclick>`.
+- `prototype/usuario-externo/tramite-detalle.html`: removido inline `style="font-size:14px"` del title del info banner.
+
+### Verification (grep checks)
+```
+grep -E "^\.naowee-message[__-]" prototype/shared/components.css | wc -l       → 0
+grep "select.*disciplina" prototype/usuario-externo/nuevo-tramite.html         → 0
+grep -E 'style="(font-size|margin-bottom)' prototype/usuario-externo/nuevo-tramite.html → 0 (en messages)
+grep '<a class="naowee-btn naowee-btn--mute"' prototype/usuario-externo/nuevo-tramite.html → 0
+```
+
+---
+
 ## [ivc-v1.1.5] — 2026-05-21
 
 > 🔧 **Fix crítico: removal del override fatal de `.naowee-card` que rompía toda la UI.** El override de 12 reglas en `components.css` peleaba contra el DS canónico v1.8.0 (que YA expone `.naowee-card` desde la línea 4436). Wizard `nuevo-tramite.html` adopta ahora el patrón canónico del repo `naowee-test-escenarios` (escenario-03/04 — sport scenarios wizard, fuente de verdad oficial del wizard pattern del proyecto v2.1).
