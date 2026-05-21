@@ -125,6 +125,26 @@
       text-align: center;
       color: var(--text-secondary);
     }
+
+    /* Page title block (Doug v1.1.5 — title vive en el body antes del stepper,
+       igual que en dashboard.html. Patrón project v2.1). */
+    .page-title-block { margin-bottom: 4px; max-width: 880px; margin-left: auto; margin-right: auto; }
+    .page-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .page-subtitle {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    /* Constrain stepper a misma anchura que las wizard-cards. */
+    .ivc-stepper { max-width: 880px; margin-left: auto; margin-right: auto; margin-bottom: 28px; }
   </style>
 </head>
 <body>
@@ -134,28 +154,36 @@
   <template id="page-content">
     <div class="page-inner">
 
-      <!-- Stepper (custom IVC — el DS no expone .naowee-stepper).
-           data-tour="wizard-stepper" lo usa el tour Step 2 (v1.1.4 #4). -->
-      <ol class="naowee-stepper" id="wizardStepper" data-tour="wizard-stepper">
-        <li class="naowee-stepper__item is-active" data-step="1">
-          <div class="naowee-stepper__circle">1</div>
-          <span class="naowee-stepper__label">Datos generales</span>
+      <!-- Page title block (Doug v1.1.5 — wizard como project v2.1: title
+           vive en el body, encabeza la pantalla, antes del stepper). -->
+      <header class="page-title-block">
+        <h1 class="page-title">Nuevo trámite</h1>
+        <p class="page-subtitle">Otorgamiento de Reconocimiento Deportivo — Liga de Atletismo de Bolívar.</p>
+      </header>
+
+      <!-- Stepper IVC (v1.1.5 — renombrado de `.naowee-stepper` que no calzaba
+           con el DS canónico). Sub-elementos `__item`/`__circle`/`__label`.
+           data-tour="wizard-stepper" lo usa el tour Step 2. -->
+      <ol class="ivc-stepper" id="wizardStepper" data-tour="wizard-stepper">
+        <li class="ivc-stepper__item is-active" data-step="1">
+          <div class="ivc-stepper__circle">1</div>
+          <span class="ivc-stepper__label">Datos generales</span>
         </li>
-        <li class="naowee-stepper__item" data-step="2">
-          <div class="naowee-stepper__circle">2</div>
-          <span class="naowee-stepper__label">Documentos</span>
+        <li class="ivc-stepper__item" data-step="2">
+          <div class="ivc-stepper__circle">2</div>
+          <span class="ivc-stepper__label">Documentos</span>
         </li>
-        <li class="naowee-stepper__item" data-step="3">
-          <div class="naowee-stepper__circle">3</div>
-          <span class="naowee-stepper__label">Confirmación</span>
+        <li class="ivc-stepper__item" data-step="3">
+          <div class="ivc-stepper__circle">3</div>
+          <span class="ivc-stepper__label">Confirmación</span>
         </li>
       </ol>
 
-      <!-- Step 1: Datos generales — refactor v1.1.4 #5 al patrón canónico
-           del DS (.naowee-textfield + sub-elementos). Las clases
-           `.naowee-input*` (incluidas `--group`, `--label`, `--helper`) NO
-           existen en el DS Naowee y fueron inventadas en versiones previas. -->
-      <section class="naowee-card wizard-card" id="step-1">
+      <!-- Step 1: Datos generales — usa `.naowee-card` del DS canónico v1.8.0
+           + variant local `.ivc-card-sectioned` para conseguir header/body/
+           footer con dividers (estilo project v2.1). El form usa el patrón
+           `.naowee-textfield` del DS. -->
+      <section class="naowee-card ivc-card-sectioned wizard-card" id="step-1">
         <div class="naowee-card__header">
           <div>
             <h2 class="naowee-card__title">Datos generales del trámite</h2>
@@ -245,7 +273,7 @@
       </section>
 
       <!-- Step 2: Documentos -->
-      <section class="naowee-card wizard-card" id="step-2" hidden data-tour="docs-decreto-1387">
+      <section class="naowee-card ivc-card-sectioned wizard-card" id="step-2" hidden data-tour="docs-decreto-1387">
         <div class="naowee-card__header">
           <div>
             <h2 class="naowee-card__title">Documentos requeridos por el Decreto 1387/1970, Art. 2.1.1.2</h2>
@@ -289,7 +317,7 @@
       </section>
 
       <!-- Step 3: Confirmación (transitorio) -->
-      <section class="naowee-card wizard-card" id="step-3" hidden>
+      <section class="naowee-card ivc-card-sectioned wizard-card" id="step-3" hidden>
         <div class="step-placeholder">
           Procesando radicación...
         </div>
@@ -347,7 +375,7 @@
 
       ['1','2','3'].forEach(function (s) {
         var sec = document.getElementById('step-' + s);
-        var item = document.querySelector('[data-step="' + s + '"]');
+        var item = document.querySelector('.ivc-stepper__item[data-step="' + s + '"]');
         if (parseInt(s, 10) === n) {
           sec.hidden = false;
           item.classList.add('is-active');

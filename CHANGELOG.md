@@ -6,6 +6,38 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.1.5] — 2026-05-21
+
+> 🔧 **Fix crítico: removal del override fatal de `.naowee-card` que rompía toda la UI.** El override de 12 reglas en `components.css` peleaba contra el DS canónico v1.8.0 (que YA expone `.naowee-card` desde la línea 4436). Wizard `nuevo-tramite.html` adopta ahora el patrón canónico del repo `naowee-test-escenarios` (escenario-03/04 — sport scenarios wizard, fuente de verdad oficial del wizard pattern del proyecto v2.1).
+
+### Removed
+- 12 reglas override de `.naowee-card`/`__header`/`__title`/`__subtitle`/`__body`/`__footer`/`--interactive` en `prototype/shared/components.css` — el DS YA expone estas clases, el override las rompía.
+- Clases inventadas `.naowee-stepper` / `.naowee-stepper__item` / `.naowee-stepper__circle` / `.naowee-stepper__label` renombradas a `.ivc-stepper*`. El DS expone `.naowee-stepper` pero con sub-elementos `__step`/`__number`/`__connector` — los `__item`/`__circle` eran invenciones que no calzaban.
+
+### Added
+- `.ivc-card-sectioned` (variant local) — modifier IVC-only que se aplica JUNTO a `.naowee-card` del DS cuando necesitamos card con header/body/footer separados por dividers (patrón project v2.1 para detalle de trámite y wizard). NO sobrescribe el DS; se compone encima.
+- `.ivc-stepper*` (renombrado) — stepper IVC custom (3 pasos del wizard de nuevo trámite). Sub-elementos `__item`/`__circle`/`__label` con states `is-active`/`is-complete`.
+
+### Fixed
+- Wizard `nuevo-tramite.html` ahora renderiza con la elevación canónica del DS (sin override roto).
+- Stepper visible en top del wizard con shape correcta (antes caía a `<ol>` default por falta de CSS efectivo cuando alguien tocaba el override).
+- `tramite-detalle.html` cards (Timeline, Acciones, Documentos cargados, Fundamento legal) usan ahora `.naowee-card` del DS + `.ivc-card-sectioned` — antes dependían del override que rompía la card.
+- Page title "Nuevo trámite" + subtitle ahora viven en `.page-title-block` antes del stepper (patrón project v2.1, igual que `dashboard.html`).
+
+### Changed
+- `prototype/shared/components.css` — removidos 12 overrides de `.naowee-card`; `.naowee-stepper*` renombrado a `.ivc-stepper*`; agregada variant `.ivc-card-sectioned`. Docstring de cabecera actualizada listando todo lo que el DS v1.8.0 ya provee (card, stepper, message, textfield, btn, badge, table, modal). Tamaño: 774 → 783 líneas (delta neto +9: removidos 56 lines de override, agregadas 65 de variant local + docs).
+- `prototype/usuario-externo/nuevo-tramite.html` — refactor: stepper a `.ivc-stepper*`, wizard sections usan `.naowee-card.ivc-card-sectioned.wizard-card`, agregado `.page-title-block` antes del stepper, JS `goToStep` actualizado para query `.ivc-stepper__item`.
+- `prototype/usuario-externo/tramite-detalle.html` — las 4 `<section class="naowee-card">` ahora son `<section class="naowee-card ivc-card-sectioned">` (timeline + 3 sidebar cards).
+
+### Verification (grep checks)
+```
+grep -cE "^\.naowee-card[^a-z-]|^\.naowee-card__|^\.naowee-card--" components.css      → 0
+grep -rE 'class=.[^"]*naowee-stepper' prototype/**/*.html                              → 0
+grep -rE 'class=.[^"]*naowee-(input-group|input-label|input-helper|badge--tramite)' prototype/**/*.html → 0
+```
+
+---
+
 ## [ivc-v1.1.4] — 2026-05-21
 
 > 🔧 **Refinamiento crítico: adopción real de clases canónicas del DS Naowee.** Los subagents anteriores inventaron `.naowee-input/-group/-label/-helper` y `.naowee-badge--tramite` — NINGUNA existe en el DS. Esta versión refactoriza al patrón canónico real (`.naowee-textfield`).

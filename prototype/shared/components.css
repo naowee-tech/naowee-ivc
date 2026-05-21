@@ -7,28 +7,52 @@
                                   --negative / --neutral / --brand / --quiet)
      · .naowee-table + thead/tbody/__num/__cell-primary
      · .naowee-modal + overlay/header/body/footer/dismiss
+     · .naowee-card + __header/__title/__subtitle/__body/__footer/__media +
+       variants (--outline / --filled / --flat / --compact / --flush /
+       --clickable / --disabled).
+     · .naowee-stepper + __step/__number/__label/__connector + variants
+       (--pulse / --distributed) y states (--active/--done).
+     · .naowee-message + __header/__icon/__title/__body/__text/__action +
+       variants (--informative / --positive / --caution / --negative).
+     · .naowee-textfield + __label/__input-wrap/__input/__check +
+       variants (--readonly/--disabled/--textarea/--error/--validated).
      · Tokens --naowee-color-* (interactive-fill-loud-idle = #D74009, etc.)
-   Acá SOLO viven los componentes que NO están en el DS o son IVC-only:
-     · Tipología badges (--tramite / --actuacion / --procedimiento)
+   Acá SOLO viven los componentes IVC-only o variants locales que el DS
+   aún no cubre:
+     · Tipología badges (`.ivc-badge-tipo-tramite/actuacion/procedimiento`)
      · Status pill con dot animado (estados de tramite)
-     · Message banner (info/caution/error/success)
-     · Tabs segmented, Stepper de wizard, Snackbar
-     · Stat-card (dashboard hero)
-     · Empty state, Doc upload card (decreto 1387), Timeline vertical
-     · Card / Input wrappers (DS aún no expone estos primitives genéricos)
+     · Tabs segmented, IVC stepper (wizard nuevo-tramite), Snackbar
+     · Stat-card (dashboard hero), Empty state, Doc upload card,
+       Timeline vertical, Sectioned card (variant local sobre `.naowee-card`)
      · Animaciones IVC y print rules.
+   v1.1.5: Removidos 12 overrides de `.naowee-card*` (DS YA expone esto).
+            `.naowee-stepper*` renombrado a `.ivc-stepper*` (sub-elementos
+            inventados que no calzan con el DS canónico).
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ───── Cards (DS no expone .naowee-card todavía) ───── */
-.naowee-card {
-  background: var(--surface);
+/* ───── Cards
+   v1.1.5 — ELIMINADOS los 12 overrides de `.naowee-card`/`__header`/
+   `__title`/`__subtitle`/`__body`/`__footer`/`--interactive`. El DS canónico
+   v1.8.0 YA expone estas clases (design-system.css líneas 4436-4465).
+   El override rompía la elevación y padding del DS. Si una página IVC necesita
+   sectioned-card con header + body + footer separados por dividers (patrón
+   v2.1), usar `.ivc-card-sectioned` definido más abajo.
+
+   v1.1.4 — Input primitives `.naowee-input*` REMOVIDAS (clases inventadas
+   que no existen en el DS canónico). El form usa ahora `.naowee-textfield`
+   y sub-elementos del DS. Ver nuevo-tramite.html para el patrón. */
+
+/* ───── IVC sectioned-card (variant local para detalle de trámite/timeline).
+   El DS naowee-card es solo padding tiny + header inline. Cuando IVC necesita
+   header dividido del body (con border-bottom) + footer alineado, usa esta
+   variant. Se aplica JUNTO a `.naowee-card` del DS. ───── */
+.ivc-card-sectioned {
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
+  padding: 0;
   overflow: hidden;
 }
-
-.naowee-card__header {
+.ivc-card-sectioned > .naowee-card__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -36,26 +60,20 @@
   padding: 22px 28px 16px;
   border-bottom: 1px solid var(--border);
 }
-
-.naowee-card__title {
-  margin: 0;
+.ivc-card-sectioned > .naowee-card__header .naowee-card__title {
   font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -.1px;
 }
-
-.naowee-card__subtitle {
+.ivc-card-sectioned > .naowee-card__header .naowee-card__subtitle {
   margin: 4px 0 0;
   font-size: 13px;
   color: var(--text-secondary);
   font-weight: 500;
 }
-
-.naowee-card__body { padding: 22px 28px; }
-.naowee-card__body--flush { padding: 0; }
-
-.naowee-card__footer {
+.ivc-card-sectioned > .naowee-card__body { padding: 22px 28px; }
+.ivc-card-sectioned > .naowee-card__footer {
   padding: 16px 28px;
   border-top: 1px solid var(--border);
   display: flex;
@@ -63,20 +81,6 @@
   gap: 10px;
   background: var(--surface-alt);
 }
-
-.naowee-card--interactive {
-  cursor: pointer;
-  transition: transform var(--duration-normal) var(--ease-out),
-              box-shadow var(--duration-normal) var(--ease-out);
-}
-.naowee-card--interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(145, 158, 171, .18);
-}
-
-/* v1.1.4 — Input primitives `.naowee-input*` REMOVIDAS (clases inventadas
-   que no existen en el DS canónico). El form usa ahora `.naowee-textfield`
-   y sub-elementos del DS. Ver nuevo-tramite.html para el patrón. */
 
 /* ───── Tipología badges (IVC-only — el DS canónico no conoce tramites/actuaciones/procedimientos)
    v1.1.4 — RENOMBRADAS de `.naowee-badge--tramite/--actuacion/--procedimiento`
@@ -238,8 +242,13 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* ───── Stepper (wizard de nuevo-tramite) ───── */
-.naowee-stepper {
+/* ───── IVC Stepper (wizard de nuevo-tramite)
+   v1.1.5 — Renombrado de `.naowee-stepper*` (clases inventadas con sub-
+   elementos `__item`/`__circle` que NO existen en el DS) a `.ivc-stepper*`.
+   El DS sí expone `.naowee-stepper` pero con sub-elementos diferentes
+   (`__step`/`__number`/`__connector`). Mantener nombre `.ivc-stepper` para
+   no confundir con el componente canónico del DS. ───── */
+.ivc-stepper {
   display: flex;
   align-items: center;
   gap: 0;
@@ -248,14 +257,14 @@
   list-style: none;
 }
 
-.naowee-stepper__item {
+.ivc-stepper__item {
   display: flex;
   align-items: center;
   gap: 12px;
   flex: 1;
 }
 
-.naowee-stepper__item:not(:last-child)::after {
+.ivc-stepper__item:not(:last-child)::after {
   content: '';
   flex: 1;
   height: 2px;
@@ -263,7 +272,7 @@
   margin: 0 8px;
 }
 
-.naowee-stepper__circle {
+.ivc-stepper__circle {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -279,30 +288,30 @@
   transition: all var(--duration-normal) var(--ease-out);
 }
 
-.naowee-stepper__label {
+.ivc-stepper__label {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
 }
 
-.naowee-stepper__item.is-active .naowee-stepper__circle {
+.ivc-stepper__item.is-active .ivc-stepper__circle {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--text-inverse);
 }
 
-.naowee-stepper__item.is-active .naowee-stepper__label {
+.ivc-stepper__item.is-active .ivc-stepper__label {
   color: var(--text-primary);
 }
 
-.naowee-stepper__item.is-complete .naowee-stepper__circle {
+.ivc-stepper__item.is-complete .ivc-stepper__circle {
   background: var(--green);
   border-color: var(--green);
   color: var(--text-inverse);
 }
 
-.naowee-stepper__item.is-complete:not(:last-child)::after {
+.ivc-stepper__item.is-complete:not(:last-child)::after {
   background: var(--green);
 }
 
