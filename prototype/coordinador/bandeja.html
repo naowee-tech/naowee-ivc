@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bandeja de asignación · Coordinador IVC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
+  <!-- Naowee DS canónico v1.8.0 — provee .naowee-btn, .naowee-badge, .naowee-table,
+       .naowee-modal, .naowee-textfield, .naowee-dropdown, .naowee-card, .naowee-message,
+       .naowee-searchbox, .naowee-checkbox, .naowee-radio. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Page-local: estilos minimos del page-title y del grid de stats — mismos
+       que dashboard.html (no se duplica el patrón en components.css para no
+       inventar clases). */
+    .page-title-block { margin-bottom: 4px; }
+    .page-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .page-subtitle {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) { .stat-grid { grid-template-columns: 1fr; } }
+
+    /* Toolbar dentro del card de tabla — searchbox + filters + bulk button.
+       NO inventa clase global; vive en este page-scope. */
+    .bandeja-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+    }
+    .bandeja-toolbar__search { flex: 1; min-width: 240px; }
+    .bandeja-toolbar__filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .bandeja-toolbar__filters .naowee-dropdown { min-width: 160px; }
+    .bandeja-toolbar__bulk { flex-shrink: 0; }
+
+    /* Row styles — column hierarchy */
+    .row-radicado {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .row-organismo {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .row-organismo__sub {
+      display: block;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      margin-top: 2px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .row-tipo { color: var(--text-secondary); }
+    .row-date {
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-feature-settings: 'tnum';
+    }
+    .row-asignado {
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .row-asignado--vacio { color: var(--text-muted); font-weight: 400; }
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .row-checkbox-cell { width: 36px; padding-left: 18px; }
+
+    /* Footer count info — minimal, page-scoped */
+    .bandeja-footer-info {
+      padding: 12px 20px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+    }
+
+    /* Modal-local layout for masivo */
+    .masivo-summary-list {
+      max-height: 140px;
+      overflow-y: auto;
+      background: var(--bg-soft);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      margin: 8px 0 0;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      line-height: 1.7;
+    }
+    .masivo-section {
+      margin: 0 0 22px;
+    }
+    .masivo-section__title {
+      margin: 0 0 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .masivo-radio-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Empty hint cuando bulk button disabled */
+    .bulk-hint {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="shell" id="app-shell"></div>
+
+  <template id="page-content">
+    <div class="page-inner">
+
+      <header class="page-title-block">
+        <h1 class="page-title">Bandeja de asignación</h1>
+        <p class="page-subtitle">Asigna las solicitudes radicadas a los profesionales disponibles de tu área.</p>
+      </header>
+
+      <!-- Stat cards (3): No asignadas / Asignadas / En validación -->
+      <section class="stat-grid">
+        <div class="naowee-stat-card naowee-stat-card--accent">
+          <span class="naowee-stat-card__label">Sin asignar</span>
+          <span class="naowee-stat-card__value" id="statNoAsignadas">0</span>
+          <span class="naowee-stat-card__hint">Pendientes de distribuir</span>
+        </div>
+        <div class="naowee-stat-card naowee-stat-card--success">
+          <span class="naowee-stat-card__label">Asignadas</span>
+          <span class="naowee-stat-card__value" id="statAsignadas">0</span>
+          <span class="naowee-stat-card__hint">Esperando inicio</span>
+        </div>
+        <div class="naowee-stat-card naowee-stat-card--info">
+          <span class="naowee-stat-card__label">En validación</span>
+          <span class="naowee-stat-card__value" id="statEnValidacion">0</span>
+          <span class="naowee-stat-card__hint">En curso por el profesional</span>
+        </div>
+      </section>
+
+      <!-- Bandeja card (patrón canónico .naowee-table-card) -->
+      <section class="naowee-table-card" data-tour="bandeja-coord">
+        <div class="naowee-table-card__head">
+          <div class="naowee-table-card__head-text">
+            <h2 class="naowee-table-card__title">Solicitudes radicadas</h2>
+            <p class="naowee-table-card__subtitle">12 trámites — Deporte Aficionado</p>
+          </div>
+          <div class="naowee-table-card__actions">
+            <button type="button"
+                    class="naowee-btn naowee-btn--loud"
+                    id="btnAsignacionMasiva"
+                    data-tour="asignacion-masiva"
+                    disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Asignación masiva
+              <span class="bulk-hint" id="bulkHint">(0)</span>
+            </button>
+          </div>
+        </div>
+        <hr class="naowee-table-card__divider" />
+
+        <!-- Toolbar: search + filters -->
+        <div class="bandeja-toolbar">
+          <div class="bandeja-toolbar__search">
+            <div class="naowee-searchbox naowee-searchbox--medium" id="searchboxRoot">
+              <div class="naowee-searchbox__input-wrap">
+                <div class="naowee-searchbox__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <input type="text"
+                       class="naowee-searchbox__input"
+                       placeholder="Buscar por radicado o organismo"
+                       id="searchInput" />
+                <button type="button" class="naowee-searchbox__clear" id="searchClear" aria-label="Limpiar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="bandeja-toolbar__filters">
+            <!-- Filtro Estado -->
+            <div class="naowee-dropdown" data-filter="estado" id="ddEstado">
+              <button type="button" class="naowee-dropdown__trigger">
+                <span class="naowee-dropdown__value" data-value-label>Estado</span>
+                <span class="naowee-dropdown__controls">
+                  <span class="naowee-dropdown__chevron">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </span>
+              </button>
+              <div class="naowee-dropdown__menu" role="listbox">
+                <button type="button" class="naowee-dropdown__option" data-val="">Todos los estados</button>
+                <button type="button" class="naowee-dropdown__option" data-val="No asignada">No asignada</button>
+                <button type="button" class="naowee-dropdown__option" data-val="Asignada">Asignada</button>
+                <button type="button" class="naowee-dropdown__option" data-val="En validación">En validación</button>
+              </div>
+            </div>
+            <!-- Filtro Tipo -->
+            <div class="naowee-dropdown" data-filter="tipo" id="ddTipo">
+              <button type="button" class="naowee-dropdown__trigger">
+                <span class="naowee-dropdown__value" data-value-label>Tipo de trámite</span>
+                <span class="naowee-dropdown__controls">
+                  <span class="naowee-dropdown__chevron">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </span>
+              </button>
+              <div class="naowee-dropdown__menu" role="listbox">
+                <button type="button" class="naowee-dropdown__option" data-val="">Todos los tipos</button>
+                <button type="button" class="naowee-dropdown__option" data-val="Otorgamiento">Otorgamiento</button>
+                <button type="button" class="naowee-dropdown__option" data-val="Renovación">Renovación</button>
+                <button type="button" class="naowee-dropdown__option" data-val="Actualización">Actualización</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla -->
+        <table class="naowee-table" id="bandejaTable">
+          <thead>
+            <tr>
+              <th class="row-checkbox-cell">
+                <label class="naowee-checkbox" id="checkAllWrap">
+                  <span class="naowee-checkbox__box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </label>
+              </th>
+              <th>Radicado</th>
+              <th>Tipo</th>
+              <th>Organismo</th>
+              <th>Fecha radicación</th>
+              <th>Estado asignación</th>
+              <th>Profesional asignado</th>
+              <th style="text-align:right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="bandejaBody"></tbody>
+        </table>
+
+        <!-- Footer count -->
+        <div class="bandeja-footer-info" id="footerCount">Mostrando 0 de 0</div>
+      </section>
+
+    </div>
+  </template>
+
+  <!-- ═══ Modal: Asignación Masiva ═══ -->
+  <div class="naowee-modal-overlay" id="modalMasivoOverlay" role="dialog" aria-modal="true" aria-labelledby="modalMasivoTitle">
+    <div class="naowee-modal naowee-modal--scrollable" style="max-width: 640px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title" id="modalMasivoTitle">Asignación masiva de trámites</h2>
+          <p class="naowee-modal__subtitle">Selecciona la estrategia y el profesional responsable.</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="modalMasivoClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body">
+
+        <!-- Sección 1: trámites seleccionados -->
+        <div class="masivo-section">
+          <h3 class="masivo-section__title">
+            Trámites seleccionados
+            <span class="naowee-badge naowee-badge--informative naowee-badge--small" id="masivoCount">0</span>
+          </h3>
+          <div class="masivo-summary-list" id="masivoList">—</div>
+        </div>
+
+        <!-- Sección 2: estrategia -->
+        <div class="masivo-section">
+          <h3 class="masivo-section__title">Estrategia de asignación</h3>
+          <div class="masivo-radio-stack">
+            <label class="naowee-radio naowee-radio--selected" data-estrategia="mismo">
+              <span class="naowee-radio__circle"></span>
+              <span class="naowee-radio__label">Asignar todos al mismo profesional</span>
+            </label>
+            <label class="naowee-radio" data-estrategia="distribuir">
+              <span class="naowee-radio__circle"></span>
+              <span class="naowee-radio__label">Distribuir entre varios profesionales (equitativo)</span>
+            </label>
+            <label class="naowee-radio" data-estrategia="manual">
+              <span class="naowee-radio__circle"></span>
+              <span class="naowee-radio__label">Asignación manual por cada trámite</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Sección 3: profesional -->
+        <div class="masivo-section">
+          <h3 class="masivo-section__title">Profesional</h3>
+          <div class="naowee-dropdown" id="ddProfesional">
+            <span class="naowee-dropdown__label">Selecciona el profesional</span>
+            <button type="button" class="naowee-dropdown__trigger">
+              <span class="naowee-dropdown__value" data-value-label>Carlos Pérez (12 activos)</span>
+              <span class="naowee-dropdown__controls">
+                <span class="naowee-dropdown__chevron">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </span>
+            </button>
+            <div class="naowee-dropdown__menu" role="listbox">
+              <button type="button" class="naowee-dropdown__option naowee-dropdown__option--selected" data-val="cp-001">Carlos Pérez (12 activos)</button>
+              <button type="button" class="naowee-dropdown__option" data-val="mg-002">María García (8 activos)</button>
+              <button type="button" class="naowee-dropdown__option" data-val="al-003">Andrés López (15 activos)</button>
+              <button type="button" class="naowee-dropdown__option" data-val="lr-004">Lucía Ramírez (5 activos)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje informativo -->
+        <div class="naowee-message naowee-message--informative" id="masivoMsg">
+          <div class="naowee-message__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div class="naowee-message__content">
+            <p class="naowee-message__text" id="masivoMsgText">
+              Se asignarán <strong id="msgCount">0</strong> trámites a <strong id="msgProf">Carlos Pérez</strong>.
+              Se registrarán fecha, hora y usuario responsable en cada uno.
+            </p>
+          </div>
+        </div>
+
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="modalMasivoCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="modalMasivoConfirm">Confirmar asignación</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Modal: Asignación Individual ═══ -->
+  <div class="naowee-modal-overlay" id="modalIndividualOverlay" role="dialog" aria-modal="true" aria-labelledby="modalIndividualTitle">
+    <div class="naowee-modal" style="max-width: 480px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title" id="modalIndividualTitle">Asignar trámite</h2>
+          <p class="naowee-modal__subtitle" id="modalIndividualSub">—</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="modalIndividualClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body">
+        <div class="naowee-dropdown" id="ddProfesionalSingle">
+          <span class="naowee-dropdown__label">Profesional responsable</span>
+          <button type="button" class="naowee-dropdown__trigger">
+            <span class="naowee-dropdown__value" data-value-label>Carlos Pérez (12 activos)</span>
+            <span class="naowee-dropdown__controls">
+              <span class="naowee-dropdown__chevron">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </span>
+          </button>
+          <div class="naowee-dropdown__menu" role="listbox">
+            <button type="button" class="naowee-dropdown__option naowee-dropdown__option--selected" data-val="cp-001">Carlos Pérez (12 activos)</button>
+            <button type="button" class="naowee-dropdown__option" data-val="mg-002">María García (8 activos)</button>
+            <button type="button" class="naowee-dropdown__option" data-val="al-003">Andrés López (15 activos)</button>
+            <button type="button" class="naowee-dropdown__option" data-val="lr-004">Lucía Ramírez (5 activos)</button>
+          </div>
+        </div>
+        <p style="margin: 14px 0 0; font-size: 12.5px; color: var(--text-secondary);">
+          Se registrará fecha, hora y usuario responsable. El profesional verá el trámite en su bandeja inmediatamente.
+        </p>
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="modalIndividualCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="modalIndividualConfirm">Asignar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../shared/data.js"></script>
+  <script src="../shared/shell.js"></script>
+  <script src="../shared/demo-tour.js"></script>
+  <script>
+    /* Estado local del page (no global — solo lo necesita esta pantalla) */
+    var state = {
+      tramites: [],          /* deep-copy de TRAMITES_BANDEJA */
+      seleccionados: {},     /* { tramiteId: true } */
+      filtros: { search: '', estado: '', tipo: '' },
+      modalTramiteId: null,  /* trámite del modal individual */
+      estrategia: 'mismo',
+      profesionalIdMasivo: 'cp-001',
+      profesionalIdSingle: 'cp-001'
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      /* Forzar perfil Coordinador para esta página */
+      window.IVCData.setPerfil('coordinador');
+
+      var template = document.getElementById('page-content');
+      var shellRoot = document.getElementById('app-shell');
+      shellRoot.innerHTML = template.innerHTML;
+
+      window.IVCShell.init({ title: null, activeNav: 'bandeja-coord' });
+
+      /* Clonar mock data → state local (immutable, no muta el constant del data.js) */
+      state.tramites = window.IVCData.TRAMITES_BANDEJA.map(function (t) {
+        return Object.assign({}, t);
+      });
+
+      renderStats();
+      renderTabla();
+      wireFiltros();
+      wireSelection();
+      wireModales();
+      wireDropdowns();
+
+      window.IVCTour.mount({ pageId: 'coordinador/bandeja.html' });
+    });
+
+    /* ───────────── Render Stats ───────────── */
+    function renderStats() {
+      var counts = state.tramites.reduce(function (acc, t) {
+        if (t.estado === 'No asignada') acc.no++;
+        else if (t.estado === 'Asignada') acc.asig++;
+        else if (t.estado === 'En validación') acc.val++;
+        return acc;
+      }, { no: 0, asig: 0, val: 0 });
+      document.getElementById('statNoAsignadas').textContent = counts.no;
+      document.getElementById('statAsignadas').textContent = counts.asig;
+      document.getElementById('statEnValidacion').textContent = counts.val;
+    }
+
+    /* ───────────── Render tabla ───────────── */
+    function getFilteredTramites() {
+      return state.tramites.filter(function (t) {
+        if (state.filtros.estado && t.estado !== state.filtros.estado) return false;
+        if (state.filtros.tipo && t.tipo !== state.filtros.tipo) return false;
+        if (state.filtros.search) {
+          var q = state.filtros.search.toLowerCase();
+          if (t.id.toLowerCase().indexOf(q) < 0 && t.organismo.toLowerCase().indexOf(q) < 0) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderTabla() {
+      var visibles = getFilteredTramites();
+      var rowsHtml = visibles.map(function (t) {
+        var isSelected = !!state.seleccionados[t.id];
+        var badgeEstado = badgeForEstadoAsignacion(t.estado);
+        var asignado = t.profesionalNombre === '—'
+          ? '<span class="row-asignado--vacio">—</span>'
+          : '<span class="row-asignado">' + t.profesionalNombre + '</span>';
+        var accionBtn = (t.estado === 'No asignada')
+          ? '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" data-asignar="' + t.id + '">Asignar</button>'
+          : '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-asignar="' + t.id + '">Reasignar</button>';
+
+        return '<tr data-tramite-id="' + t.id + '">' +
+          '<td class="row-checkbox-cell">' +
+            '<label class="naowee-checkbox ' + (isSelected ? 'naowee-checkbox--checked' : '') + '" data-row-check="' + t.id + '">' +
+              '<span class="naowee-checkbox__box">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+              '</span>' +
+            '</label>' +
+          '</td>' +
+          '<td><span class="row-radicado">' + t.id + '</span></td>' +
+          '<td><span class="row-tipo">' + t.tipo + '</span></td>' +
+          '<td><span class="row-organismo">' + t.organismo + '<span class="row-organismo__sub">NIT ' + t.nit + '</span></span></td>' +
+          '<td><span class="row-date">' + formatDate(t.fechaRadicacion) + '</span></td>' +
+          '<td>' + badgeEstado + '</td>' +
+          '<td>' + asignado + '</td>' +
+          '<td><div class="row-actions">' + accionBtn + '</div></td>' +
+        '</tr>';
+      }).join('');
+
+      document.getElementById('bandejaBody').innerHTML = rowsHtml || '<tr><td colspan="8" style="text-align:center; padding:32px; color:var(--text-secondary);">No hay trámites que coincidan con los filtros.</td></tr>';
+      document.getElementById('footerCount').textContent = 'Mostrando ' + visibles.length + ' de ' + state.tramites.length;
+
+      updateBulkButton();
+    }
+
+    function badgeForEstadoAsignacion(estado) {
+      if (estado === 'No asignada') return '<span class="naowee-badge naowee-badge--caution">No asignada</span>';
+      if (estado === 'Asignada')    return '<span class="naowee-badge naowee-badge--positive">Asignada</span>';
+      if (estado === 'En validación') return '<span class="naowee-badge naowee-badge--informative">En validación</span>';
+      return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">' + estado + '</span>';
+    }
+
+    function formatDate(iso) {
+      var p = iso.split('-');
+      var months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      return p[2] + ' ' + months[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    }
+
+    /* ───────────── Filtros ───────────── */
+    function wireFiltros() {
+      var sb = document.getElementById('searchboxRoot');
+      var sbInput = document.getElementById('searchInput');
+      sbInput.addEventListener('input', function () {
+        state.filtros.search = sbInput.value;
+        if (sbInput.value) sb.classList.add('naowee-searchbox--has-value');
+        else sb.classList.remove('naowee-searchbox--has-value');
+        renderTabla();
+      });
+      document.getElementById('searchClear').addEventListener('click', function () {
+        sbInput.value = '';
+        state.filtros.search = '';
+        sb.classList.remove('naowee-searchbox--has-value');
+        renderTabla();
+      });
+    }
+
+    /* ───────────── Dropdowns (open/close + filter wire) ───────────── */
+    function wireDropdowns() {
+      document.querySelectorAll('.naowee-dropdown').forEach(function (dd) {
+        var trigger = dd.querySelector('.naowee-dropdown__trigger');
+        if (!trigger) return;
+        trigger.addEventListener('click', function (e) {
+          e.stopPropagation();
+          /* Cerrar otros */
+          document.querySelectorAll('.naowee-dropdown--open').forEach(function (other) {
+            if (other !== dd) other.classList.remove('naowee-dropdown--open');
+          });
+          dd.classList.toggle('naowee-dropdown--open');
+        });
+        dd.querySelectorAll('.naowee-dropdown__option').forEach(function (opt) {
+          opt.addEventListener('click', function (e) {
+            e.stopPropagation();
+            dd.querySelectorAll('.naowee-dropdown__option').forEach(function (o) { o.classList.remove('naowee-dropdown__option--selected'); });
+            opt.classList.add('naowee-dropdown__option--selected');
+            var label = dd.querySelector('[data-value-label]');
+            if (label) label.textContent = opt.textContent.trim();
+            dd.classList.remove('naowee-dropdown--open');
+
+            /* Aplicar filtro si tiene data-filter */
+            var filterName = dd.getAttribute('data-filter');
+            if (filterName) {
+              state.filtros[filterName] = opt.getAttribute('data-val');
+              renderTabla();
+            }
+            /* Si es el dropdown del modal masivo, update mensaje */
+            if (dd.id === 'ddProfesional') {
+              state.profesionalIdMasivo = opt.getAttribute('data-val');
+              updateMasivoMessage();
+            }
+            if (dd.id === 'ddProfesionalSingle') {
+              state.profesionalIdSingle = opt.getAttribute('data-val');
+            }
+          });
+        });
+      });
+      /* Click fuera cierra cualquier dropdown abierto */
+      document.addEventListener('click', function () {
+        document.querySelectorAll('.naowee-dropdown--open').forEach(function (dd) {
+          dd.classList.remove('naowee-dropdown--open');
+        });
+      });
+    }
+
+    /* ───────────── Selection ───────────── */
+    function wireSelection() {
+      /* Header checkbox (seleccionar todos visibles) */
+      var checkAllWrap = document.getElementById('checkAllWrap');
+      checkAllWrap.addEventListener('click', function (e) {
+        e.preventDefault();
+        var visibles = getFilteredTramites();
+        var allSelected = visibles.every(function (t) { return state.seleccionados[t.id]; });
+        if (allSelected) {
+          visibles.forEach(function (t) { delete state.seleccionados[t.id]; });
+        } else {
+          visibles.forEach(function (t) { state.seleccionados[t.id] = true; });
+        }
+        checkAllWrap.classList.toggle('naowee-checkbox--checked', !allSelected);
+        renderTabla();
+      });
+
+      /* Click delegado en filas */
+      document.getElementById('bandejaBody').addEventListener('click', function (ev) {
+        var cb = ev.target.closest('[data-row-check]');
+        if (cb) {
+          ev.preventDefault();
+          var id = cb.getAttribute('data-row-check');
+          if (state.seleccionados[id]) delete state.seleccionados[id];
+          else state.seleccionados[id] = true;
+          cb.classList.toggle('naowee-checkbox--checked');
+          updateBulkButton();
+          return;
+        }
+        var asig = ev.target.closest('[data-asignar]');
+        if (asig) {
+          openModalIndividual(asig.getAttribute('data-asignar'));
+        }
+      });
+    }
+
+    function selectedCount() {
+      return Object.keys(state.seleccionados).filter(function (k) { return state.seleccionados[k]; }).length;
+    }
+
+    function updateBulkButton() {
+      var n = selectedCount();
+      var btn = document.getElementById('btnAsignacionMasiva');
+      var hint = document.getElementById('bulkHint');
+      btn.disabled = n === 0;
+      hint.textContent = '(' + n + ')';
+    }
+
+    /* ───────────── Modales ───────────── */
+    function wireModales() {
+      var masivoOv = document.getElementById('modalMasivoOverlay');
+      document.getElementById('btnAsignacionMasiva').addEventListener('click', openModalMasivo);
+      document.getElementById('modalMasivoClose').addEventListener('click', closeModalMasivo);
+      document.getElementById('modalMasivoCancel').addEventListener('click', closeModalMasivo);
+      masivoOv.addEventListener('click', function (e) { if (e.target === masivoOv) closeModalMasivo(); });
+      document.getElementById('modalMasivoConfirm').addEventListener('click', confirmMasivo);
+
+      /* Radios de estrategia */
+      document.querySelectorAll('[data-estrategia]').forEach(function (r) {
+        r.addEventListener('click', function () {
+          document.querySelectorAll('[data-estrategia]').forEach(function (o) { o.classList.remove('naowee-radio--selected'); });
+          r.classList.add('naowee-radio--selected');
+          state.estrategia = r.getAttribute('data-estrategia');
+          updateMasivoMessage();
+        });
+      });
+
+      var indOv = document.getElementById('modalIndividualOverlay');
+      document.getElementById('modalIndividualClose').addEventListener('click', closeModalIndividual);
+      document.getElementById('modalIndividualCancel').addEventListener('click', closeModalIndividual);
+      indOv.addEventListener('click', function (e) { if (e.target === indOv) closeModalIndividual(); });
+      document.getElementById('modalIndividualConfirm').addEventListener('click', confirmIndividual);
+    }
+
+    function openModalMasivo() {
+      var ov = document.getElementById('modalMasivoOverlay');
+      ov.classList.add('open');
+      var n = selectedCount();
+      document.getElementById('masivoCount').textContent = n;
+      var ids = Object.keys(state.seleccionados).filter(function (k) { return state.seleccionados[k]; });
+      var listEl = document.getElementById('masivoList');
+      listEl.textContent = ids.length === 0 ? '—' : ids.join(', ');
+      updateMasivoMessage();
+    }
+    function closeModalMasivo() {
+      document.getElementById('modalMasivoOverlay').classList.remove('open');
+    }
+    function updateMasivoMessage() {
+      var n = selectedCount();
+      var prof = window.IVCData.PROFESIONALES_DISPONIBLES.find(function (p) { return p.id === state.profesionalIdMasivo; });
+      var profNombre = prof ? prof.nombre : 'Carlos Pérez';
+      document.getElementById('msgCount').textContent = n;
+      var msgText = document.getElementById('masivoMsgText');
+      if (state.estrategia === 'mismo') {
+        msgText.innerHTML = 'Se asignarán <strong>' + n + '</strong> trámites a <strong>' + profNombre + '</strong>. Se registrarán fecha, hora y usuario responsable en cada uno.';
+      } else if (state.estrategia === 'distribuir') {
+        msgText.innerHTML = 'Los <strong>' + n + '</strong> trámites se distribuirán equitativamente entre 4 profesionales disponibles (~' + Math.ceil(n / 4) + ' por persona).';
+      } else {
+        msgText.innerHTML = 'Tras confirmar, asignarás manualmente uno a uno los <strong>' + n + '</strong> trámites en el siguiente paso.';
+      }
+    }
+
+    function confirmMasivo() {
+      var n = selectedCount();
+      var prof = window.IVCData.PROFESIONALES_DISPONIBLES.find(function (p) { return p.id === state.profesionalIdMasivo; });
+      var profNombre = prof ? prof.nombre : 'Carlos Pérez';
+      /* Mutar tramites con la asignación (state local, immutable copies) */
+      state.tramites = state.tramites.map(function (t) {
+        if (!state.seleccionados[t.id]) return t;
+        return Object.assign({}, t, {
+          estado: 'Asignada',
+          profesionalId: prof ? prof.id : 'cp-001',
+          profesionalNombre: profNombre
+        });
+      });
+      state.seleccionados = {};
+      closeModalMasivo();
+      renderStats();
+      renderTabla();
+      window.IVCShell.showSnackbar(n + ' trámites asignados a ' + profNombre + '.', 'success');
+    }
+
+    function openModalIndividual(tramiteId) {
+      state.modalTramiteId = tramiteId;
+      var t = state.tramites.find(function (x) { return x.id === tramiteId; });
+      var sub = t ? (t.id + ' · ' + t.organismo) : '';
+      document.getElementById('modalIndividualSub').textContent = sub;
+      document.getElementById('modalIndividualOverlay').classList.add('open');
+    }
+    function closeModalIndividual() {
+      document.getElementById('modalIndividualOverlay').classList.remove('open');
+      state.modalTramiteId = null;
+    }
+    function confirmIndividual() {
+      if (!state.modalTramiteId) return;
+      var prof = window.IVCData.PROFESIONALES_DISPONIBLES.find(function (p) { return p.id === state.profesionalIdSingle; });
+      var profNombre = prof ? prof.nombre : 'Carlos Pérez';
+      state.tramites = state.tramites.map(function (t) {
+        if (t.id !== state.modalTramiteId) return t;
+        return Object.assign({}, t, {
+          estado: 'Asignada',
+          profesionalId: prof ? prof.id : 'cp-001',
+          profesionalNombre: profNombre
+        });
+      });
+      closeModalIndividual();
+      renderStats();
+      renderTabla();
+      window.IVCShell.showSnackbar('Trámite asignado a ' + profNombre + '.', 'success');
+    }
+  </script>
+</body>
+</html>

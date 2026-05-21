@@ -6,6 +6,47 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.2.0] — 2026-05-21
+
+> 🎨 **Fase 2 Sprint 1: 5 pantallas que cubren HU-3, HU-4, HU-6 oficiales del XLSX MODULO IVC.** Habilitados perfiles Coordinador + Profesional en el demo-switcher. Cero invención de clases `.naowee-*`; todas las clases del DS verificadas contra `naowee-design-system@v1.8.0`.
+
+### Added — `prototype/coordinador/`
+- `coordinador/bandeja.html` — Bandeja de asignación (HU-3): tabla `.naowee-table-card` con 12 trámites mock, filtros por estado/tipo, searchbox `.naowee-searchbox--medium`, asignación individual y masiva con reasignación, 3 stat-cards (sin asignar / asignadas / en validación), selección multi-row con `.naowee-checkbox`.
+- Modal de Asignación Masiva embebido (HU-3, criterio masivo): `.naowee-modal--scrollable` con resumen de trámites seleccionados, 3 estrategias en `.naowee-radio` (mismo profesional / distribuir equitativo / manual), `.naowee-dropdown` para seleccionar profesional, mensaje informativo dinámico.
+- Modal de Asignación Individual embebido: dropdown del profesional con conteo de activos por persona.
+
+### Added — `prototype/profesional/`
+- `profesional/workspace.html` — Workspace de validación (HU-4/HU-6): info-card del trámite con 8 datos (radicado, organismo, NIT, disciplina, fechas, plazo), checklist interactivo de los 7 documentos del Decreto 1387 con tri-state (Cumple ✓ / Observación ⚠ / No cumple ✗), barra de progreso, sticky footer con 3 botones de decisión (cumple totalmente / cumplimiento parcial / no cumple).
+- Modal "Generar Acto Administrativo" (HU-6): preview tipográfico estilo resolución oficial con membrete del Ministerio, considerandos y resuelve, numeración consecutiva automática (2026-001) + fecha auto, `.naowee-message--informative` aclarando que NO se envía automáticamente.
+- Modal "Generar Acto de No Cumplimiento" (HU-4): textarea para causales (`.naowee-textfield--textarea`), lista dinámica de docs marcados como ✗ con sus observaciones, preview del acto de rechazo, numeración 2026-002 + fecha auto, `.naowee-message--caution`.
+
+### Changed
+- `shared/shell.js` — Coordinador y Profesional ahora `enabled: true` (NAV_ITEMS extendidos con bandeja-coord/en-validacion/historico-coord para Coordinador y bandeja-prof/revision/historico-prof para Profesional). `SECTION_LABELS` map agrega 'COORDINACIÓN' y 'OPERACIÓN'. Demo-switcher navega a la landing correspondiente por perfil (bandeja.html o workspace.html). Panel-label dinámico (`perfiles.length`) en lugar del hardcoded "14".
+- `shared/data.js` — `PERFILES` actualizado: coordinador = Carolina Méndez (Coordinadora · Deporte Aficionado), profesional = Carlos Pérez (Profesional · Deporte Aficionado), ambos `enabled: true`. Agregadas constants `PROFESIONALES_DISPONIBLES` (4 profesionales con conteo de activos) y `TRAMITES_BANDEJA` (12 trámites mock con estados mixtos). Nuevo API `getTramiteFocal()`, `getTramiteFocalState()`, `updateTramiteFocalState()`, `resetTramiteFocal()` para persistir el state del workspace del Profesional separado del trámite del Usuario Externo.
+- `shared/demo-tour.js` — Steps 5-8 promovidos de stubs `pages: []` a reactivos con páginas reales: Step 5 (bandeja-coordinador, HU-3) en `coordinador/bandeja.html`, Step 6 (workspace-profesional, HU-4/6) y Step 7 (decision-profesional) en `profesional/workspace.html`, Step 8 (acto-generado) tras decision. `buildState` merges `tramiteFocal` en `s.tramite` para que los applicable checks de Steps 6-8 vean `docsValidados` y `decision`.
+
+### Trazabilidad HU oficiales (XLSX MODULO IVC)
+| HU | Criterios cubiertos | Pantalla |
+|---|---|---|
+| HU-3 Asignación | individual + masiva + estado (No asignada / Asignada / En validación) + reasignar + trazabilidad (fecha, hora, usuario) | `coordinador/bandeja.html` + Modal Masivo + Modal Individual |
+| HU-4 No cumple | marcar estado + formulario para Acto + numeración consecutiva automática (2026-002) + fecha auto + notificación al organismo + trazabilidad | `profesional/workspace.html` + Modal No Cumplimiento |
+| HU-6 Cumple | marcar estado + Acto auto generado + numeración consecutiva (2026-001) + fecha auto + SIN envío automático (pendiente firma Director) + trazabilidad | `profesional/workspace.html` + Modal Cumple |
+
+### Pendiente Sprint 2 (no en este release)
+- HU-5 Cumplimiento parcial (devolución para corrección por organismo + ventana de 5-10 días)
+- HU-7 Notificación electrónica (step en wizard)
+- HU-8 Notificación en oficinas (pendiente spec de Danna)
+- Vista del organismo cuando trámite está devuelto
+- Vista del organismo en estado Aprobado/Rechazado tras decisión
+- Director: cola "Por firmar" + firma electrónica del acto
+
+### Verificación
+- `grep -rE '\.naowee-(input|input-group|input-label|input-helper|badge--tramite|stepper)\b' prototype/coordinador prototype/profesional` → **0 hits** (cero invenciones en archivos nuevos)
+- Todas las clases `.naowee-*` usadas en `bandeja.html` y `workspace.html` están en el DS canónico (`design-system.css` v1.8.0) o son IVC-canonical (`.naowee-table-card`, `.naowee-stat-card`).
+- Demo-switcher exhibe ahora 3 perfiles habilitados (usuario-externo + coordinador + profesional). Director permanece deshabilitado para Fase 3.
+
+---
+
 ## [ivc-v1.1.6] — 2026-05-21
 
 > 🔧 **Fix 4 issues UI del wizard.** Removida otra override fatal de `.naowee-message` que rompía el DS (mismo patrón del bug v1.1.5 con `.naowee-card`). Dropdown nativo de Chrome reemplazado por `.naowee-dropdown` canónico del DS con widget JS open/close + selection.

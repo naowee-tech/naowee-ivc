@@ -120,53 +120,57 @@
             && s.tourAdvanced; /* Solo aparece después de cerrar el step 3 */
         }
       },
-      /* Steps 5-8 son stubs preparados — Fase 2 implementará las páginas */
+      /* v1.2.0 — Fase 2 Sprint 1: Steps 5-8 ahora son reactivos (HU-3/HU-4/HU-6) */
       {
-        id: 'bandeja-profesional',
+        id: 'bandeja-coordinador',
         stepIndex: 5,
-        title: 'Bandeja del Profesional IVC',
-        body: '[Fase 2] Aquí el Profesional ve los trámites asignados con countdown de 15 días.',
-        target: '[data-tour="bandeja-tramite"]',
+        title: 'Bandeja del Coordinador',
+        body: 'Como Coordinadora de área, asignas las solicitudes radicadas a los profesionales disponibles. Puedes asignar individualmente o en masa. (HU-3)',
+        target: '[data-tour="asignacion-masiva"], [data-tour="bandeja-coord"]',
         position: 'bottom',
-        pages: [],
+        pages: ['coordinador/bandeja.html'],
+        pageHint: 'coordinador/bandeja.html',
+        pageHintLabel: 'Ir a la bandeja',
         applicable: function (s) {
-          return s.perfil === 'profesional' && s.tramite && s.tramite.estado === 'Radicado';
+          return s.perfil === 'coordinador';
         }
       },
       {
-        id: 'validar-requisitos',
+        id: 'workspace-profesional',
         stepIndex: 6,
-        title: 'Validar requisitos',
-        body: '[Fase 2] El Profesional marca cada requisito: Cumple / Parcial / No Cumple.',
-        target: '[data-tour="checklist-requisitos"]',
+        title: 'Workspace del Profesional',
+        body: 'Como Profesional, revisas los 7 documentos del Decreto 1387 y marcas cada uno como Cumple, Observación o No cumple. (HU-4/HU-6)',
+        target: '[data-tour="checklist-documentos"]',
         position: 'right',
-        pages: [],
+        pages: ['profesional/workspace.html'],
+        pageHint: 'profesional/workspace.html',
+        pageHintLabel: 'Ir al workspace',
         applicable: function (s) {
-          return s.perfil === 'profesional' && s.tramite && s.tramite.estado === 'En Validación';
+          return s.perfil === 'profesional' && (!s.tramite || s.tramite.decision !== 'NoCumple') && (!s.tramite || s.tramite.decision !== 'Cumple');
         }
       },
       {
-        id: 'generar-subsanacion',
+        id: 'decision-profesional',
         stepIndex: 7,
-        title: 'Generar requerimiento de subsanación',
-        body: '[Fase 2] Cuando es parcial, se genera requerimiento. Usuario tiene 5-10 días para responder.',
-        target: '[data-tour="modal-subsanacion"]',
-        position: 'center',
-        pages: [],
+        title: 'Decisión del trámite',
+        body: 'Una vez validados los documentos, decide: Cumple totalmente, Cumplimiento parcial, o No cumple. Cumple/No cumple generan automáticamente el Acto Administrativo.',
+        target: '[data-tour="botones-decision"]',
+        position: 'top',
+        pages: ['profesional/workspace.html'],
         applicable: function (s) {
-          return s.tramite && s.tramite.decision === 'Parcial';
+          return s.perfil === 'profesional' && s.tramite && (s.tramite.docsValidados || 0) >= 5 && !s.tramite.decision;
         }
       },
       {
-        id: 'continuar-fase-2',
+        id: 'acto-generado',
         stepIndex: 8,
-        title: 'Continuamos en Fase 2',
-        body: 'Los siguientes pasos (Coordinador → Director → Notificación → Recurso) los pintaremos en la próxima iteración.',
-        target: '#demoSwitcherToggle',
-        position: 'top',
-        pages: [],
+        title: 'Acto administrativo generado',
+        body: 'El sistema generó automáticamente la numeración consecutiva y fecha. El acto queda almacenado en el trámite y será firmado por el Director (Fase 3).',
+        target: '[data-tour="acto-preview"], #demoSwitcherToggle',
+        position: 'center',
+        pages: ['profesional/workspace.html'],
         applicable: function (s) {
-          return s.tramite && s.tramite.estado === 'Subsanado';
+          return s.perfil === 'profesional' && s.tramite && (s.tramite.decision === 'Cumple' || s.tramite.decision === 'NoCumple');
         }
       }
     ];
@@ -174,9 +178,15 @@
 
   /* ───── State builder ───── */
   function buildState() {
+    var baseTramite = window.IVCData.getTramite() || {};
+    /* v1.2.0 — Merge tramiteFocal del Profesional (HU-4/HU-6) en el tramite
+       que el tour lee. Así s.tramite.decision y s.tramite.docsValidados están
+       disponibles para los Steps 6/7/8 applicable functions. */
+    var focal = (window.IVCData.getTramiteFocalState && window.IVCData.getTramiteFocalState()) || {};
+    var mergedTramite = Object.assign({}, baseTramite, focal);
     return {
       perfil: window.IVCData.getPerfil(),
-      tramite: window.IVCData.getTramite(),
+      tramite: (Object.keys(baseTramite).length === 0 && Object.keys(focal).length === 0) ? null : mergedTramite,
       /* v1.1.4 #4 — wizardStep para discriminar Step 2 / 2b */
       wizardStep: (window.IVCData.getWizardStep && window.IVCData.getWizardStep()) || 1,
       tourAdvanced: localStorage.getItem('naowee.ivc.tourAdvanced') === '1'
@@ -343,9 +353,9 @@
     positionTooltip(target, step.position);
 
     /* CTA primario: "Entendido" cierra temporalmente para que el usuario actúe.
-       Si es el último step (continuar-fase-2), cierra el tour. */
+       Si es el último step (acto-generado), cierra el tour. */
     var btn = _overlay.querySelector('[data-action-primary]');
-    if (step.id === 'continuar-fase-2') {
+    if (step.id === 'acto-generado') {
       btn.textContent = 'Cerrar tour';
       btn.onclick = close;
     } else if (step.id === 'tramite-radicado') {

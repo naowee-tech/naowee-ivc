@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validación de trámite · Profesional IVC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
+  <!-- Naowee DS canónico v1.8.0 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Page-local styles — minimal, only for layout patterns that no DS class
+       cubre. Sin invención de naowee-* classes. */
+    .breadcrumb {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .breadcrumb a { color: var(--text-secondary); }
+    .breadcrumb__sep { margin: 0 6px; color: var(--text-muted); }
+
+    .page-title-block { margin-bottom: 4px; }
+    .page-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .page-subtitle {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Info-card grid del trámite — KV pairs en 2 columnas */
+    .tramite-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 24px;
+    }
+    @media (max-width: 900px) { .tramite-info-grid { grid-template-columns: 1fr; } }
+    .tramite-info-grid__cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .tramite-info-grid__label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .tramite-info-grid__value {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .tramite-info-grid__value--mono {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-weight: 700;
+    }
+    .tramite-info-grid__value--warn {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Doc-row dentro de checklist (variante page-scoped del doc-upload-card) */
+    .doc-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: border-color var(--duration-fast) var(--ease-in-out);
+    }
+    .doc-row + .doc-row { margin-top: 10px; }
+    .doc-row.is-cumple    { background: #f4faf5; border-color: var(--green-border); }
+    .doc-row.is-obs       { background: var(--orange-bg); border-color: var(--orange-border); }
+    .doc-row.is-no-cumple { background: var(--red-bg); border-color: var(--red-border); }
+
+    .doc-row__icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--bg-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+    }
+    .doc-row__main { flex: 1; min-width: 0; }
+    .doc-row__title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 4px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .doc-row__meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+    .doc-row__viewlink {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 12.5px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .doc-row__actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .doc-row__validation-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-dark);
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 16px;
+      transition: all var(--duration-fast) var(--ease-in-out);
+    }
+    .doc-row__validation-btn:hover {
+      border-color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    .doc-row__validation-btn.is-active-cumple {
+      background: var(--green);
+      color: var(--text-inverse);
+      border-color: var(--green);
+    }
+    .doc-row__validation-btn.is-active-obs {
+      background: var(--naranja);
+      color: var(--text-inverse);
+      border-color: var(--naranja);
+    }
+    .doc-row__validation-btn.is-active-no {
+      background: var(--red);
+      color: var(--text-inverse);
+      border-color: var(--red);
+    }
+
+    .doc-row__obs-input {
+      margin-top: 8px;
+      display: none;
+    }
+    .doc-row.is-obs .doc-row__obs-input,
+    .doc-row.is-no-cumple .doc-row__obs-input {
+      display: block;
+    }
+
+    /* Progreso checklist */
+    .checklist-progress {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      padding: 14px 18px;
+      background: var(--bg-soft);
+      border-radius: var(--radius-md);
+    }
+    .checklist-progress__text {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .checklist-progress__bar {
+      flex: 1;
+      max-width: 280px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .checklist-progress__fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width var(--duration-normal) var(--ease-in-out);
+    }
+
+    /* Footer sticky con botones de decisión */
+    .decision-footer {
+      position: sticky;
+      bottom: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 24px -28px -28px;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+      z-index: 10;
+    }
+    .decision-footer__right { display: flex; gap: 10px; }
+
+    /* Acto preview en modal */
+    .acto-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      margin: 18px 0;
+      font-family: 'Georgia', serif;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-primary);
+    }
+    .acto-preview__head {
+      text-align: center;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--text-primary);
+    }
+    .acto-preview__ministerio {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--azul);
+    }
+    .acto-preview__num {
+      margin: 14px 0 4px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .acto-preview__por-la-cual {
+      font-style: italic;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0 0 18px;
+    }
+    .acto-preview__body p {
+      margin: 0 0 10px;
+      text-align: justify;
+    }
+    .acto-preview__firma {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px dashed var(--border);
+      text-align: center;
+      font-style: italic;
+      color: var(--text-muted);
+      font-size: 12.5px;
+    }
+
+    /* Datos auto-generados */
+    .auto-data-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    @media (max-width: 700px) { .auto-data-grid { grid-template-columns: 1fr; } }
+    .auto-data-grid__cell {
+      background: var(--bg-soft);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+    }
+    .auto-data-grid__label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .auto-data-grid__value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .auto-data-grid__value--mono {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    /* Section title generic — page scoped */
+    .section-title {
+      margin: 24px 0 12px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .section-title:first-child { margin-top: 0; }
+  </style>
+</head>
+<body>
+
+  <div class="shell" id="app-shell"></div>
+
+  <template id="page-content">
+    <div class="page-inner">
+
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Ruta de navegación">
+        <a href="#">Mi bandeja</a>
+        <span class="breadcrumb__sep">›</span>
+        <span>Validación IVC-2026-001</span>
+      </nav>
+
+      <header class="page-title-block">
+        <h1 class="page-title">Validación del trámite IVC-2026-001</h1>
+        <p class="page-subtitle">Otorgamiento de Reconocimiento Deportivo — Liga de Atletismo de Bolívar</p>
+      </header>
+
+      <!-- Info card del trámite -->
+      <section class="naowee-card" style="margin-top: 18px; padding: 22px 24px;">
+        <div class="naowee-card__header">
+          <div>
+            <h2 class="naowee-card__title">Datos del trámite</h2>
+            <p class="naowee-card__subtitle">Información radicada por el organismo deportivo.</p>
+          </div>
+        </div>
+        <div class="naowee-card__body" style="padding-top: 14px;">
+          <div class="tramite-info-grid">
+            <div class="tramite-info-grid__cell">
+              <span class="tramite-info-grid__label">Radicado</span>
+              <span class="tramite-info-grid__value tramite-info-grid__value--mono">IVC-2026-001</span>
+            </div>
+            <div class="tramite-info-grid__cell">
+              <span class="tramite-info-grid__label">Tipo</span>
+              <span class="tramite-info-grid__value">Otorgamiento de Reconocimiento Deportivo</span>
+            </div>
+            <div class="tramite-info-grid__cell">
+              <span class="tramite-info-grid__label">Organismo</span>
+              <span class="tramite-info-grid__value">Liga de Atletismo de Bolívar <span style="color:var(--text-secondary); font-weight:400;">(NIT 800.245.678-3)</span></span>
+            </div>
+            <div class="tramite-info-grid__cell">
+              <span class="tramite-info-grid__label">Disciplina</span>
+              <span class="tramite-info-grid__value">Atletismo</span>
+            </div>
+            <div class="tramite-info-grid__cell">
+              <span class="tramite-info-grid__label">Fecha radicación</span>
+              <span class="tramite-info-grid__value">21 may 2026</span>
+            </div>
+            <div class="tramite-info-grid__cell">
+              <span class="tramite-info-grid__label">Asignado a mí</span>
+              <span class="tramite-info-grid__value">21 may 2026, 14:32 <span style="color:var(--text-muted); font-weight:400;">(hace 15 min)</span></span>
+            </div>
+            <div class="tramite-info-grid__cell">
+              <span class="tramite-info-grid__label">Plazo restante</span>
+              <span class="tramite-info-grid__value tramite-info-grid__value--warn">14 días hábiles</span>
+            </div>
+            <div class="tramite-info-grid__cell">
+              <span class="tramite-info-grid__label">Estado actual</span>
+              <span class="tramite-info-grid__value"><span class="naowee-badge naowee-badge--informative">En validación</span></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Documentos cargados (checklist) -->
+      <section class="naowee-card" style="margin-top: 18px; padding: 22px 24px 28px;" data-tour="checklist-documentos">
+        <div class="naowee-card__header">
+          <div>
+            <h2 class="naowee-card__title">Documentos cargados</h2>
+            <p class="naowee-card__subtitle">Decreto 1387/1970 — 7 documentos. Marca cada uno como Cumple, Observación o No cumple.</p>
+          </div>
+        </div>
+        <div class="naowee-card__body" style="padding-top: 16px;">
+          <div class="checklist-progress">
+            <span class="checklist-progress__text"><strong id="docsValidadosCount">0</strong> de 7 documentos validados</span>
+            <div class="checklist-progress__bar"><div class="checklist-progress__fill" id="progressFill" style="width:0%"></div></div>
+          </div>
+          <div id="docsList"></div>
+        </div>
+
+        <!-- Decision footer sticky con todos los botones -->
+        <div class="decision-footer" data-tour="botones-decision">
+          <button type="button" class="naowee-btn naowee-btn--mute" id="btnBack">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Volver a bandeja
+          </button>
+          <div class="decision-footer__right">
+            <button type="button" class="naowee-btn naowee-btn--quiet" id="btnNoCumple" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              No cumple
+            </button>
+            <button type="button" class="naowee-btn naowee-btn--quiet" id="btnParcial" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Cumplimiento parcial
+            </button>
+            <button type="button" class="naowee-btn naowee-btn--loud" id="btnCumple" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Cumple totalmente
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </template>
+
+  <!-- ═══ Modal: Generar Acto Cumple (HU-6) ═══ -->
+  <div class="naowee-modal-overlay" id="modalCumpleOverlay" role="dialog" aria-modal="true" aria-labelledby="modalCumpleTitle">
+    <div class="naowee-modal naowee-modal--scrollable" style="max-width: 720px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title" id="modalCumpleTitle">Generar Acto Administrativo</h2>
+          <p class="naowee-modal__subtitle">Reconocimiento Deportivo — Cumplimiento total</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="modalCumpleClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body" data-tour="acto-preview">
+
+        <div class="naowee-message naowee-message--informative">
+          <div class="naowee-message__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div class="naowee-message__content">
+            <p class="naowee-message__text">
+              Se generará un acto administrativo con numeración consecutiva automática. <strong>El acto NO se enviará automáticamente;</strong> deberá ser revisado y firmado por el Director del IVC en la siguiente fase.
+            </p>
+          </div>
+        </div>
+
+        <h3 class="section-title" style="margin-top: 20px;">Vista previa del acto</h3>
+        <article class="acto-preview">
+          <header class="acto-preview__head">
+            <div class="acto-preview__ministerio">República de Colombia · Ministerio del Deporte</div>
+            <p class="acto-preview__num">RESOLUCIÓN NÚMERO <span id="cumpleNumActo">2026-001</span> DE 2026</p>
+            <p class="acto-preview__por-la-cual">"Por la cual se otorga el Reconocimiento Deportivo a la Liga de Atletismo de Bolívar"</p>
+          </header>
+          <div class="acto-preview__body">
+            <p><strong>EL MINISTRO DEL DEPORTE</strong>, en uso de sus facultades legales, y en particular las conferidas por el Decreto 1387 de 1970, la Ley 181 de 1995 y el Decreto 1085 de 2015,</p>
+            <p><strong>CONSIDERANDO:</strong></p>
+            <p>1. Que la Liga de Atletismo de Bolívar, identificada con NIT 800.245.678-3, radicó solicitud de Otorgamiento de Reconocimiento Deportivo con número IVC-2026-001 el día 21 de mayo de 2026.</p>
+            <p>2. Que la documentación aportada cumple con los requisitos exigidos por el Artículo 2.1.1.2 del Decreto 1387 de 1970.</p>
+            <p>3. Que el Profesional asignado a la validación verificó la completitud y conformidad de los siete (7) documentos requeridos.</p>
+            <p><strong>RESUELVE:</strong></p>
+            <p><strong>ARTÍCULO PRIMERO.</strong> Otorgar Reconocimiento Deportivo a la Liga de Atletismo de Bolívar, en los términos de la legislación vigente.</p>
+            <p><strong>ARTÍCULO SEGUNDO.</strong> Disponer la inscripción en el Registro Nacional Deportivo.</p>
+          </div>
+          <footer class="acto-preview__firma">
+            [Por firmar electrónicamente por el Director del IVC — Fase 3]
+          </footer>
+        </article>
+
+        <h3 class="section-title">Datos auto-generados</h3>
+        <div class="auto-data-grid">
+          <div class="auto-data-grid__cell">
+            <span class="auto-data-grid__label">Número de acto</span>
+            <span class="auto-data-grid__value auto-data-grid__value--mono" id="cumpleNumActo2">2026-001</span>
+          </div>
+          <div class="auto-data-grid__cell">
+            <span class="auto-data-grid__label">Fecha de generación</span>
+            <span class="auto-data-grid__value" id="cumpleFechaGen">—</span>
+          </div>
+          <div class="auto-data-grid__cell">
+            <span class="auto-data-grid__label">Profesional responsable</span>
+            <span class="auto-data-grid__value">Carlos Pérez</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="modalCumpleCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="modalCumpleConfirm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirmar y generar acto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Modal: Generar Acto No Cumple (HU-4) ═══ -->
+  <div class="naowee-modal-overlay" id="modalNoCumpleOverlay" role="dialog" aria-modal="true" aria-labelledby="modalNoCumpleTitle">
+    <div class="naowee-modal naowee-modal--scrollable" style="max-width: 720px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title" id="modalNoCumpleTitle">Generar Acto de No Cumplimiento</h2>
+          <p class="naowee-modal__subtitle">Reconocimiento Deportivo — Rechazo del trámite</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="modalNoCumpleClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body">
+
+        <div class="naowee-message naowee-message--caution">
+          <div class="naowee-message__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="naowee-message__content">
+            <p class="naowee-message__text">
+              Este acto formaliza el rechazo del trámite. El organismo recibirá notificación del cambio de estado y registrará la trazabilidad completa.
+            </p>
+          </div>
+        </div>
+
+        <h3 class="section-title">Causales de no cumplimiento</h3>
+        <div class="naowee-textfield naowee-textfield--textarea">
+          <span class="naowee-textfield__label">Descripción del Profesional</span>
+          <div class="naowee-textfield__input-wrap">
+            <textarea class="naowee-textfield__input"
+                      id="causalesText"
+                      rows="4"
+                      placeholder="Describe las causales generales del no cumplimiento..."></textarea>
+          </div>
+          <p class="ivc-field-helper" style="margin: 6px 0 0; font-size: 12px; color: var(--text-secondary);">Esta descripción quedará registrada en el Acto Administrativo y será notificada al organismo.</p>
+        </div>
+
+        <h3 class="section-title">Documentos que no cumplen</h3>
+        <div id="docsNoCumpleList" style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">
+          —
+        </div>
+
+        <h3 class="section-title">Vista previa del acto</h3>
+        <article class="acto-preview">
+          <header class="acto-preview__head">
+            <div class="acto-preview__ministerio">República de Colombia · Ministerio del Deporte</div>
+            <p class="acto-preview__num">RESOLUCIÓN NÚMERO <span id="noCumpleNumActo">2026-002</span> DE 2026 — NO CUMPLIMIENTO</p>
+            <p class="acto-preview__por-la-cual">"Por la cual se rechaza el trámite de Otorgamiento de Reconocimiento Deportivo presentado por la Liga de Atletismo de Bolívar"</p>
+          </header>
+          <div class="acto-preview__body">
+            <p><strong>EL MINISTRO DEL DEPORTE</strong>, en uso de sus facultades legales,</p>
+            <p><strong>CONSIDERANDO:</strong></p>
+            <p>1. Que la Liga de Atletismo de Bolívar radicó solicitud IVC-2026-001 el 21 de mayo de 2026.</p>
+            <p>2. Que la documentación aportada presenta inconsistencias frente a los requisitos exigidos por el Artículo 2.1.1.2 del Decreto 1387 de 1970.</p>
+            <p><strong>RESUELVE:</strong></p>
+            <p><strong>ARTÍCULO PRIMERO.</strong> Rechazar el trámite de Otorgamiento de Reconocimiento Deportivo radicado bajo el número IVC-2026-001.</p>
+            <p><strong>ARTÍCULO SEGUNDO.</strong> Notificar al organismo el presente acto y la trazabilidad asociada.</p>
+          </div>
+          <footer class="acto-preview__firma">
+            [Por firmar electrónicamente por el Director del IVC — Fase 3]
+          </footer>
+        </article>
+
+        <h3 class="section-title">Datos auto-generados</h3>
+        <div class="auto-data-grid">
+          <div class="auto-data-grid__cell">
+            <span class="auto-data-grid__label">Número de acto</span>
+            <span class="auto-data-grid__value auto-data-grid__value--mono" id="noCumpleNumActo2">2026-002</span>
+          </div>
+          <div class="auto-data-grid__cell">
+            <span class="auto-data-grid__label">Fecha de generación</span>
+            <span class="auto-data-grid__value" id="noCumpleFechaGen">—</span>
+          </div>
+          <div class="auto-data-grid__cell">
+            <span class="auto-data-grid__label">Profesional responsable</span>
+            <span class="auto-data-grid__value">Carlos Pérez</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="modalNoCumpleCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="modalNoCumpleConfirm">
+          Confirmar y generar acto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../shared/data.js"></script>
+  <script src="../shared/shell.js"></script>
+  <script src="../shared/demo-tour.js"></script>
+  <script>
+    /* State local del workspace */
+    var state = {
+      docs: [],         /* [{id, orden, titulo, obligatorio, validacion: 'cumple'|'obs'|'no'|null, observacion: ''}] */
+      decision: null    /* 'Cumple' | 'NoCumple' | 'Parcial' | null */
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      window.IVCData.setPerfil('profesional');
+
+      var template = document.getElementById('page-content');
+      var shellRoot = document.getElementById('app-shell');
+      shellRoot.innerHTML = template.innerHTML;
+
+      window.IVCShell.init({ title: null, activeNav: 'bandeja-prof' });
+
+      var focal = window.IVCData.getTramiteFocal();
+      state.docs = focal.documentos.map(function (d) {
+        return Object.assign({}, d, { validacion: null, observacion: '' });
+      });
+
+      renderDocs();
+      wireFooter();
+      wireModales();
+
+      window.IVCTour.mount({ pageId: 'profesional/workspace.html' });
+    });
+
+    /* ─────────── Render docs checklist ─────────── */
+    function renderDocs() {
+      var html = state.docs.map(function (d, i) {
+        var cls = '';
+        if (d.validacion === 'cumple') cls = 'is-cumple';
+        else if (d.validacion === 'obs') cls = 'is-obs';
+        else if (d.validacion === 'no') cls = 'is-no-cumple';
+
+        var optionalBadge = !d.obligatorio
+          ? '<span class="naowee-badge naowee-badge--quiet naowee-badge--small">Opcional</span>'
+          : '';
+
+        return '<div class="doc-row ' + cls + '" data-doc-id="' + d.id + '">' +
+          '<div class="doc-row__icon">' +
+            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+          '</div>' +
+          '<div class="doc-row__main">' +
+            '<h3 class="doc-row__title">' + d.orden + '. ' + d.titulo + ' ' + optionalBadge + '</h3>' +
+            '<p class="doc-row__meta">PDF · 245 KB · cargado el 21 may 2026</p>' +
+            '<a href="#" class="doc-row__viewlink">Ver documento</a>' +
+            '<div class="doc-row__obs-input">' +
+              '<div class="naowee-textfield naowee-textfield--small">' +
+                '<div class="naowee-textfield__input-wrap">' +
+                  '<input type="text" class="naowee-textfield__input" data-obs="' + d.id + '" placeholder="Observación..." value="' + (d.observacion || '') + '" />' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="doc-row__actions">' +
+            '<button type="button" class="doc-row__validation-btn ' + (d.validacion === 'cumple' ? 'is-active-cumple' : '') + '" data-validate="cumple" data-doc="' + d.id + '" title="Cumple" aria-label="Marcar como Cumple">✓</button>' +
+            '<button type="button" class="doc-row__validation-btn ' + (d.validacion === 'obs' ? 'is-active-obs' : '') + '" data-validate="obs" data-doc="' + d.id + '" title="Observación" aria-label="Marcar con Observación">⚠</button>' +
+            '<button type="button" class="doc-row__validation-btn ' + (d.validacion === 'no' ? 'is-active-no' : '') + '" data-validate="no" data-doc="' + d.id + '" title="No cumple" aria-label="Marcar como No cumple">✗</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      document.getElementById('docsList').innerHTML = html;
+      wireDocRows();
+      updateProgress();
+    }
+
+    function wireDocRows() {
+      document.querySelectorAll('[data-validate]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var docId = btn.getAttribute('data-doc');
+          var val = btn.getAttribute('data-validate');
+          state.docs = state.docs.map(function (d) {
+            if (d.id !== docId) return d;
+            return Object.assign({}, d, { validacion: d.validacion === val ? null : val });
+          });
+          renderDocs();
+        });
+      });
+      document.querySelectorAll('[data-obs]').forEach(function (inp) {
+        inp.addEventListener('input', function () {
+          var docId = inp.getAttribute('data-obs');
+          state.docs = state.docs.map(function (d) {
+            if (d.id !== docId) return d;
+            return Object.assign({}, d, { observacion: inp.value });
+          });
+        });
+      });
+    }
+
+    function updateProgress() {
+      var validados = state.docs.filter(function (d) { return d.validacion !== null; }).length;
+      document.getElementById('docsValidadosCount').textContent = validados;
+      document.getElementById('progressFill').style.width = (validados / 7 * 100) + '%';
+
+      /* Persistir docsValidados al tour state */
+      if (window.IVCData.updateTramiteFocalState) {
+        window.IVCData.updateTramiteFocalState({ docsValidados: validados });
+      }
+
+      /* Enable/disable decision buttons — requiere todos los obligatorios validados */
+      var obligatorios = state.docs.filter(function (d) { return d.obligatorio; });
+      var obligatoriosValidados = obligatorios.filter(function (d) { return d.validacion !== null; }).length;
+      var todos = obligatoriosValidados === obligatorios.length;
+
+      var btnCumple = document.getElementById('btnCumple');
+      var btnNoCumple = document.getElementById('btnNoCumple');
+      var btnParcial = document.getElementById('btnParcial');
+
+      btnNoCumple.disabled = !todos;
+      btnParcial.disabled = !todos;
+
+      /* Cumple total solo si TODOS los obligatorios son 'cumple' */
+      var todosCumplen = obligatorios.every(function (d) { return d.validacion === 'cumple'; });
+      btnCumple.disabled = !(todos && todosCumplen);
+    }
+
+    /* ─────────── Footer wiring ─────────── */
+    function wireFooter() {
+      document.getElementById('btnBack').addEventListener('click', function () {
+        window.IVCData.setPerfil('coordinador');
+        window.location.href = '../coordinador/bandeja.html';
+      });
+      document.getElementById('btnCumple').addEventListener('click', openCumple);
+      document.getElementById('btnNoCumple').addEventListener('click', openNoCumple);
+      document.getElementById('btnParcial').addEventListener('click', function () {
+        window.IVCShell.showSnackbar('Cumplimiento parcial (HU-5) — disponible en Sprint 2.');
+      });
+    }
+
+    /* ─────────── Modales ─────────── */
+    function wireModales() {
+      var cOv = document.getElementById('modalCumpleOverlay');
+      document.getElementById('modalCumpleClose').addEventListener('click', function () { cOv.classList.remove('open'); });
+      document.getElementById('modalCumpleCancel').addEventListener('click', function () { cOv.classList.remove('open'); });
+      cOv.addEventListener('click', function (e) { if (e.target === cOv) cOv.classList.remove('open'); });
+      document.getElementById('modalCumpleConfirm').addEventListener('click', confirmCumple);
+
+      var ncOv = document.getElementById('modalNoCumpleOverlay');
+      document.getElementById('modalNoCumpleClose').addEventListener('click', function () { ncOv.classList.remove('open'); });
+      document.getElementById('modalNoCumpleCancel').addEventListener('click', function () { ncOv.classList.remove('open'); });
+      ncOv.addEventListener('click', function (e) { if (e.target === ncOv) ncOv.classList.remove('open'); });
+      document.getElementById('modalNoCumpleConfirm').addEventListener('click', confirmNoCumple);
+    }
+
+    function nowStamp() {
+      /* Fecha hoy + hora local — 21 may 2026, 14:47 */
+      var hh = String(new Date().getHours()).padStart(2, '0');
+      var mm = String(new Date().getMinutes()).padStart(2, '0');
+      return '21 may 2026, ' + hh + ':' + mm;
+    }
+
+    function openCumple() {
+      document.getElementById('cumpleFechaGen').textContent = nowStamp();
+      document.getElementById('modalCumpleOverlay').classList.add('open');
+    }
+
+    function confirmCumple() {
+      window.IVCData.updateTramiteFocalState({
+        decision: 'Cumple',
+        numActo: '2026-001',
+        fechaActo: nowStamp(),
+        docsValidados: state.docs.filter(function (d) { return d.validacion !== null; }).length
+      });
+      document.getElementById('modalCumpleOverlay').classList.remove('open');
+      window.IVCShell.showSnackbar('Acto administrativo 2026-001 generado. Pendiente de firma por el Director.', 'success');
+      state.decision = 'Cumple';
+    }
+
+    function openNoCumple() {
+      var noCumplen = state.docs.filter(function (d) { return d.validacion === 'no'; });
+      var listEl = document.getElementById('docsNoCumpleList');
+      if (noCumplen.length === 0) {
+        listEl.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Ningún documento marcado como No cumple. Se rechaza el trámite por la descripción general anterior.</span>';
+      } else {
+        listEl.innerHTML = '<ul style="margin:0; padding-left:18px;">' + noCumplen.map(function (d) {
+          return '<li style="margin-bottom:6px;"><strong>' + d.titulo + '</strong>' + (d.observacion ? ' — <span style="color:var(--text-secondary);">' + d.observacion + '</span>' : '') + '</li>';
+        }).join('') + '</ul>';
+      }
+      document.getElementById('noCumpleFechaGen').textContent = nowStamp();
+      document.getElementById('modalNoCumpleOverlay').classList.add('open');
+    }
+
+    function confirmNoCumple() {
+      var causales = document.getElementById('causalesText').value;
+      window.IVCData.updateTramiteFocalState({
+        decision: 'NoCumple',
+        numActo: '2026-002',
+        fechaActo: nowStamp(),
+        observacionesNoCumple: causales,
+        docsValidados: state.docs.filter(function (d) { return d.validacion !== null; }).length
+      });
+      document.getElementById('modalNoCumpleOverlay').classList.remove('open');
+      window.IVCShell.showSnackbar('Acto de No Cumplimiento 2026-002 generado. El organismo será notificado.', 'success');
+      state.decision = 'NoCumple';
+    }
+  </script>
+</body>
+</html>

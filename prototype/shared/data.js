@@ -16,6 +16,7 @@
   var K_TOUR_CLOSED = 'naowee.ivc.tourClosed';
   var K_SIDEBAR_COLLAPSED = 'naowee.ivc.sidebarCollapsed';
   var K_WIZARD_STEP = 'naowee.ivc.wizardStep'; /* v1.1.4 #4 — tour reactivo */
+  var K_TRAMITE_FOCAL = 'naowee.ivc.tramiteFocal'; /* v1.2.0 — workspace del Profesional */
 
   /* ───── Perfiles disponibles ───── */
   var PERFILES = {
@@ -29,25 +30,27 @@
       enabled: true,
       color: '#002B5B'
     },
-    'profesional': {
-      id: 'profesional',
-      nombre: 'Carolina Méndez',
-      cedula: '52.345.678',
-      rol: 'Profesional IVC',
-      avatar: 'CM',
-      etapa: 'Fase 2',
-      enabled: false,
-      color: '#1f78d1'
-    },
     'coordinador': {
       id: 'coordinador',
-      nombre: 'Andrés Salazar',
-      cedula: '79.456.123',
-      rol: 'Coordinador IVC',
-      avatar: 'AS',
+      nombre: 'Carolina Méndez',
+      cedula: '52.345.678',
+      rol: 'Coordinadora · Deporte Aficionado',
+      area: 'Deporte Aficionado',
+      avatar: 'CM',
       etapa: 'Fase 2',
-      enabled: false,
+      enabled: true,
       color: '#7c3aed'
+    },
+    'profesional': {
+      id: 'profesional',
+      nombre: 'Carlos Pérez',
+      cedula: '79.456.123',
+      rol: 'Profesional · Deporte Aficionado',
+      area: 'Deporte Aficionado',
+      avatar: 'CP',
+      etapa: 'Fase 2',
+      enabled: true,
+      color: '#1f78d1'
     },
     'director': {
       id: 'director',
@@ -168,6 +171,54 @@
     { id: 11, titulo: 'Renuncia a términos / Recursos', rol: 'Usuario Externo',   estado: 'pending' },
     { id: 12, titulo: 'Actualización del trámite (RND)', rol: 'Sistema',          estado: 'pending' }
   ];
+
+  /* ───── Profesionales disponibles (HU-3 — para asignación) ───── */
+  var PROFESIONALES_DISPONIBLES = [
+    { id: 'cp-001', nombre: 'Carlos Pérez',     cedula: '79.456.123', activos: 12, color: '#1f78d1', avatar: 'CP' },
+    { id: 'mg-002', nombre: 'María García',     cedula: '41.987.654', activos:  8, color: '#7c3aed', avatar: 'MG' },
+    { id: 'al-003', nombre: 'Andrés López',     cedula: '80.123.456', activos: 15, color: '#d74009', avatar: 'AL' },
+    { id: 'lr-004', nombre: 'Lucía Ramírez',    cedula: '52.789.012', activos:  5, color: '#1f8923', avatar: 'LR' }
+  ];
+
+  /* ───── Bandeja del Coordinador (HU-3) — 12 trámites mock ───── */
+  var TRAMITES_BANDEJA = [
+    { id: 'IVC-2026-001', tipo: 'Otorgamiento',  organismo: 'Liga de Atletismo de Bolívar',          nit: '800.245.678-3', fechaRadicacion: '2026-05-21', estado: 'No asignada',  profesionalId: null,    profesionalNombre: '—' },
+    { id: 'IVC-2026-002', tipo: 'Renovación',    organismo: 'Liga de Voleibol de Cundinamarca',      nit: '800.456.789-1', fechaRadicacion: '2026-05-20', estado: 'No asignada',  profesionalId: null,    profesionalNombre: '—' },
+    { id: 'IVC-2026-003', tipo: 'Otorgamiento',  organismo: 'Asociación de Patinaje del Valle',      nit: '901.234.567-2', fechaRadicacion: '2026-05-19', estado: 'Asignada',     profesionalId: 'cp-001', profesionalNombre: 'Carlos Pérez' },
+    { id: 'IVC-2026-004', tipo: 'Actualización', organismo: 'Liga de Natación del Atlántico',        nit: '800.789.012-4', fechaRadicacion: '2026-05-19', estado: 'No asignada',  profesionalId: null,    profesionalNombre: '—' },
+    { id: 'IVC-2026-005', tipo: 'Otorgamiento',  organismo: 'Liga de Tenis de Mesa de Antioquia',    nit: '811.345.678-9', fechaRadicacion: '2026-05-18', estado: 'En validación', profesionalId: 'mg-002', profesionalNombre: 'María García' },
+    { id: 'IVC-2026-006', tipo: 'Renovación',    organismo: 'Liga de Ciclismo de Boyacá',            nit: '900.567.890-5', fechaRadicacion: '2026-05-18', estado: 'Asignada',     profesionalId: 'al-003', profesionalNombre: 'Andrés López' },
+    { id: 'IVC-2026-007', tipo: 'Otorgamiento',  organismo: 'Asociación de Taekwondo de Caldas',     nit: '901.456.789-3', fechaRadicacion: '2026-05-17', estado: 'No asignada',  profesionalId: null,    profesionalNombre: '—' },
+    { id: 'IVC-2026-008', tipo: 'Otorgamiento',  organismo: 'Liga de Fútbol de Sala del Tolima',     nit: '800.234.567-8', fechaRadicacion: '2026-05-17', estado: 'En validación', profesionalId: 'lr-004', profesionalNombre: 'Lucía Ramírez' },
+    { id: 'IVC-2026-009', tipo: 'Actualización', organismo: 'Liga de Judo de Santander',             nit: '900.876.543-2', fechaRadicacion: '2026-05-16', estado: 'No asignada',  profesionalId: null,    profesionalNombre: '—' },
+    { id: 'IVC-2026-010', tipo: 'Renovación',    organismo: 'Liga de Baloncesto del Magdalena',      nit: '800.345.678-6', fechaRadicacion: '2026-05-15', estado: 'Asignada',     profesionalId: 'cp-001', profesionalNombre: 'Carlos Pérez' },
+    { id: 'IVC-2026-011', tipo: 'Otorgamiento',  organismo: 'Asociación de Boxeo del Cauca',         nit: '901.567.890-1', fechaRadicacion: '2026-05-15', estado: 'No asignada',  profesionalId: null,    profesionalNombre: '—' },
+    { id: 'IVC-2026-012', tipo: 'Otorgamiento',  organismo: 'Liga de Karate del Quindío',            nit: '900.654.321-7', fechaRadicacion: '2026-05-14', estado: 'En validación', profesionalId: 'mg-002', profesionalNombre: 'María García' }
+  ];
+
+  /* ───── Trámite focal del Profesional (HU-4/HU-6) — IVC-2026-001 ───── */
+  function getTramiteFocal() {
+    return {
+      id: 'IVC-2026-001',
+      tipo: 'Otorgamiento de Reconocimiento Deportivo',
+      organismo: 'Liga de Atletismo de Bolívar',
+      nit: '800.245.678-3',
+      disciplina: 'Atletismo',
+      fechaRadicacion: '2026-05-21',
+      fechaAsignacion: '2026-05-21 14:32',
+      asignadoHace: '15 min',
+      diasRestantes: 14,
+      documentos: [
+        { id: 'acta-constitucion',      orden: 1, titulo: 'Copia del Acta de Constitución',            obligatorio: true,  validacion: null, observacion: '' },
+        { id: 'lista-afiliados',        orden: 2, titulo: 'Lista de afiliados con nóminas de Directivos', obligatorio: true, validacion: null, observacion: '' },
+        { id: 'estatutos',              orden: 3, titulo: 'Copia de Estatutos y Reglamentos',          obligatorio: true,  validacion: null, observacion: '' },
+        { id: 'personeria',             orden: 4, titulo: 'Documento de Personería Jurídica',          obligatorio: true,  validacion: null, observacion: '' },
+        { id: 'afiliacion-internacional', orden: 5, titulo: 'Constancia de afiliación internacional',  obligatorio: false, validacion: null, observacion: '' },
+        { id: 'inventario',             orden: 6, titulo: 'Inventario de bienes',                      obligatorio: true,  validacion: null, observacion: '' },
+        { id: 'sede',                   orden: 7, titulo: 'Acta de designación de sede',               obligatorio: true,  validacion: null, observacion: '' }
+      ]
+    };
+  }
 
   /* ───── Storage helpers ───── */
   function read(key, fallback) {
@@ -326,7 +377,29 @@
     remove(K_TOUR_CLOSED);
     remove(K_SIDEBAR_COLLAPSED);
     remove(K_WIZARD_STEP);
+    remove(K_TRAMITE_FOCAL);
     notifyChange('full-reset');
+  }
+
+  /* ───── Trámite focal (v1.2.0 — Profesional workspace HU-4/HU-6)
+     Estructura: { docsValidados: number, decision: 'Cumple'|'NoCumple'|'Parcial'|null,
+                   numActo: string|null, fechaActo: string|null, observacionesNoCumple: string }
+     Se almacena por separado del trámite "Borrador" del Usuario Externo (K_TRAMITE)
+     para no contaminar el state del wizard. El tour escucha este key para Steps 6-8. */
+  function getTramiteFocalState() {
+    return read(K_TRAMITE_FOCAL, { docsValidados: 0, decision: null, numActo: null, fechaActo: null, observacionesNoCumple: '' });
+  }
+  function updateTramiteFocalState(partial) {
+    var current = getTramiteFocalState();
+    var updated = Object.assign({}, current, partial);
+    write(K_TRAMITE_FOCAL, updated);
+    /* El tour mira s.tramite — para reactividad lo mergeamos con el state del Profesional */
+    notifyChange('tramite-focal');
+    return updated;
+  }
+  function resetTramiteFocal() {
+    remove(K_TRAMITE_FOCAL);
+    notifyChange('tramite-focal-reset');
   }
 
   /* ───── Días hábiles calculator (placeholder simple) ───── */
@@ -345,6 +418,9 @@
     PERFILES: PERFILES,
     DOCUMENTOS_DECRETO_1387: DOCUMENTOS_DECRETO_1387,
     FLUJO_TIMELINE: FLUJO_TIMELINE,
+    PROFESIONALES_DISPONIBLES: PROFESIONALES_DISPONIBLES,
+    TRAMITES_BANDEJA: TRAMITES_BANDEJA,
+    getTramiteFocal: getTramiteFocal,
     /* Perfil */
     getPerfil: getPerfil,
     setPerfil: setPerfil,
@@ -370,6 +446,10 @@
     /* Wizard step (v1.1.4 #4) */
     getWizardStep: getWizardStep,
     setWizardStep: setWizardStep,
+    /* Trámite focal Profesional (v1.2.0) */
+    getTramiteFocalState: getTramiteFocalState,
+    updateTramiteFocalState: updateTramiteFocalState,
+    resetTramiteFocal: resetTramiteFocal,
     /* Reset */
     fullReset: fullReset
   };

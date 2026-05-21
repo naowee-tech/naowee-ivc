@@ -41,17 +41,29 @@
       { id: 'docs',     label: 'Documentos',     icon: ICONS.docs,     href: '#' }
       /* "Mi perfil" eliminado (v1.1.3) — duplicaba el access del user-pill del header */
     ],
-    'profesional': [
-      { id: 'bandeja',     label: 'Bandeja',       icon: ICONS.bandeja,  href: '#' },
-      { id: 'validacion',  label: 'En validación', icon: ICONS.tramites, href: '#' },
-      { id: 'historico',   label: 'Histórico',     icon: ICONS.docs,     href: '#' }
-    ],
+    /* v1.2.0 — Fase 2 Sprint 1: Coordinador habilitado (HU-3) */
     'coordinador': [
-      { id: 'bandeja', label: 'Bandeja', icon: ICONS.bandeja, href: '#' }
+      { id: 'bandeja-coord', label: 'Bandeja de asignación', icon: ICONS.bandeja,  href: 'bandeja.html', badge: '4' },
+      { id: 'en-validacion', label: 'Trámites en validación', icon: ICONS.tramites, href: '#' },
+      { id: 'historico-coord', label: 'Histórico',           icon: ICONS.docs,     href: '#' }
+    ],
+    /* v1.2.0 — Fase 2 Sprint 1: Profesional habilitado (HU-4/HU-6) */
+    'profesional': [
+      { id: 'bandeja-prof', label: 'Mi bandeja',        icon: ICONS.bandeja,  href: 'workspace.html', badge: '3' },
+      { id: 'revision',     label: 'En revisión',       icon: ICONS.tramites, href: '#' },
+      { id: 'historico-prof', label: 'Histórico',       icon: ICONS.docs,     href: '#' }
     ],
     'director': [
       { id: 'firma',   label: 'Por firmar', icon: ICONS.tramites, href: '#' }
     ]
+  };
+
+  /* Section label por perfil */
+  var SECTION_LABELS = {
+    'usuario-externo': 'MI ORGANISMO',
+    'coordinador':     'COORDINACIÓN',
+    'profesional':     'OPERACIÓN',
+    'director':        'DIRECCIÓN'
   };
 
   function el(html) {
@@ -79,13 +91,22 @@
     var items = NAV_ITEMS[perfilId] || NAV_ITEMS['usuario-externo'];
     var activeId = (opts && opts.activeNav) || items[0].id;
     var isCollapsed = getCollapsed();
-    var sectionLabel = perfilId === 'usuario-externo' ? 'MI ORGANISMO' : 'OPERACIÓN';
+    var sectionLabel = SECTION_LABELS[perfilId] || 'OPERACIÓN';
+
+    /* Determinar subdir base por perfil (para resolver href relativos) */
+    var perfilSubdirs = {
+      'usuario-externo': 'usuario-externo/',
+      'coordinador':     'coordinador/',
+      'profesional':     'profesional/',
+      'director':        'director/'
+    };
+    var perfilSubdir = perfilSubdirs[perfilId] || 'usuario-externo/';
 
     var navHtml = items.map(function (it) {
       var isActive = it.id === activeId;
       var href = it.href;
       if (href && href !== '#' && !/^https?:/.test(href)) {
-        href = (inSubdir() ? '' : 'usuario-externo/') + href;
+        href = (inSubdir() ? '' : perfilSubdir) + href;
       }
       var badgeHtml = it.badge ? '<span class="nav-row__badge">' + it.badge + '</span>' : '';
       return '<a class="nav-row ' + (isActive ? 'is-active' : '') + '" ' +
@@ -216,7 +237,7 @@
         '<span class="demo-role-switcher__chev">' + ICONS.chevron + '</span>' +
       '</button>' +
       '<div class="demo-role-switcher__panel" id="demoSwitcherPanel" role="menu">' +
-        '<div class="demo-role-switcher__panel-label">14 perfiles del demo</div>' +
+        '<div class="demo-role-switcher__panel-label">' + perfiles.length + ' perfiles del demo</div>' +
         '<div class="demo-role-switcher__list">' + itemsHtml + '</div>' +
         '<div class="demo-role-switcher__panel-footer">' +
           '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" id="demoRestartTourBtn">' +
@@ -316,8 +337,15 @@
           return;
         }
         window.IVCData.setPerfil(next);
-        if (next === 'usuario-externo') {
-          window.location.href = (inSubdir() ? '' : 'usuario-externo/') + 'dashboard.html';
+        /* v1.2.0 — landing por perfil */
+        var landings = {
+          'usuario-externo': 'usuario-externo/dashboard.html',
+          'coordinador':     'coordinador/bandeja.html',
+          'profesional':     'profesional/workspace.html'
+        };
+        var landing = landings[next];
+        if (landing) {
+          window.location.href = pathPrefix() + landing;
         }
       });
     });
