@@ -121,21 +121,25 @@
       '</aside>';
   }
 
-  /* ───── Header (canonical: title + breadcrumb + profile-switcher) ───── */
+  /* ───── Header (canonical: profile-switcher SIN breadcrumb ni title)
+     Doug fix #2: NO breadcrumb en header.
+     Doug fix #3: el title del page vive en el body de la página
+     (page-title-block en dashboard, hero en detalle, stepper en wizard).
+     Si opts.title === null o no se pasa, no se renderiza title.
+     Si se pasa string, se renderiza por compat con otras vistas. ───── */
   function renderHeader(opts) {
     var perfilId = (window.IVCData && window.IVCData.getPerfil()) || 'usuario-externo';
     var perfil = (window.IVCData && window.IVCData.PERFILES[perfilId]) || {};
-    var title = (opts && opts.title) || 'Mis trámites';
-    var breadcrumb = (opts && opts.breadcrumb) || null;
+    var title = (opts && opts.title) || null;
 
-    var bcHtml = '';
-    if (breadcrumb && breadcrumb.length) {
-      bcHtml = '<nav class="top-header__breadcrumb" aria-label="Ruta">' +
-        breadcrumb.map(function (b, i) {
-          var sep = i > 0 ? '<span class="top-header__breadcrumb-sep">›</span>' : '';
-          return sep + (b.href ? '<a href="' + b.href + '">' + b.label + '</a>' : '<span>' + b.label + '</span>');
-        }).join('') +
-        '</nav>';
+    var titleHtml = '';
+    if (title) {
+      titleHtml = '<div class="top-header__title-wrap">' +
+        '<h1 class="top-header__title">' + title + '</h1>' +
+      '</div>';
+    } else {
+      /* Spacer flex para empujar el user-chip a la derecha */
+      titleHtml = '<div class="top-header__title-wrap"></div>';
     }
 
     var color = perfil.color || '#002B5B';
@@ -143,10 +147,7 @@
     var ident = perfil.nit ? ('NIT ' + perfil.nit) : (perfil.cedula ? ('CC ' + perfil.cedula) : '');
 
     return '<header class="top-header">' +
-      '<div class="top-header__title-wrap">' +
-        bcHtml +
-        '<h1 class="top-header__title">' + title + '</h1>' +
-      '</div>' +
+      titleHtml +
       '<div class="top-header__right">' +
         '<div class="profile-switcher" id="profileSwitcher">' +
           '<div class="user-chip" id="userChipTrigger">' +
@@ -401,7 +402,7 @@
         '<div class="shell" id="app-shell">' +
           renderSidebar({ activeNav: opts.activeNav, perfilId: opts.perfilId }) +
           '<div class="main">' +
-            renderHeader({ title: opts.title, breadcrumb: opts.breadcrumb }) +
+            renderHeader({ title: opts.title }) +
             '<main class="page page-fade-in" id="page-main">' +
               innerContent +
             '</main>' +

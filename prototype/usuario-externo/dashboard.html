@@ -7,6 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
+  <!-- Naowee Design System (CDN oficial) — versión taggeada v1.8.0.
+       Provee .naowee-btn--loud/quiet/mute, .naowee-badge--positive/informative/caution/etc.,
+       .naowee-table, .naowee-modal, .naowee-input. Carga ANTES que shell.css y
+       components.css para que estos puedan sobreescribir IVC-specific. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+
   <link rel="stylesheet" href="../shared/tokens.css">
   <link rel="stylesheet" href="../shared/components.css">
   <link rel="stylesheet" href="../shared/shell.css">
@@ -64,6 +71,23 @@
       color: var(--text-secondary);
       font-weight: 500;
     }
+
+    /* Page title block (Doug fix #3 — title vive en body, no en header) */
+    .page-title-block { margin-bottom: 4px; }
+    .page-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .page-subtitle {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
@@ -73,6 +97,12 @@
   <!-- Hidden template for page content (mounted by shell.init) -->
   <template id="page-content">
     <div class="page-inner">
+
+      <!-- Page title (movido del header al body — Doug fix #3) -->
+      <header class="page-title-block">
+        <h1 class="page-title">Mis trámites</h1>
+        <p class="page-subtitle">Otorgamientos, renovaciones y actualizaciones del Reconocimiento Deportivo.</p>
+      </header>
 
       <!-- Stat cards -->
       <section class="stat-grid">
@@ -147,13 +177,10 @@
       var shellRoot = document.getElementById('app-shell');
       shellRoot.innerHTML = template.innerHTML;
 
+      /* Header sin breadcrumb (Doug fix #2) — title vive en page-title-block (#3) */
       window.IVCShell.init({
-        title: 'Mis trámites',
-        activeNav: 'tramites',
-        breadcrumb: [
-          { label: 'Inicio', href: '../index.html' },
-          { label: 'Mis trámites' }
-        ]
+        title: null,
+        activeNav: 'tramites'
       });
 
       renderBandeja();
@@ -233,7 +260,7 @@
           '<td class="tramite-row__tipo">' + h.tipo + '</td>' +
           '<td class="tramite-row__date">' + formatDate(h.fecha) + '</td>' +
           '<td class="tramite-row__date">' + h.vigencia + '</td>' +
-          '<td><span class="naowee-badge naowee-badge--success">' + h.estado + '</span></td>' +
+          '<td><span class="naowee-badge naowee-badge--positive naowee-badge--quiet">' + h.estado + '</span></td>' +
           '<td class="tramite-row__actions">' +
             '<button class="naowee-btn naowee-btn--mute naowee-btn--small">Ver acto</button>' +
           '</td>' +
@@ -244,13 +271,14 @@
     }
 
     function badgeForEstado(estado) {
+      /* Map IVC estado → DS badge variant (informative/positive/caution/neutral) */
       switch (estado) {
-        case 'Borrador':       return '<span class="naowee-badge naowee-badge--neutral">' + estado + '</span>';
-        case 'Radicado':       return '<span class="naowee-badge naowee-badge--info">' + estado + '</span>';
-        case 'En Validación':  return '<span class="naowee-badge naowee-badge--warning">' + estado + '</span>';
-        case 'Subsanación':    return '<span class="naowee-badge naowee-badge--warning">' + estado + '</span>';
-        case 'Finalizado':     return '<span class="naowee-badge naowee-badge--success">' + estado + '</span>';
-        default:               return '<span class="naowee-badge naowee-badge--neutral">' + (estado || '—') + '</span>';
+        case 'Borrador':       return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">' + estado + '</span>';
+        case 'Radicado':       return '<span class="naowee-badge naowee-badge--informative">' + estado + '</span>';
+        case 'En Validación':  return '<span class="naowee-badge naowee-badge--caution">' + estado + '</span>';
+        case 'Subsanación':    return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">' + estado + '</span>';
+        case 'Finalizado':     return '<span class="naowee-badge naowee-badge--positive">' + estado + '</span>';
+        default:               return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">' + (estado || '—') + '</span>';
       }
     }
 

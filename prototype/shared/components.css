@@ -1,95 +1,25 @@
 /* ═══════════════════════════════════════════════════════════════════
-   components.css — Naowee UI components canónicos
+   components.css — IVC-specific components ONLY.
+   El DS canónico naowee-design-system@v1.8.0 (cargado vía CDN ANTES
+   que este archivo) provee:
+     · .naowee-btn + variants (--loud / --quiet / --mute / --small / --large)
+     · .naowee-badge + variants (--informative / --positive / --caution /
+                                  --negative / --neutral / --brand / --quiet)
+     · .naowee-table + thead/tbody/__num/__cell-primary
+     · .naowee-modal + overlay/header/body/footer/dismiss
+     · Tokens --naowee-color-* (interactive-fill-loud-idle = #D74009, etc.)
+   Acá SOLO viven los componentes que NO están en el DS o son IVC-only:
+     · Tipología badges (--tramite / --actuacion / --procedimiento)
+     · Status pill con dot animado (estados de tramite)
+     · Message banner (info/caution/error/success)
+     · Tabs segmented, Stepper de wizard, Snackbar
+     · Stat-card (dashboard hero)
+     · Empty state, Doc upload card (decreto 1387), Timeline vertical
+     · Card / Input wrappers (DS aún no expone estos primitives genéricos)
+     · Animaciones IVC y print rules.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ───── Buttons ───── */
-.naowee-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 20px;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-primary);
-  font: 700 13px var(--font);
-  letter-spacing: .1px;
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-in-out),
-              border-color var(--duration-fast) var(--ease-in-out),
-              color var(--duration-fast) var(--ease-in-out),
-              transform var(--duration-fast) var(--ease-in-out),
-              opacity var(--duration-fast) var(--ease-in-out);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.naowee-btn:hover { opacity: .92; text-decoration: none; }
-.naowee-btn:active { transform: scale(.97); }
-.naowee-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(215, 64, 9, .25);
-}
-
-.naowee-btn--loud {
-  background: var(--naranja);
-  color: var(--text-inverse);
-  border-color: var(--naranja);
-}
-
-.naowee-btn--accent {
-  background: var(--accent);
-  color: var(--text-inverse);
-  border-color: var(--accent);
-}
-
-.naowee-btn--quiet {
-  background: var(--surface);
-  color: var(--text-primary);
-  border-color: var(--border-dark);
-}
-.naowee-btn--quiet:hover { background: var(--bg); }
-
-.naowee-btn--mute {
-  background: transparent;
-  color: var(--text-secondary);
-  border-color: transparent;
-}
-.naowee-btn--mute:hover {
-  background: var(--bg);
-  color: var(--text-primary);
-}
-
-.naowee-btn--link {
-  background: transparent;
-  color: var(--accent);
-  border: 0;
-  padding: 0;
-  height: auto;
-  text-decoration: none;
-}
-.naowee-btn--link:hover { text-decoration: underline; }
-
-.naowee-btn--danger {
-  background: var(--red);
-  color: var(--text-inverse);
-  border-color: var(--red);
-}
-
-.naowee-btn--small { height: 34px; padding: 0 14px; font-size: 12px; }
-.naowee-btn--large { height: 48px; padding: 0 28px; font-size: 14px; }
-
-.naowee-btn:disabled, .naowee-btn[disabled] {
-  opacity: .45;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.naowee-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-/* ───── Cards ───── */
+/* ───── Cards (DS no expone .naowee-card todavía) ───── */
 .naowee-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -134,7 +64,6 @@
   background: var(--surface-alt);
 }
 
-/* Hover lift (anti-template) */
 .naowee-card--interactive {
   cursor: pointer;
   transition: transform var(--duration-normal) var(--ease-out),
@@ -145,63 +74,7 @@
   box-shadow: 0 8px 24px rgba(145, 158, 171, .18);
 }
 
-/* ───── Modal ───── */
-.naowee-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 17, 35, .5);
-  z-index: var(--z-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--duration-normal) var(--ease-out);
-}
-.naowee-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
-
-.naowee-modal {
-  background: var(--surface);
-  border-radius: var(--radius-xl);
-  width: 95vw;
-  max-width: 720px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-lg);
-  transform: scale(.96);
-  transition: transform var(--duration-normal) var(--ease-out);
-}
-.naowee-modal-overlay.is-open .naowee-modal { transform: scale(1); }
-
-.naowee-modal__header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  background: var(--surface);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-.naowee-modal__title { margin: 0; font-size: 16px; font-weight: 700; }
-.naowee-modal__body { padding: 24px; overflow-y: auto; flex: 1; }
-.naowee-modal__footer {
-  padding: 16px 24px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  background: var(--surface-alt);
-  position: sticky;
-  bottom: 0;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-}
-
-/* ───── Inputs ───── */
+/* ───── Input primitives (DS expone solo .naowee-input-stepper counter) ───── */
 .naowee-input-group { display: flex; flex-direction: column; gap: 6px; }
 
 .naowee-input-label {
@@ -262,120 +135,36 @@ select.naowee-input {
   font-weight: 500;
 }
 
-/* ───── Table ───── */
-.naowee-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--surface);
-}
-
-.naowee-table thead {
-  background: #f5f6fa;
-}
-
-.naowee-table thead th {
-  padding: 14px 16px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
-.naowee-table tbody td {
-  padding: 16px;
-  font-size: 14px;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-
-.naowee-table tbody tr {
-  transition: background var(--duration-fast);
-}
-.naowee-table tbody tr:hover { background: var(--surface-alt); }
-.naowee-table tbody tr:last-child td { border-bottom: 0; }
-
-.naowee-table__empty {
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-/* ───── Badges ───── */
-.naowee-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .3px;
-  text-transform: uppercase;
-  border: 1px solid transparent;
-  line-height: 1;
-}
-
-.naowee-badge--success {
-  background: var(--green-bg);
-  color: var(--green);
-  border-color: var(--green-border);
-}
-
-.naowee-badge--warning {
-  background: var(--orange-bg);
-  color: var(--accent);
-  border-color: var(--orange-border);
-}
-
-.naowee-badge--error {
-  background: var(--red-bg);
-  color: var(--red);
-  border-color: var(--red-border);
-}
-
-.naowee-badge--info {
-  background: var(--blue-bg);
-  color: var(--blue-info);
-  border-color: var(--blue-border);
-}
-
-.naowee-badge--neutral {
-  background: var(--bg);
-  color: var(--text-secondary);
-  border-color: var(--border);
-}
-
-/* Tipología (3 sabores semánticos del dominio IVC) */
+/* ───── Tipología badges (IVC-only — el DS canónico no conoce tramites/actuaciones/procedimientos)
+   Mantienen la apariencia outline + 3 colores semánticos del dominio IVC.
+   NOTA: el DS provee .naowee-badge (pill base) — estas son variants ADICIONALES. ───── */
 .naowee-badge--tramite {
   background: var(--tipo-tramite-bg);
   color: var(--tipo-tramite);
-  border-color: var(--tipo-tramite-border);
+  border: 1px solid var(--tipo-tramite-border);
 }
 
 .naowee-badge--actuacion {
   background: var(--tipo-actuacion-bg);
   color: var(--tipo-actuacion);
-  border-color: var(--tipo-actuacion-border);
+  border: 1px solid var(--tipo-actuacion-border);
 }
 
 .naowee-badge--procedimiento {
   background: var(--tipo-procedimiento-bg);
   color: var(--tipo-procedimiento);
-  border-color: var(--tipo-procedimiento-border);
+  border: 1px solid var(--tipo-procedimiento-border);
 }
 
 .naowee-badge--xl {
-  font-size: 14px;
-  padding: 8px 16px;
-  letter-spacing: .8px;
+  font-size: 13px;
+  padding: 8px 14px;
+  letter-spacing: .4px;
+  height: auto;
+  min-width: 0;
 }
 
-/* ───── Status pill (variant of badge with dot) ───── */
+/* ───── Status pill (variant de badge con dot animado, usado en hero del trámite) ───── */
 .naowee-status-pill {
   display: inline-flex;
   align-items: center;
@@ -386,6 +175,7 @@ select.naowee-input {
   font-weight: 600;
   border: 1px solid var(--border);
   background: var(--surface);
+  color: var(--text-primary);
 }
 
 .naowee-status-pill::before {
@@ -409,7 +199,7 @@ select.naowee-input {
   50% { box-shadow: 0 0 0 4px rgba(255, 117, 0, 0); }
 }
 
-/* ───── Messages (info/caution/error/success) ───── */
+/* ───── Messages (info/caution/error/success banners — IVC-specific layout) ───── */
 .naowee-message {
   display: flex;
   gap: 12px;
@@ -479,7 +269,7 @@ select.naowee-input {
   box-shadow: var(--shadow-sm);
 }
 
-/* ───── Stepper ───── */
+/* ───── Stepper (wizard de nuevo-tramite) ───── */
 .naowee-stepper {
   display: flex;
   align-items: center;
@@ -584,7 +374,7 @@ select.naowee-input {
   font-size: 13px;
 }
 
-/* ───── Stat card (specific pattern for dashboards) ───── */
+/* ───── Stat card (dashboard pattern) ───── */
 .naowee-stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -688,7 +478,7 @@ select.naowee-input {
   max-width: 360px;
 }
 
-/* ───── Document upload card (custom for nuevo-tramite) ───── */
+/* ───── Document upload card (Decreto 1387 wizard) ───── */
 .doc-upload-card {
   display: flex;
   align-items: flex-start;
@@ -770,7 +560,7 @@ select.naowee-input {
   font-weight: 500;
 }
 
-/* ───── Timeline (vertical, for tramite-detalle) ───── */
+/* ───── Timeline (vertical, tramite-detalle) ───── */
 .naowee-timeline { list-style: none; padding: 0; margin: 0; }
 
 .naowee-timeline__item {
@@ -857,5 +647,6 @@ select.naowee-input {
 @media print {
   .naowee-btn, .demo-role-switcher, .demo-tour-overlay { display: none !important; }
   .naowee-card { box-shadow: none; border-color: #ccc; }
-  body { background: white; }
+  .sidebar { display: none !important; }
+  .top-header { border-bottom: 2px solid #000; }
 }

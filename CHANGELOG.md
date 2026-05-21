@@ -6,6 +6,35 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.1.2] — 2026-05-21
+
+> 🔧 **Patch crítico: adopción del DS canónico naowee-design-system@v1.8.0 vía CDN.** Reemplaza reinvenciones con el DS productivo + 7 fixes de UI específicos identificados por Doug en la review del prototipo v1.1.1.
+
+### Changed
+
+- Todas las páginas ahora linkean a `naowee-tech/naowee-design-system@v1.8.0` vía jsdelivr CDN (carga ANTES que `tokens.css` / `components.css` / `shell.css` para que las clases canónicas estén disponibles y los wrappers IVC puedan extenderlas)
+- `prototype/shared/components.css` — removidas reinvenciones de `.naowee-btn*`, `.naowee-badge--success/--warning/--info/--error/--neutral` y `.naowee-table*` (provistos ahora por el DS). KEPT: tipología badges (`--tramite/--actuacion/--procedimiento`), cards, inputs primitives, status-pill con dot animado, message banners, tabs, stepper, snackbar, stat-card, empty, doc-upload-card, timeline vertical
+- `prototype/usuario-externo/dashboard.html` — `badgeForEstado()` mapea ahora a variants DS (`--positive/--informative/--caution/--neutral` con `--quiet` para tints suaves)
+- `prototype/shared/shell.js` — `renderHeader()` ya no acepta breadcrumb (Doug fix #2); si `title` es null/undefined renderiza solo spacer + user-chip
+
+### Fixed (Doug feedback 2026-05-21 review v1.1.1)
+
+- **#1 Header logos** — los logos del Ministerio + pill IVC ya eran canónicos del v1.1.1; ahora confirmado match exacto con `naowee-test-sidebar-shell/perfil.html` (mismo height, misma sb-logo-img--pill, mismo border)
+- **#2 Header sin breadcrumb** — `renderHeader()` ya no renderiza la nav.top-header__breadcrumb; las 3 páginas que pasaban `breadcrumb: [...]` ahora pasan solo `activeNav`
+- **#3 Title "Mis trámites" en body** — agregado `.page-title-block` con `<h1 class="page-title">` como primer elemento del page-inner en dashboard.html; nuevo-tramite usa el stepper como header visual, detalle usa el hero del radicado
+- **#4 Botón primario "Nuevo trámite" naranja DS** — usa `.naowee-btn--loud` que toma color de `--naowee-color-interactive-fill-loud-idle` (`#D74009` = `--naowee-color-orange-700` del DS). El glow en hover sigue intacto (port de `style/btn-glow-and-root-menu`)
+- **#5 Tablas estilo DS** — `<table class="naowee-table">` ahora renderiza con las reglas del DS (thead con `__num`/`__cell-primary`, hover en `tbody tr`, sort indicators `data-sort`)
+- **#6 Badges DS naowee** — borradores y radicados usan `.naowee-badge--informative`, finalizados `.naowee-badge--positive`, en validación/subsanación `.naowee-badge--caution`. Tipologías (trámite/actuación/procedimiento) preservan su outline IVC-específico
+- **#7 Icono colapsado del menú Notificaciones centrado** — en `.sidebar.is-collapsed` se zeroan margins de `.nav-row .icon` Y de `.nav-row__badge` (también `padding/width/min-width: 0`) para que `justify-content: center` quede limpio
+
+### Notes
+
+- Color real del naranja primario del DS: `--naowee-color-orange-700 = #D74009`. El IVC token local `--accent: #d74009` ya coincide 1:1, así que las animaciones, glows y dot pulses siguen alineados sin reinvención
+- Los archivos `tokens.css` quedan (NO vaciados) porque el DS provee tokens `--naowee-color-*` distintos y separados; el IVC usa tokens domain-specific (tipología, sidebar dims, durations IVC) que no entran en el DS. Coexisten sin colisión
+- Cambio de contrato: `IVCShell.init({ title, activeNav })` — la prop `breadcrumb` queda ignorada (compat backwards: si se pasa, no rompe pero no se renderiza)
+
+---
+
 ## [ivc-v1.1.1] — 2026-05-21
 
 > 🔧 **Patch crítico: port del shell canónico de naowee-test-sidebar-shell.** Reemplaza la implementación reinventada con los componentes refinados de producción.
