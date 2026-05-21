@@ -74,83 +74,27 @@
   box-shadow: 0 8px 24px rgba(145, 158, 171, .18);
 }
 
-/* ───── Input primitives (DS expone solo .naowee-input-stepper counter) ───── */
-.naowee-input-group { display: flex; flex-direction: column; gap: 6px; }
-
-.naowee-input-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.naowee-input {
-  height: 42px;
-  padding: 0 14px;
-  border: 1px solid var(--border-dark);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  font-size: 14px;
-  color: var(--text-primary);
-  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
-  width: 100%;
-}
-
-.naowee-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(215, 64, 9, .15);
-}
-
-.naowee-input:disabled {
-  background: var(--bg);
-  color: var(--text-muted);
-  cursor: not-allowed;
-}
-
-textarea.naowee-input {
-  height: auto;
-  min-height: 96px;
-  padding: 12px 14px;
-  line-height: 1.5;
-  resize: vertical;
-}
-
-select.naowee-input {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23646587' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 36px;
-}
-
-.naowee-input-helper {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.naowee-input-error {
-  font-size: 12px;
-  color: var(--red);
-  font-weight: 500;
-}
+/* v1.1.4 — Input primitives `.naowee-input*` REMOVIDAS (clases inventadas
+   que no existen en el DS canónico). El form usa ahora `.naowee-textfield`
+   y sub-elementos del DS. Ver nuevo-tramite.html para el patrón. */
 
 /* ───── Tipología badges (IVC-only — el DS canónico no conoce tramites/actuaciones/procedimientos)
-   Mantienen la apariencia outline + 3 colores semánticos del dominio IVC.
-   NOTA: el DS provee .naowee-badge (pill base) — estas son variants ADICIONALES. ───── */
-.naowee-badge--tramite {
+   v1.1.4 — RENOMBRADAS de `.naowee-badge--tramite/--actuacion/--procedimiento`
+   (inventadas) a `.ivc-badge-tipo-*` para no contaminar el namespace del DS.
+   Aplican junto a `.naowee-badge` base. ───── */
+.ivc-badge-tipo-tramite {
   background: var(--tipo-tramite-bg);
   color: var(--tipo-tramite);
   border: 1px solid var(--tipo-tramite-border);
 }
 
-.naowee-badge--actuacion {
+.ivc-badge-tipo-actuacion {
   background: var(--tipo-actuacion-bg);
   color: var(--tipo-actuacion);
   border: 1px solid var(--tipo-actuacion-border);
 }
 
-.naowee-badge--procedimiento {
+.ivc-badge-tipo-procedimiento {
   background: var(--tipo-procedimiento-bg);
   color: var(--tipo-procedimiento);
   border: 1px solid var(--tipo-procedimiento-border);
@@ -199,24 +143,49 @@ select.naowee-input {
   50% { box-shadow: 0 0 0 4px rgba(255, 117, 0, 0); }
 }
 
-/* ───── Messages (info/caution/error/success banners — IVC-specific layout) ───── */
+/* ───── Messages (info/caution/error/success banners — patrón DS canónico).
+   v1.1.4 — alineado al patrón `.naowee-message__header` del DS Naowee
+   (design-system.css líneas 2971-3083). Wrapper outer + header row + content. */
 .naowee-message {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   padding: 14px 16px;
   border-radius: var(--radius-lg);
   border: 1px solid;
   font-size: 13px;
   line-height: 1.5;
-  align-items: flex-start;
 }
 
-.naowee-message__icon { flex-shrink: 0; margin-top: 1px; }
-.naowee-message__content { flex: 1; min-width: 0; }
-.naowee-message__title { font-weight: 700; margin: 0 0 2px; }
-.naowee-message__text { margin: 0; color: inherit; opacity: .88; }
+/* Header: icon + title/content lado a lado (patrón DS) */
+.naowee-message__header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+}
 
-.naowee-message--info {
+.naowee-message__icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: currentColor;
+  color: var(--surface);
+  margin-top: 1px;
+}
+.naowee-message__icon svg { color: inherit; }
+
+.naowee-message__content { flex: 1; min-width: 0; }
+.naowee-message__title { font-weight: 700; margin: 0 0 2px; color: var(--text-primary); }
+.naowee-message__text { margin: 0; color: var(--text-secondary); font-weight: 500; }
+
+/* v1.1.4 — variant `--info` renombrado a `--informative` (nombre canónico
+   del DS Naowee; ver design-system.css línea 3077). */
+.naowee-message--informative {
   background: var(--blue-bg);
   border-color: var(--blue-border);
   color: var(--blue-info);
@@ -687,14 +656,15 @@ select.naowee-input {
   padding: 0;
 }
 
-/* Head: title + subtitle + actions en una sola fila. Padding optimizado
-   (16px vertical / 20px horizontal — Doug pidió menos espacio). */
+/* Head: title + subtitle + actions en una sola fila. Padding ajustado
+   tight (Doug v1.1.4 #3) — subtitle ~8px sobre el divider, no 24px.
+   12px top / 10px bottom / 20px horizontal. */
 .naowee-table-card__head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 20px;
+  padding: 12px 20px 10px;
   flex-wrap: wrap;
 }
 .naowee-table-card__head-text {
@@ -783,6 +753,15 @@ select.naowee-input {
 .naowee-table-card .naowee-table tbody td:first-child { padding-left: 18px; }
 .naowee-table-card .naowee-table tbody td:last-child  { padding-right: 18px; }
 .naowee-table-card .naowee-table tbody tr:last-child td { border-bottom: 0; }
+
+/* Doug v1.1.4 #2 — botones-link en columna Acciones NO deben heredar el
+   underline global de `a:hover` (tokens.css). Forzar sin underline para
+   anchors estilizados como botones DS (.naowee-btn--quiet, --small, --link). */
+.naowee-table-card .naowee-table tbody a.naowee-btn,
+.naowee-table-card .naowee-table tbody a.naowee-btn:hover,
+.naowee-table-card .naowee-table tbody a.naowee-btn:focus {
+  text-decoration: none;
+}
 
 /* Hover row — claro (fafbfd, patrón project v2.1 línea 1884), no oscuro.
    El DS oficial usa --naowee-color-fill-secondary; acá lo aclaramos aún

@@ -6,6 +6,38 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.1.4] — 2026-05-21
+
+> 🔧 **Refinamiento crítico: adopción real de clases canónicas del DS Naowee.** Los subagents anteriores inventaron `.naowee-input/-group/-label/-helper` y `.naowee-badge--tramite` — NINGUNA existe en el DS. Esta versión refactoriza al patrón canónico real (`.naowee-textfield`).
+
+### Fixed (Doug feedback 2026-05-21 — round 3)
+- **#1**: User pill dropdown reducido a identity-only (sin Mi perfil/Notif/Config/Cerrar sesión — para Mid-Fi focused).
+- **#2**: Botón "Continuar wizard" ahora `<button class="naowee-btn naowee-btn--quiet naowee-btn--small">` real (era `<a>` con underline heredado de `tokens.css a:hover`). Se añade rule de blindaje `.naowee-table-card .naowee-table tbody a.naowee-btn { text-decoration: none }` para anchors estilizados como botón en columna Acciones.
+- **#3**: `.naowee-table-card__head` padding ajustado (`12px 20px 10px` en lugar de `16px 20px`) — subtitle ahora ~8px sobre el divider.
+- **#4**: Tour Step 2 fix — Step 2a apunta a `[data-tour="wizard-stepper"]` (visible al cargar wizard step 1). Step 2b nuevo apunta a `[data-tour="docs-decreto-1387"]` (solo cuando `wizardStep >= 2`). Antes el tooltip caía en top-left sin spotlight porque el target estaba oculto.
+- **#5**: Refactor completo de `nuevo-tramite.html` al patrón `.naowee-textfield` del DS. Step 1 (Datos generales) usa `.naowee-textfield__label`, `__input-wrap`, `__input`, `__helper` + variants `--readonly`, `--disabled`, `--textarea`. Info message ahora `.naowee-message naowee-message--informative` con `__header`. Badge "Trámite" ahora `.naowee-badge--informative --quiet`.
+
+### Changed
+- `prototype/usuario-externo/nuevo-tramite.html` — refactor completo del form usando DS canónico.
+- `prototype/usuario-externo/tramite-detalle.html` — badge y banner alineados a `--informative` (era `--tramite` inventado y `--info` no canónico).
+- `prototype/usuario-externo/dashboard.html` — anchors de "Continuar wizard" / "Ver detalle" convertidos a `<button>` reales con handlers `data-go-wizard` / `data-go-detalle`.
+- `prototype/shared/shell.js` — user pill dropdown reducido a identity-only (clase nueva `profile-dd--identity-only`).
+- `prototype/shared/components.css` — `.naowee-message` rediseñado al patrón DS (`__header` outer flex + icon-circle 22px). `.naowee-message--info` → `--informative`. Padding de `__head` tight. Rule anti-underline para botones-link en tabla.
+- `prototype/shared/demo-tour.js` — Steps 2 / 2b reactivos a `wizardStep`. `buildState()` ahora lee `IVCData.getWizardStep()`.
+- `prototype/shared/data.js` — nuevo state `wizardStep` (storage key `naowee.ivc.wizardStep`, default 1) + getters/setters. Incluido en `fullReset()`.
+
+### Removed
+- Clases inventadas eliminadas del codebase: `.naowee-input`, `.naowee-input-group`, `.naowee-input-label`, `.naowee-input-helper`, `.naowee-input-error`, `.naowee-badge--tramite`, `.naowee-message--info`.
+- Las variants de badge tipología renombradas a prefijo IVC: `.ivc-badge-tipo-tramite` / `--actuacion` / `--procedimiento` (antes contaminaban el namespace `.naowee-badge--*`).
+- 4 action items del user pill dropdown (Mi perfil, Notificaciones, Configuraciones, Cerrar sesión).
+
+### Notes
+- DS canónico confirmado: `.naowee-textfield` (líneas 1606-1845), `.naowee-message` con `__header` (líneas 2971-3083), `.naowee-badge` variants `--informative/--brand/--positive/--caution/--negative/--neutral` + modifier `--quiet` (líneas 1006-1058).
+- `.naowee-stepper` NO existe en el DS — sigue siendo custom IVC con marcador `data-tour="wizard-stepper"` agregado.
+- `.naowee-input-stepper` SÍ existe en el DS (counter component, distinto a inputs de texto) — no se confunde con las clases inventadas.
+
+---
+
 ## [ivc-v1.1.3] — 2026-05-21
 
 > 🔧 **Refinamiento UI post-revisión Doug.** 4 fixes específicos siguiendo patrones canónicos del DS Naowee project v2.1.

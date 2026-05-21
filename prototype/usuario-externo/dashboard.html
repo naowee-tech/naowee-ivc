@@ -10,7 +10,7 @@
 
   <!-- Naowee Design System (CDN oficial) — versión taggeada v1.8.0.
        Provee .naowee-btn--loud/quiet/mute, .naowee-badge--positive/informative/caution/etc.,
-       .naowee-table, .naowee-modal, .naowee-input. Carga ANTES que shell.css y
+       .naowee-table, .naowee-modal, .naowee-textfield. Carga ANTES que shell.css y
        components.css para que estos puedan sobreescribir IVC-specific. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
@@ -177,6 +177,14 @@
         window.location.href = 'nuevo-tramite.html';
       });
 
+      /* Wire botones Acciones de la tabla (Doug v1.1.4 #2 — eran <a>) */
+      document.addEventListener('click', function (ev) {
+        var t = ev.target.closest('[data-go-wizard]');
+        if (t) { window.location.href = 'nuevo-tramite.html'; return; }
+        var d = ev.target.closest('[data-go-detalle]');
+        if (d) { window.location.href = 'tramite-detalle.html'; }
+      });
+
       /* Reaccionar a cambios */
       window.addEventListener('naowee:ivc:state-change', function () {
         renderBandeja();
@@ -221,9 +229,12 @@
             '<td class="tramite-row__date">' + fechaTexto + '</td>' +
             '<td>' + estadoBadge + '</td>' +
             '<td class="tramite-row__actions">' +
+              /* Doug v1.1.4 #2 — botón real, sin text-link underline. La
+                 CSS .naowee-table-card .naowee-table tbody a.naowee-btn
+                 también lo blinda contra el a:hover global. */
               (t.radicado
-                ? '<a class="naowee-btn naowee-btn--quiet naowee-btn--small" href="tramite-detalle.html">Ver detalle</a>'
-                : '<a class="naowee-btn naowee-btn--quiet naowee-btn--small" href="nuevo-tramite.html">Continuar wizard</a>') +
+                ? '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" data-go-detalle>Ver detalle</button>'
+                : '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" data-go-wizard>Continuar wizard</button>') +
             '</td>' +
           '</tr></tbody>' +
         '</table>';

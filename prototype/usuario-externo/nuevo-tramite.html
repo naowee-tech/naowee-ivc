@@ -22,7 +22,10 @@
       grid-template-columns: 1fr 1fr;
       gap: 18px 20px;
     }
-    .wizard-form .naowee-input-group--full { grid-column: 1 / -1; }
+    /* v1.1.4 — clase IVC-scoped (no inventar `.naowee-*`).
+       Hace que el campo ocupe las 2 columnas del grid. */
+    .wizard-form .ivc-field--full { grid-column: 1 / -1; }
+    .wizard-form .naowee-textfield { width: 100%; }
 
     @media (max-width: 720px) {
       .wizard-form { grid-template-columns: 1fr; }
@@ -131,8 +134,9 @@
   <template id="page-content">
     <div class="page-inner">
 
-      <!-- Stepper -->
-      <ol class="naowee-stepper" id="wizardStepper">
+      <!-- Stepper (custom IVC — el DS no expone .naowee-stepper).
+           data-tour="wizard-stepper" lo usa el tour Step 2 (v1.1.4 #4). -->
+      <ol class="naowee-stepper" id="wizardStepper" data-tour="wizard-stepper">
         <li class="naowee-stepper__item is-active" data-step="1">
           <div class="naowee-stepper__circle">1</div>
           <span class="naowee-stepper__label">Datos generales</span>
@@ -147,54 +151,88 @@
         </li>
       </ol>
 
-      <!-- Step 1: Datos generales -->
+      <!-- Step 1: Datos generales — refactor v1.1.4 #5 al patrón canónico
+           del DS (.naowee-textfield + sub-elementos). Las clases
+           `.naowee-input*` (incluidas `--group`, `--label`, `--helper`) NO
+           existen en el DS Naowee y fueron inventadas en versiones previas. -->
       <section class="naowee-card wizard-card" id="step-1">
         <div class="naowee-card__header">
           <div>
             <h2 class="naowee-card__title">Datos generales del trámite</h2>
             <p class="naowee-card__subtitle">Identificación del organismo y tipo de Reconocimiento.</p>
           </div>
-          <span class="naowee-badge naowee-badge--tramite">Trámite</span>
+          <span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Trámite</span>
         </div>
         <div class="naowee-card__body">
+          <!-- Info message canónico DS — .naowee-message + variant `--informative`.
+               Antes el helper "Pre-seleccionado..." iba como `.naowee-input-helper`. -->
+          <div class="naowee-message naowee-message--informative" style="margin-bottom:18px">
+            <div class="naowee-message__header">
+              <span class="naowee-message__icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </span>
+              <div class="naowee-message__content">
+                <p class="naowee-message__title" style="font-size:14px">Tipo de trámite pre-seleccionado para esta demo</p>
+                <p class="naowee-message__text">En el sistema real, el Usuario elige entre Otorgamiento, Renovación o Actualización del Reconocimiento Deportivo.</p>
+              </div>
+            </div>
+          </div>
+
           <div class="wizard-form">
-            <div class="naowee-input-group naowee-input-group--full">
-              <label class="naowee-input-label" for="tipo">Tipo de trámite</label>
-              <select class="naowee-input" id="tipo" disabled>
-                <option>Otorgamiento de Reconocimiento Deportivo</option>
-              </select>
-              <span class="naowee-input-helper">Pre-seleccionado para esta demo. En el sistema real el Usuario elige entre Otorgamiento / Renovación / Actualización.</span>
+            <!-- Tipo de trámite (select dentro de naowee-textfield) -->
+            <div class="naowee-textfield naowee-textfield--disabled ivc-field--full">
+              <label class="naowee-textfield__label" for="tipo">Tipo de trámite</label>
+              <div class="naowee-textfield__input-wrap">
+                <select class="naowee-textfield__input" id="tipo" disabled>
+                  <option>Otorgamiento de Reconocimiento Deportivo</option>
+                </select>
+              </div>
             </div>
 
-            <div class="naowee-input-group">
-              <label class="naowee-input-label" for="organismo">Organismo deportivo</label>
-              <input class="naowee-input" id="organismo" type="text" value="Liga de Atletismo de Bolívar" readonly>
-              <span class="naowee-input-helper">Leído del perfil del usuario autenticado.</span>
+            <!-- Organismo deportivo (readonly) -->
+            <div class="naowee-textfield naowee-textfield--readonly">
+              <label class="naowee-textfield__label" for="organismo">Organismo deportivo</label>
+              <div class="naowee-textfield__input-wrap">
+                <input class="naowee-textfield__input" id="organismo" type="text" value="Liga de Atletismo de Bolívar" readonly>
+              </div>
+              <span class="naowee-textfield__helper">Leído del perfil del usuario autenticado.</span>
             </div>
 
-            <div class="naowee-input-group">
-              <label class="naowee-input-label" for="nit">NIT</label>
-              <input class="naowee-input" id="nit" type="text" value="800.245.678-3" readonly>
+            <!-- NIT (readonly) -->
+            <div class="naowee-textfield naowee-textfield--readonly">
+              <label class="naowee-textfield__label" for="nit">NIT</label>
+              <div class="naowee-textfield__input-wrap">
+                <input class="naowee-textfield__input" id="nit" type="text" value="800.245.678-3" readonly>
+              </div>
             </div>
 
-            <div class="naowee-input-group">
-              <label class="naowee-input-label" for="disciplina">Disciplina deportiva</label>
-              <select class="naowee-input" id="disciplina">
-                <option>Atletismo</option>
-                <option>Ciclismo</option>
-                <option>Natación</option>
-                <option>Voleibol</option>
-              </select>
+            <!-- Disciplina deportiva (select editable) -->
+            <div class="naowee-textfield">
+              <label class="naowee-textfield__label naowee-textfield__label--required" for="disciplina">Disciplina deportiva</label>
+              <div class="naowee-textfield__input-wrap">
+                <select class="naowee-textfield__input" id="disciplina">
+                  <option>Atletismo</option>
+                  <option>Ciclismo</option>
+                  <option>Natación</option>
+                  <option>Voleibol</option>
+                </select>
+              </div>
             </div>
 
-            <div class="naowee-input-group">
-              <label class="naowee-input-label" for="domicilio">Domicilio principal</label>
-              <input class="naowee-input" id="domicilio" type="text" value="Cartagena de Indias, Bolívar">
+            <!-- Domicilio principal -->
+            <div class="naowee-textfield">
+              <label class="naowee-textfield__label naowee-textfield__label--required" for="domicilio">Domicilio principal</label>
+              <div class="naowee-textfield__input-wrap">
+                <input class="naowee-textfield__input" id="domicilio" type="text" value="Cartagena de Indias, Bolívar">
+              </div>
             </div>
 
-            <div class="naowee-input-group naowee-input-group--full">
-              <label class="naowee-input-label" for="observaciones">Observaciones adicionales (opcional)</label>
-              <textarea class="naowee-input" id="observaciones" placeholder="Información complementaria que el organismo quiera adjuntar al trámite..."></textarea>
+            <!-- Observaciones (textarea variant) -->
+            <div class="naowee-textfield naowee-textfield--textarea ivc-field--full">
+              <label class="naowee-textfield__label" for="observaciones">Observaciones adicionales (opcional)</label>
+              <div class="naowee-textfield__input-wrap">
+                <textarea class="naowee-textfield__input" id="observaciones" rows="4" placeholder="Información complementaria que el organismo quiera adjuntar al trámite..."></textarea>
+              </div>
             </div>
           </div>
         </div>
@@ -213,15 +251,19 @@
             <h2 class="naowee-card__title">Documentos requeridos por el Decreto 1387/1970, Art. 2.1.1.2</h2>
             <p class="naowee-card__subtitle">Carga los 7 documentos exigidos para el Otorgamiento del Reconocimiento Deportivo.</p>
           </div>
-          <span class="naowee-badge naowee-badge--tramite">Trámite</span>
+          <span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Trámite</span>
         </div>
         <div class="naowee-card__body">
           <div class="docs-section-title">
-            <div class="naowee-message naowee-message--info" style="margin-bottom: 0; flex: 1">
-              <span class="naowee-message__icon">ℹ️</span>
-              <div class="naowee-message__content">
-                <p class="naowee-message__title">Demo · Haz click en cada documento para simular la carga</p>
-                <p class="naowee-message__text">En el sistema real, esto abre un picker de archivos con validación de extensión, tamaño y firma.</p>
+            <div class="naowee-message naowee-message--informative" style="margin-bottom: 0; flex: 1">
+              <div class="naowee-message__header">
+                <span class="naowee-message__icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </span>
+                <div class="naowee-message__content">
+                  <p class="naowee-message__title" style="font-size:14px">Demo · Haz click en cada documento para simular la carga</p>
+                  <p class="naowee-message__text">En el sistema real, esto abre un picker de archivos con validación de extensión, tamaño y firma.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -290,11 +332,19 @@
       document.getElementById('btnStep2Back').addEventListener('click', function () { goToStep(1); });
       document.getElementById('btnRadicar').addEventListener('click', radicarTramite);
 
+      /* Sincroniza wizardStep en estado inicial (v1.1.4 #4 — tour reactivo) */
+      var currentStep = window.IVCData.getWizardStep();
+      if (currentStep !== 1) goToStep(currentStep); else window.IVCData.setWizardStep(1);
+
       /* Mount tour */
       window.IVCTour.mount({ pageId: 'usuario-externo/nuevo-tramite.html' });
     });
 
     function goToStep(n) {
+      /* v1.1.4 #4 — notifica al tour para que cambie entre Step 2 (datos
+         generales) y Step 2b (documentos) según la posición del wizard. */
+      window.IVCData.setWizardStep(n);
+
       ['1','2','3'].forEach(function (s) {
         var sec = document.getElementById('step-' + s);
         var item = document.querySelector('[data-step="' + s + '"]');

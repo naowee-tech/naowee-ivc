@@ -15,6 +15,7 @@
   var K_TRAMITE   = 'naowee.ivc.tramite';
   var K_TOUR_CLOSED = 'naowee.ivc.tourClosed';
   var K_SIDEBAR_COLLAPSED = 'naowee.ivc.sidebarCollapsed';
+  var K_WIZARD_STEP = 'naowee.ivc.wizardStep'; /* v1.1.4 #4 — tour reactivo */
 
   /* ───── Perfiles disponibles ───── */
   var PERFILES = {
@@ -304,12 +305,27 @@
     write(K_SIDEBAR_COLLAPSED, !!v);
   }
 
+  /* ───── Wizard step (Doug v1.1.4 #4) — tour Step 2 / 2b reactivo ───── */
+  function getWizardStep() {
+    var v = read(K_WIZARD_STEP, 1);
+    var n = parseInt(v, 10);
+    return (isNaN(n) || n < 1) ? 1 : n;
+  }
+
+  function setWizardStep(n) {
+    var step = parseInt(n, 10);
+    if (isNaN(step) || step < 1) step = 1;
+    write(K_WIZARD_STEP, step);
+    notifyChange('wizard-step');
+  }
+
   /* ───── Full reset (botón "Reiniciar demo") ───── */
   function fullReset() {
     remove(K_PERFIL);
     remove(K_TRAMITE);
     remove(K_TOUR_CLOSED);
     remove(K_SIDEBAR_COLLAPSED);
+    remove(K_WIZARD_STEP);
     notifyChange('full-reset');
   }
 
@@ -351,6 +367,9 @@
     /* Sidebar */
     isSidebarCollapsed: isSidebarCollapsed,
     setSidebarCollapsed: setSidebarCollapsed,
+    /* Wizard step (v1.1.4 #4) */
+    getWizardStep: getWizardStep,
+    setWizardStep: setWizardStep,
     /* Reset */
     fullReset: fullReset
   };

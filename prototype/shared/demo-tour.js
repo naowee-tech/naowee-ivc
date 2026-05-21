@@ -21,6 +21,9 @@
   'use strict';
 
   var TOUR_DEBOUNCE_MS = 150;
+  /* TOTAL_STEPS sigue siendo 8 (numeración pública). El step 2 ahora tiene
+     dos sub-pasos visuales (2a / 2b) que comparten el mismo stepIndex 2
+     pero apuntan a targets distintos según el wizardStep actual. — v1.1.4 #4 */
   var TOTAL_STEPS = 8;
 
   /* ───── Definición de los 8 steps de Fase 1 ─────
@@ -50,6 +53,29 @@
           return s.perfil === 'usuario-externo' && (!s.tramite || !s.tramite.radicado && s.tramite.estado !== 'Borrador');
         }
       },
+      /* v1.1.4 #4 — Step 2a: usuario está en wizardStep 1 (Datos generales).
+         El target visible es el stepper del wizard. ANTES el step apuntaba a
+         `[data-tour="docs-decreto-1387"]` que está dentro de wizard step 2
+         (hidden al cargar), lo que causaba tooltip en top-left sin spotlight. */
+      {
+        id: 'wizard-stepper-overview',
+        stepIndex: 2,
+        title: 'El wizard tiene 3 pasos',
+        body: 'Datos generales → Documentos (Decreto 1387/1970, Art. 2.1.1.2 — 7 documentos) → Confirmación. Diligencia los datos del organismo y avanza al paso de Documentos.',
+        target: '[data-tour="wizard-stepper"]',
+        position: 'bottom',
+        pages: ['usuario-externo/nuevo-tramite.html'],
+        pageHint: 'usuario-externo/nuevo-tramite.html',
+        pageHintLabel: 'Ir al wizard',
+        applicable: function (s) {
+          return s.perfil === 'usuario-externo'
+            && s.tramite && !s.tramite.radicado
+            && s.tramite.estado === 'Borrador'
+            && s.wizardStep === 1;
+        }
+      },
+      /* v1.1.4 #4 — Step 2b: usuario avanzó a wizardStep 2 (Documentos).
+         Ahora sí el target [data-tour="docs-decreto-1387"] es visible. */
       {
         id: 'cargar-documentos',
         stepIndex: 2,
@@ -63,7 +89,8 @@
         applicable: function (s) {
           return s.perfil === 'usuario-externo'
             && s.tramite && !s.tramite.radicado
-            && s.tramite.estado === 'Borrador';
+            && s.tramite.estado === 'Borrador'
+            && s.wizardStep >= 2;
         }
       },
       {
@@ -150,6 +177,8 @@
     return {
       perfil: window.IVCData.getPerfil(),
       tramite: window.IVCData.getTramite(),
+      /* v1.1.4 #4 — wizardStep para discriminar Step 2 / 2b */
+      wizardStep: (window.IVCData.getWizardStep && window.IVCData.getWizardStep()) || 1,
       tourAdvanced: localStorage.getItem('naowee.ivc.tourAdvanced') === '1'
     };
   }

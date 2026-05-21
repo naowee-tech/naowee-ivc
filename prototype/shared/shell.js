@@ -163,7 +163,10 @@
               ICONS.chevron +
             '</button>' +
           '</div>' +
-          '<div class="profile-dd" role="menu">' +
+          /* Mid-Fi: solo identity card. Sin acciones (Mi perfil / Notif /
+             Configuraciones / Cerrar sesión) para no distraer del flujo IVC.
+             Doug feedback v1.1.4 — round 3 #1. */
+          '<div class="profile-dd profile-dd--identity-only" role="menu">' +
             '<div class="profile-dd__header">' +
               '<span class="ava-ring" style="width:42px;height:42px;font-size:14px;background:' + color + '22;color:' + color + '">' + avatar + '</span>' +
               '<div class="profile-dd__user">' +
@@ -175,24 +178,6 @@
                 '</span>' +
               '</div>' +
             '</div>' +
-            '<div class="profile-dd__sep"></div>' +
-            '<a class="profile-dd__item" href="#mi-perfil">' +
-              '<span class="profile-dd__icon">' + ICONS.userIcon + '</span>' +
-              '<span>Mi perfil</span>' +
-            '</a>' +
-            '<a class="profile-dd__item" href="#notificaciones">' +
-              '<span class="profile-dd__icon">' + ICONS.bell + '</span>' +
-              '<span>Notificaciones</span>' +
-            '</a>' +
-            '<a class="profile-dd__item" href="#configuracion">' +
-              '<span class="profile-dd__icon">' + ICONS.gear + '</span>' +
-              '<span>Configuraciones</span>' +
-            '</a>' +
-            '<div class="profile-dd__sep"></div>' +
-            '<a class="profile-dd__item profile-dd__item--danger" href="' + pathPrefix() + 'index.html" data-action="logout">' +
-              '<span class="profile-dd__icon">' + ICONS.logoutSm + '</span>' +
-              '<span>Cerrar sesión</span>' +
-            '</a>' +
           '</div>' +
         '</div>' +
       '</div>' +
