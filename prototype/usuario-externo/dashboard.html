@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis trámites · IVC Naowee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) { .stat-grid { grid-template-columns: 1fr; } }
+
+    .tramite-row__id {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+    }
+
+    .tramite-row__tipo {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .tramite-row__date {
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-feature-settings: 'tnum';
+    }
+
+    .tramite-row__actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    /* Section header con CTA */
+    .section-header-with-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 28px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-header-with-cta__title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .section-header-with-cta__subtitle {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="shell" id="app-shell"></div>
+
+  <!-- Hidden template for page content (mounted by shell.init) -->
+  <template id="page-content">
+    <div class="page-inner">
+
+      <!-- Stat cards -->
+      <section class="stat-grid">
+        <div class="naowee-stat-card naowee-stat-card--accent">
+          <span class="naowee-stat-card__label">En curso</span>
+          <span class="naowee-stat-card__value" id="statEnCurso">0</span>
+          <span class="naowee-stat-card__hint">Trámites activos</span>
+        </div>
+        <div class="naowee-stat-card naowee-stat-card--success">
+          <span class="naowee-stat-card__label">Aprobados</span>
+          <span class="naowee-stat-card__value">2</span>
+          <span class="naowee-stat-card__hint">Histórico vigente</span>
+        </div>
+        <div class="naowee-stat-card naowee-stat-card--info">
+          <span class="naowee-stat-card__label">En subsanación</span>
+          <span class="naowee-stat-card__value">0</span>
+          <span class="naowee-stat-card__hint">Pendientes de responder</span>
+        </div>
+      </section>
+
+      <!-- Bandeja activa -->
+      <section class="naowee-card">
+        <div class="section-header-with-cta">
+          <div>
+            <h2 class="section-header-with-cta__title">Mis trámites activos</h2>
+            <p class="section-header-with-cta__subtitle">Otorgamientos, renovaciones y actualizaciones del Reconocimiento Deportivo.</p>
+          </div>
+          <button type="button" class="naowee-btn naowee-btn--loud" data-tour="nuevo-tramite" id="btnNuevoTramite">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo trámite
+          </button>
+        </div>
+        <div id="bandejaActiva"></div>
+      </section>
+
+      <!-- Historial -->
+      <section class="naowee-card">
+        <div class="naowee-card__header">
+          <div>
+            <h2 class="naowee-card__title">Histórico</h2>
+            <p class="naowee-card__subtitle">Trámites finalizados con reconocimiento vigente.</p>
+          </div>
+        </div>
+        <div class="naowee-card__body naowee-card__body--flush">
+          <table class="naowee-table" id="historicoTable">
+            <thead>
+              <tr>
+                <th>Radicado</th>
+                <th>Tipo</th>
+                <th>Fecha</th>
+                <th>Vigencia</th>
+                <th>Estado</th>
+                <th style="text-align:right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="historicoBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </template>
+
+  <!-- Scripts -->
+  <script src="../shared/data.js"></script>
+  <script src="../shared/shell.js"></script>
+  <script src="../shared/demo-tour.js"></script>
+  <script>
+    /* Init shell con content del template */
+    document.addEventListener('DOMContentLoaded', function () {
+      var template = document.getElementById('page-content');
+      var shellRoot = document.getElementById('app-shell');
+      shellRoot.innerHTML = template.innerHTML;
+
+      window.IVCShell.init({
+        title: 'Mis trámites',
+        activeNav: 'tramites',
+        breadcrumb: [
+          { label: 'Inicio', href: '../index.html' },
+          { label: 'Mis trámites' }
+        ]
+      });
+
+      renderBandeja();
+      renderHistorico();
+
+      /* Wire CTA Nuevo trámite */
+      document.getElementById('btnNuevoTramite').addEventListener('click', function () {
+        /* Inicia borrador → navega al wizard */
+        window.IVCData.initTramiteBorrador();
+        window.location.href = 'nuevo-tramite.html';
+      });
+
+      /* Reaccionar a cambios */
+      window.addEventListener('naowee:ivc:state-change', function () {
+        renderBandeja();
+      });
+
+      /* Mount tour */
+      window.IVCTour.mount({ pageId: 'usuario-externo/dashboard.html' });
+    });
+
+    function renderBandeja() {
+      var t = window.IVCData.getTramite();
+      var container = document.getElementById('bandejaActiva');
+      var statEl = document.getElementById('statEnCurso');
+
+      if (!t) {
+        statEl.textContent = '0';
+        container.innerHTML =
+          '<div class="naowee-empty">' +
+            '<div class="naowee-empty__icon">📋</div>' +
+            '<h3 class="naowee-empty__title">No tienes trámites activos</h3>' +
+            '<p class="naowee-empty__desc">Inicia un nuevo Otorgamiento de Reconocimiento Deportivo cargando los 7 documentos del Decreto 1387/1970.</p>' +
+          '</div>';
+        return;
+      }
+
+      statEl.textContent = '1';
+      var estadoBadge = badgeForEstado(t.estado);
+      var fechaTexto = t.fechaRadicacion ? formatDate(t.fechaRadicacion) : 'Borrador sin radicar';
+
+      container.innerHTML =
+        '<table class="naowee-table">' +
+          '<thead><tr>' +
+            '<th>Radicado</th>' +
+            '<th>Tipo</th>' +
+            '<th>Fecha</th>' +
+            '<th>Estado</th>' +
+            '<th style="text-align:right">Acciones</th>' +
+          '</tr></thead>' +
+          '<tbody><tr>' +
+            '<td class="tramite-row__id">' + (t.radicado ? t.id : '—') + '</td>' +
+            '<td class="tramite-row__tipo">' + t.tipo + '</td>' +
+            '<td class="tramite-row__date">' + fechaTexto + '</td>' +
+            '<td>' + estadoBadge + '</td>' +
+            '<td class="tramite-row__actions">' +
+              (t.radicado
+                ? '<a class="naowee-btn naowee-btn--quiet naowee-btn--small" href="tramite-detalle.html">Ver detalle</a>'
+                : '<a class="naowee-btn naowee-btn--quiet naowee-btn--small" href="nuevo-tramite.html">Continuar wizard</a>') +
+            '</td>' +
+          '</tr></tbody>' +
+        '</table>';
+    }
+
+    function renderHistorico() {
+      var tramite = window.IVCData.getTramite();
+      var historicos = (tramite && tramite.historicos) || window.IVCData.PERFILES['usuario-externo'] && [];
+      /* Hardcode historicos del template (siempre los mismos) */
+      historicos = [
+        { id: 'IVC-2024-204', tipo: 'Renovación Reconocimiento Deportivo', fecha: '2024-11-22', vigencia: 'Vigente hasta 2028-11-22', estado: 'Finalizado' },
+        { id: 'IVC-2021-088', tipo: 'Otorgamiento Reconocimiento Deportivo', fecha: '2021-08-14', vigencia: 'Vigente hasta 2025-08-14', estado: 'Finalizado' }
+      ];
+
+      var rows = historicos.map(function (h) {
+        return '<tr>' +
+          '<td class="tramite-row__id">' + h.id + '</td>' +
+          '<td class="tramite-row__tipo">' + h.tipo + '</td>' +
+          '<td class="tramite-row__date">' + formatDate(h.fecha) + '</td>' +
+          '<td class="tramite-row__date">' + h.vigencia + '</td>' +
+          '<td><span class="naowee-badge naowee-badge--success">' + h.estado + '</span></td>' +
+          '<td class="tramite-row__actions">' +
+            '<button class="naowee-btn naowee-btn--mute naowee-btn--small">Ver acto</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+
+      document.getElementById('historicoBody').innerHTML = rows;
+    }
+
+    function badgeForEstado(estado) {
+      switch (estado) {
+        case 'Borrador':       return '<span class="naowee-badge naowee-badge--neutral">' + estado + '</span>';
+        case 'Radicado':       return '<span class="naowee-badge naowee-badge--info">' + estado + '</span>';
+        case 'En Validación':  return '<span class="naowee-badge naowee-badge--warning">' + estado + '</span>';
+        case 'Subsanación':    return '<span class="naowee-badge naowee-badge--warning">' + estado + '</span>';
+        case 'Finalizado':     return '<span class="naowee-badge naowee-badge--success">' + estado + '</span>';
+        default:               return '<span class="naowee-badge naowee-badge--neutral">' + (estado || '—') + '</span>';
+      }
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      var parts = iso.split('-');
+      if (parts.length !== 3) return iso;
+      var months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      return parts[2] + ' ' + months[parseInt(parts[1], 10) - 1] + ' ' + parts[0];
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nuevo trámite · IVC Naowee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/components.css">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    .wizard-card { max-width: 880px; margin: 0 auto; width: 100%; }
+
+    .wizard-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 20px;
+    }
+    .wizard-form .naowee-input-group--full { grid-column: 1 / -1; }
+
+    @media (max-width: 720px) {
+      .wizard-form { grid-template-columns: 1fr; }
+    }
+
+    .docs-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .docs-section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .docs-section-title__progress {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .docs-section-title__progress strong {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .progress-bar {
+      flex: 1;
+      max-width: 120px;
+      height: 6px;
+      background: var(--bg);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .progress-bar__fill {
+      height: 100%;
+      background: var(--green);
+      transition: width var(--duration-normal) var(--ease-out);
+    }
+
+    .wizard-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-alt);
+    }
+
+    .wizard-footer__hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Loader overlay for radicación */
+    .radicando-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, .9);
+      z-index: 1100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 18px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s ease;
+    }
+    .radicando-overlay.is-visible { opacity: 1; pointer-events: auto; }
+    .radicando-overlay__spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .radicando-overlay__text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Step 1 & 3 placeholders */
+    .step-placeholder {
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="shell" id="app-shell"></div>
+
+  <template id="page-content">
+    <div class="page-inner">
+
+      <!-- Stepper -->
+      <ol class="naowee-stepper" id="wizardStepper">
+        <li class="naowee-stepper__item is-active" data-step="1">
+          <div class="naowee-stepper__circle">1</div>
+          <span class="naowee-stepper__label">Datos generales</span>
+        </li>
+        <li class="naowee-stepper__item" data-step="2">
+          <div class="naowee-stepper__circle">2</div>
+          <span class="naowee-stepper__label">Documentos</span>
+        </li>
+        <li class="naowee-stepper__item" data-step="3">
+          <div class="naowee-stepper__circle">3</div>
+          <span class="naowee-stepper__label">Confirmación</span>
+        </li>
+      </ol>
+
+      <!-- Step 1: Datos generales -->
+      <section class="naowee-card wizard-card" id="step-1">
+        <div class="naowee-card__header">
+          <div>
+            <h2 class="naowee-card__title">Datos generales del trámite</h2>
+            <p class="naowee-card__subtitle">Identificación del organismo y tipo de Reconocimiento.</p>
+          </div>
+          <span class="naowee-badge naowee-badge--tramite">Trámite</span>
+        </div>
+        <div class="naowee-card__body">
+          <div class="wizard-form">
+            <div class="naowee-input-group naowee-input-group--full">
+              <label class="naowee-input-label" for="tipo">Tipo de trámite</label>
+              <select class="naowee-input" id="tipo" disabled>
+                <option>Otorgamiento de Reconocimiento Deportivo</option>
+              </select>
+              <span class="naowee-input-helper">Pre-seleccionado para esta demo. En el sistema real el Usuario elige entre Otorgamiento / Renovación / Actualización.</span>
+            </div>
+
+            <div class="naowee-input-group">
+              <label class="naowee-input-label" for="organismo">Organismo deportivo</label>
+              <input class="naowee-input" id="organismo" type="text" value="Liga de Atletismo de Bolívar" readonly>
+              <span class="naowee-input-helper">Leído del perfil del usuario autenticado.</span>
+            </div>
+
+            <div class="naowee-input-group">
+              <label class="naowee-input-label" for="nit">NIT</label>
+              <input class="naowee-input" id="nit" type="text" value="800.245.678-3" readonly>
+            </div>
+
+            <div class="naowee-input-group">
+              <label class="naowee-input-label" for="disciplina">Disciplina deportiva</label>
+              <select class="naowee-input" id="disciplina">
+                <option>Atletismo</option>
+                <option>Ciclismo</option>
+                <option>Natación</option>
+                <option>Voleibol</option>
+              </select>
+            </div>
+
+            <div class="naowee-input-group">
+              <label class="naowee-input-label" for="domicilio">Domicilio principal</label>
+              <input class="naowee-input" id="domicilio" type="text" value="Cartagena de Indias, Bolívar">
+            </div>
+
+            <div class="naowee-input-group naowee-input-group--full">
+              <label class="naowee-input-label" for="observaciones">Observaciones adicionales (opcional)</label>
+              <textarea class="naowee-input" id="observaciones" placeholder="Información complementaria que el organismo quiera adjuntar al trámite..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="wizard-footer">
+          <a class="naowee-btn naowee-btn--mute" href="dashboard.html">← Cancelar</a>
+          <button type="button" class="naowee-btn naowee-btn--loud" id="btnStep1Next">
+            Continuar a Documentos →
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 2: Documentos -->
+      <section class="naowee-card wizard-card" id="step-2" hidden data-tour="docs-decreto-1387">
+        <div class="naowee-card__header">
+          <div>
+            <h2 class="naowee-card__title">Documentos requeridos por el Decreto 1387/1970, Art. 2.1.1.2</h2>
+            <p class="naowee-card__subtitle">Carga los 7 documentos exigidos para el Otorgamiento del Reconocimiento Deportivo.</p>
+          </div>
+          <span class="naowee-badge naowee-badge--tramite">Trámite</span>
+        </div>
+        <div class="naowee-card__body">
+          <div class="docs-section-title">
+            <div class="naowee-message naowee-message--info" style="margin-bottom: 0; flex: 1">
+              <span class="naowee-message__icon">ℹ️</span>
+              <div class="naowee-message__content">
+                <p class="naowee-message__title">Demo · Haz click en cada documento para simular la carga</p>
+                <p class="naowee-message__text">En el sistema real, esto abre un picker de archivos con validación de extensión, tamaño y firma.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="docs-section-title">
+            <span class="docs-section-title__progress">
+              Progreso: <strong id="docsProgress">0 / 6</strong> obligatorios
+              <span class="progress-bar"><span class="progress-bar__fill" id="docsProgressFill" style="width:0%"></span></span>
+            </span>
+          </div>
+
+          <div class="docs-grid" id="docsGrid"></div>
+        </div>
+        <div class="wizard-footer">
+          <button type="button" class="naowee-btn naowee-btn--quiet" id="btnStep2Back">← Volver</button>
+          <div style="display:flex;align-items:center;gap:14px">
+            <span class="wizard-footer__hint" id="radicarHint">Carga los 6 documentos obligatorios para continuar.</span>
+            <button type="button" class="naowee-btn naowee-btn--loud" id="btnRadicar" disabled>
+              Radicar trámite →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Confirmación (transitorio) -->
+      <section class="naowee-card wizard-card" id="step-3" hidden>
+        <div class="step-placeholder">
+          Procesando radicación...
+        </div>
+      </section>
+
+    </div>
+  </template>
+
+  <!-- Loader -->
+  <div class="radicando-overlay" id="radicandoOverlay">
+    <div class="radicando-overlay__spinner"></div>
+    <div class="radicando-overlay__text">Radicando trámite en GESDOC...</div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../shared/data.js"></script>
+  <script src="../shared/shell.js"></script>
+  <script src="../shared/demo-tour.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var template = document.getElementById('page-content');
+      var shellRoot = document.getElementById('app-shell');
+      shellRoot.innerHTML = template.innerHTML;
+
+      window.IVCShell.init({
+        title: 'Nuevo trámite — Otorgamiento',
+        activeNav: 'tramites',
+        breadcrumb: [
+          { label: 'Inicio', href: '../index.html' },
+          { label: 'Mis trámites', href: 'dashboard.html' },
+          { label: 'Nuevo trámite' }
+        ]
+      });
+
+      /* Asegurar borrador */
+      if (!window.IVCData.getTramite()) {
+        window.IVCData.initTramiteBorrador();
+      }
+
+      renderDocs();
+
+      /* Step navigation */
+      document.getElementById('btnStep1Next').addEventListener('click', function () { goToStep(2); });
+      document.getElementById('btnStep2Back').addEventListener('click', function () { goToStep(1); });
+      document.getElementById('btnRadicar').addEventListener('click', radicarTramite);
+
+      /* Mount tour */
+      window.IVCTour.mount({ pageId: 'usuario-externo/nuevo-tramite.html' });
+    });
+
+    function goToStep(n) {
+      ['1','2','3'].forEach(function (s) {
+        var sec = document.getElementById('step-' + s);
+        var item = document.querySelector('[data-step="' + s + '"]');
+        if (parseInt(s, 10) === n) {
+          sec.hidden = false;
+          item.classList.add('is-active');
+          item.classList.remove('is-complete');
+        } else if (parseInt(s, 10) < n) {
+          sec.hidden = true;
+          item.classList.add('is-complete');
+          item.classList.remove('is-active');
+        } else {
+          sec.hidden = true;
+          item.classList.remove('is-active');
+          item.classList.remove('is-complete');
+        }
+      });
+      /* Scroll to top of section */
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderDocs() {
+      var docs = window.IVCData.DOCUMENTOS_DECRETO_1387;
+      var t = window.IVCData.getTramite();
+      var uploaded = (t && t.documentos) || [];
+      var grid = document.getElementById('docsGrid');
+
+      grid.innerHTML = docs.map(function (d) {
+        var isUploaded = uploaded.indexOf(d.id) >= 0;
+        var optionalChip = !d.obligatorio
+          ? '<span class="doc-upload-card__optional">Opcional</span>'
+          : '';
+        return '<div class="doc-upload-card ' + (isUploaded ? 'is-uploaded' : '') + '" data-doc="' + d.id + '">' +
+          '<div class="doc-upload-card__check">' +
+            (isUploaded
+              ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+              : '<span>' + d.orden + '</span>') +
+          '</div>' +
+          '<div class="doc-upload-card__content">' +
+            '<h4 class="doc-upload-card__title">' + d.titulo + optionalChip + '</h4>' +
+            '<p class="doc-upload-card__legal">' + d.descripcion + '</p>' +
+            '<p class="doc-upload-card__meta">📜 ' + d.fundamento + '</p>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      /* Wire clicks */
+      grid.querySelectorAll('[data-doc]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          window.IVCData.toggleDocumento(el.dataset.doc);
+          renderDocs();
+        });
+      });
+
+      updateProgress();
+    }
+
+    function updateProgress() {
+      var docs = window.IVCData.DOCUMENTOS_DECRETO_1387;
+      var t = window.IVCData.getTramite();
+      var uploaded = (t && t.documentos) || [];
+
+      var obligatorios = docs.filter(function (d) { return d.obligatorio; });
+      var cargadosObligatorios = obligatorios.filter(function (d) { return uploaded.indexOf(d.id) >= 0; });
+
+      document.getElementById('docsProgress').textContent = cargadosObligatorios.length + ' / ' + obligatorios.length;
+      var pct = (cargadosObligatorios.length / obligatorios.length) * 100;
+      document.getElementById('docsProgressFill').style.width = pct + '%';
+
+      var btn = document.getElementById('btnRadicar');
+      var hint = document.getElementById('radicarHint');
+      var allLoaded = cargadosObligatorios.length === obligatorios.length;
+      btn.disabled = !allLoaded;
+      hint.textContent = allLoaded
+        ? '✓ Todos los documentos obligatorios cargados.'
+        : 'Faltan ' + (obligatorios.length - cargadosObligatorios.length) + ' documentos obligatorios.';
+      hint.style.color = allLoaded ? 'var(--green)' : 'var(--text-secondary)';
+    }
+
+    function radicarTramite() {
+      goToStep(3);
+      var loader = document.getElementById('radicandoOverlay');
+      loader.classList.add('is-visible');
+
+      setTimeout(function () {
+        window.IVCData.radicarTramite();
+        loader.classList.remove('is-visible');
+        window.location.href = 'tramite-detalle.html';
+      }, 1400);
+    }
+  </script>
+</body>
+</html>
