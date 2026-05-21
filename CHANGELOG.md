@@ -6,6 +6,36 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.1.1] — 2026-05-21
+
+> 🔧 **Patch crítico: port del shell canónico de naowee-test-sidebar-shell.** Reemplaza la implementación reinventada con los componentes refinados de producción.
+
+### Changed
+
+- `prototype/shared/tokens.css` — canonical Naowee tokens
+- `prototype/shared/shell.css` — full replace con shell refinado + glow naranja portado de `style/btn-glow-and-root-menu`
+- `prototype/shared/components.css` — botones ahora reciben glow desde shell.css (sin conflictos)
+- `prototype/shared/shell.js` — emite ahora el markup canónico (logos Ministerio + pill IVC, burger toggle, profile-switcher con dropdown, active-bar con View Transitions, tooltips en colapsado)
+
+### Added
+
+- **Logos oficiales en sidebar** (`shared/logos/ministerio.svg` + pill "IVC")
+- **Botones primarios con glow naranja** (port de `style/btn-glow-and-root-menu` — hover lift -1px + sombra accent vibrante)
+- **Sidebar colapsable con tooltips** (per commit 94c64cf — tooltip flotante position:fixed cuando el sidebar está collapsed)
+- **Header con avatar dropdown** (per commit a32e92c — user-chip con chevron + profile-dd con Mi perfil / Notificaciones / Configuraciones / Cerrar sesión)
+- **Active-bar slide vía View Transitions API** (per commit 446b091 — `shell-active-bar` morph entre items)
+- **Burger button con rotate 180° en collapsed** (paridad con escenarios/incentivos)
+- **Ghost buttons cream-hover** (per commit adaa8b2 — naowee-btn--mute con bg `#FFEDC7` sobre chevron del user-chip)
+
+### Fixed
+
+- Implementación reinventada reemplazada por canon de producción
+- `is-collapsed` modifier sustituye `collapsed` (paridad con shell.js canónico)
+- `is-active` modifier sustituye `active` para nav-row (paridad con sidebar.js canónico)
+- Hover opacity .92 ya no dim los botones loud/accent (override explícito en shell.css)
+
+---
+
 ## [ivc-v1.1.0] — 2026-05-21
 
 > 🎨 **Fase 1 del prototipo Mid-Fi interactivo con tour guiado.** Pintadas 4 pantallas del happy path Usuario Externo + sistema shared (tokens, components, shell, data, tour reactivo).
