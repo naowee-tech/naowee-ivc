@@ -49,28 +49,10 @@
       justify-content: flex-end;
     }
 
-    /* Section header con CTA */
-    .section-header-with-cta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 22px 28px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .section-header-with-cta__title {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .section-header-with-cta__subtitle {
-      margin: 2px 0 0;
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
+    /* (v1.1.3) — Doug feedback round 2: el wrapper section-header-with-cta
+       fue reemplazado por el patrón canónico .naowee-table-card del DS
+       project v2.1 (ver components.css). El divider ahora es full-bleed
+       y el padding del head pasó de 22/28 a 16/20. */
 
     /* Page title block (Doug fix #3 — title vive en body, no en header) */
     .page-title-block { margin-bottom: 4px; }
@@ -123,44 +105,46 @@
         </div>
       </section>
 
-      <!-- Bandeja activa -->
-      <section class="naowee-card">
-        <div class="section-header-with-cta">
-          <div>
-            <h2 class="section-header-with-cta__title">Mis trámites activos</h2>
-            <p class="section-header-with-cta__subtitle">Otorgamientos, renovaciones y actualizaciones del Reconocimiento Deportivo.</p>
+      <!-- Bandeja activa — patrón .naowee-table-card canónico (Doug v1.1.3) -->
+      <section class="naowee-table-card">
+        <div class="naowee-table-card__head">
+          <div class="naowee-table-card__head-text">
+            <h2 class="naowee-table-card__title">Mis trámites activos</h2>
+            <p class="naowee-table-card__subtitle">Otorgamientos, renovaciones y actualizaciones del Reconocimiento Deportivo.</p>
           </div>
-          <button type="button" class="naowee-btn naowee-btn--loud" data-tour="nuevo-tramite" id="btnNuevoTramite">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nuevo trámite
-          </button>
+          <div class="naowee-table-card__actions">
+            <button type="button" class="naowee-btn naowee-btn--loud" data-tour="nuevo-tramite" id="btnNuevoTramite">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nuevo trámite
+            </button>
+          </div>
         </div>
+        <hr class="naowee-table-card__divider" />
         <div id="bandejaActiva"></div>
       </section>
 
-      <!-- Historial -->
-      <section class="naowee-card">
-        <div class="naowee-card__header">
-          <div>
-            <h2 class="naowee-card__title">Histórico</h2>
-            <p class="naowee-card__subtitle">Trámites finalizados con reconocimiento vigente.</p>
+      <!-- Historial — mismo patrón .naowee-table-card -->
+      <section class="naowee-table-card">
+        <div class="naowee-table-card__head">
+          <div class="naowee-table-card__head-text">
+            <h2 class="naowee-table-card__title">Histórico</h2>
+            <p class="naowee-table-card__subtitle">Trámites finalizados con reconocimiento vigente.</p>
           </div>
         </div>
-        <div class="naowee-card__body naowee-card__body--flush">
-          <table class="naowee-table" id="historicoTable">
-            <thead>
-              <tr>
-                <th>Radicado</th>
-                <th>Tipo</th>
-                <th>Fecha</th>
-                <th>Vigencia</th>
-                <th>Estado</th>
-                <th style="text-align:right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="historicoBody"></tbody>
-          </table>
-        </div>
+        <hr class="naowee-table-card__divider" />
+        <table class="naowee-table" id="historicoTable">
+          <thead>
+            <tr>
+              <th>Radicado</th>
+              <th>Tipo</th>
+              <th>Fecha</th>
+              <th>Vigencia</th>
+              <th>Estado</th>
+              <th style="text-align:right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="historicoBody"></tbody>
+        </table>
       </section>
 
     </div>

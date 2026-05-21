@@ -38,8 +38,8 @@
     'usuario-externo': [
       { id: 'tramites', label: 'Mis trámites',   icon: ICONS.tramites, href: 'dashboard.html' },
       { id: 'notif',    label: 'Notificaciones', icon: ICONS.notif,    href: '#', badge: '2' },
-      { id: 'docs',     label: 'Documentos',     icon: ICONS.docs,     href: '#' },
-      { id: 'perfil',   label: 'Perfil',         icon: ICONS.perfil,   href: '#' }
+      { id: 'docs',     label: 'Documentos',     icon: ICONS.docs,     href: '#' }
+      /* "Mi perfil" eliminado (v1.1.3) — duplicaba el access del user-pill del header */
     ],
     'profesional': [
       { id: 'bandeja',     label: 'Bandeja',       icon: ICONS.bandeja,  href: '#' },

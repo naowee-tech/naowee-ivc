@@ -6,6 +6,27 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.1.3] — 2026-05-21
+
+> 🔧 **Refinamiento UI post-revisión Doug.** 4 fixes específicos siguiendo patrones canónicos del DS Naowee project v2.1.
+
+### Removed
+- Sidebar item "Perfil" eliminado (duplicado con el user pill del header)
+
+### Changed (Doug feedback round 2)
+- **Stat cards** ahora sin border + con shadow (patrón `.naowee-card` del DS + `box-shadow: var(--shadow-card)` canónico). Acento de color preservado como left-strip 4px vía `::before` (no como `border-left`).
+- **Tables** sin elevation, header gris claro con border-radius en 4 esquinas (patrón `.naowee-table-card` portado de project v2.1 + sedes-list).
+- **Title/subtitle de tabla** con padding optimizado (16px vertical / 20px horizontal en vez de 22/28).
+- **Divider** debajo de title/subtitle ahora full-bleed (`<hr class="naowee-table-card__divider">` con `margin: 0; width: 100%`).
+- **Row hover** aclarado a `#fafbfd` (valor canónico de `dash-table` en project v2.1, línea 1884), reemplaza el hover oscuro previo.
+
+### Notes
+- Patrón `.naowee-table-card` portado de `naowee-test-sidebar-shell/shared/pages/sedes-list` + `Claude-Doug/.claude/worktrees/funny-leakey-205859/project/shared/pages.css` (proyecto v2.1).
+- Acento de color en stat cards mantenido como left-strip 4px (`::before` con `position:absolute; inset:0 auto 0 0; width:4px`), no como `border-left` — esto permite quitar el border real del card sin perder la señal de color.
+- Hover canónico del DS oficial `.naowee-table tbody tr:hover` es `var(--naowee-color-fill-secondary)`. Acá usamos `#fafbfd` (más claro) porque es lo que Doug aprobó en project v2.1 para tablas dentro de cards.
+
+---
+
 ## [ivc-v1.1.2] — 2026-05-21
 
 > 🔧 **Patch crítico: adopción del DS canónico naowee-design-system@v1.8.0 vía CDN.** Reemplaza reinvenciones con el DS productivo + 7 fixes de UI específicos identificados por Doug en la review del prototipo v1.1.1.

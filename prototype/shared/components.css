@@ -374,21 +374,28 @@ select.naowee-input {
   font-size: 13px;
 }
 
-/* ───── Stat card (dashboard pattern) ───── */
+/* ───── Stat card (dashboard pattern)
+   Doug v1.1.3: SIN border, CON shadow canónico project v2.1.
+   Accent color sobrevive como left-strip 4px (no como border). El strip se
+   compone via inset-inline-start usando ::before para no contar como
+   border y poder quitar el border real. ───── */
 .naowee-stat-card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: relative;
+  overflow: hidden;
   transition: transform var(--duration-normal), box-shadow var(--duration-normal);
 }
 
 .naowee-stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 8px 24px rgba(145, 158, 171, .18);
 }
 
 .naowee-stat-card__label {
@@ -413,9 +420,19 @@ select.naowee-input {
   margin-top: 4px;
 }
 
-.naowee-stat-card--accent { border-left: 4px solid var(--accent); }
-.naowee-stat-card--success { border-left: 4px solid var(--green); }
-.naowee-stat-card--info { border-left: 4px solid var(--blue-info); }
+/* Accent strip — 4px de ancho en el edge izquierdo (no es border).
+   Sale del overflow:hidden del card padre para respetar el radius. */
+.naowee-stat-card--accent::before,
+.naowee-stat-card--success::before,
+.naowee-stat-card--info::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+}
+.naowee-stat-card--accent::before  { background: var(--accent); }
+.naowee-stat-card--success::before { background: var(--green); }
+.naowee-stat-card--info::before    { background: var(--blue-info); }
 
 /* ───── Animations ───── */
 @keyframes fadeInUp {
@@ -649,4 +666,130 @@ select.naowee-input {
   .naowee-card { box-shadow: none; border-color: #ccc; }
   .sidebar { display: none !important; }
   .top-header { border-bottom: 2px solid #000; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Table-card (Doug v1.1.3 — patrón canónico project v2.1)
+   Portado de Claude-Doug/.../project/shared/pages.css (líneas 841-925) +
+   patrón .naowee-table-card de naowee-test-sidebar-shell/sedes-list.
+   - SIN elevation (no shadow), border subtle, radius en 4 esquinas
+   - Header (title + subtitle + actions): padding 16/20 (NO 28)
+   - Divider full-bleed (margin 0, ancho 100%)
+   - thead gris (var(--bg-soft)) con 4 esquinas redondeadas
+   - Hover row: aclarado al fafbfd canónico (no fafbff oscuro)
+   ═══════════════════════════════════════════════════════════════════ */
+.naowee-table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: none;        /* sin elevation — Doug feedback #3 */
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Head: title + subtitle + actions en una sola fila. Padding optimizado
+   (16px vertical / 20px horizontal — Doug pidió menos espacio). */
+.naowee-table-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  flex-wrap: wrap;
+}
+.naowee-table-card__head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.naowee-table-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -.1px;
+}
+.naowee-table-card__subtitle {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.naowee-table-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Divider full-bleed: ocupa todo el ancho del card (no contenido). */
+.naowee-table-card__divider {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+/* Tabla dentro del card: respeta el radius del padre, sin border propio.
+   thead pintado de gris con border-radius en 4 esquinas (patrón project v2.1). */
+.naowee-table-card .naowee-table {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.naowee-table-card .naowee-table thead {
+  background: transparent;
+}
+.naowee-table-card .naowee-table thead th {
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border: 0;
+  background: var(--bg-soft);
+}
+/* Header strip: 4 esquinas redondeadas (6px sutil — patrón project v2.1) */
+.naowee-table-card .naowee-table thead th:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  padding-left: 18px;
+}
+.naowee-table-card .naowee-table thead th:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  padding-right: 18px;
+}
+/* Espacio antes del header strip — el strip "flota" inset del card */
+.naowee-table-card .naowee-table {
+  padding: 8px 14px 0;
+  display: table;
+  border-spacing: 0;
+  border-collapse: separate;
+}
+.naowee-table-card .naowee-table tbody td {
+  padding: 13px 16px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.naowee-table-card .naowee-table tbody td:first-child { padding-left: 18px; }
+.naowee-table-card .naowee-table tbody td:last-child  { padding-right: 18px; }
+.naowee-table-card .naowee-table tbody tr:last-child td { border-bottom: 0; }
+
+/* Hover row — claro (fafbfd, patrón project v2.1 línea 1884), no oscuro.
+   El DS oficial usa --naowee-color-fill-secondary; acá lo aclaramos aún
+   más al fafbfd canónico que es el valor que Doug aprobó en project v2.1. */
+.naowee-table-card .naowee-table tbody tr {
+  transition: background var(--duration-fast) var(--ease-in-out);
+}
+.naowee-table-card .naowee-table tbody tr:hover {
+  background: #fafbfd;
 }
