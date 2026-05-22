@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IVC · Radicación · Fase 1 (Demo) — Naowee</title>
+
+<!-- Fuente Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Naowee Design System v1.8.0 canónico -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+
+<style>
+  /* ============================================================
+     CSS scoped al módulo IVC — solo tokens locales para layout
+     y patrón wizard-page (no override de clases .naowee-*).
+     ============================================================ */
+  :root {
+    --accent: var(--naowee-color-feedback-fill-caution-loud, #d74009);
+    --orange-bg: #fff3e6;
+    --text-primary: var(--naowee-color-text-primary, #282834);
+    --text-secondary: var(--naowee-color-text-secondary, #646587);
+    --border: var(--naowee-color-border-mute, #e7e9f3);
+    --border-dark: var(--naowee-color-border-default, #d0d4e6);
+    --header-h: 72px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #f5f6fa;
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+
+  /* ============================================================
+     HEADER · estilo v2.0.3 (Ministerio + Naowee + SUID)
+     ============================================================ */
+  .ivc-top-header {
+    height: var(--header-h);
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+  }
+  .ivc-top-header__brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-right: auto;
+  }
+  .ivc-top-header__logos {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ivc-top-header__logos img.l-min { height: 38px; width: auto; display: block; }
+  .ivc-top-header__logos img.l-suid { height: 28px; width: auto; display: block; }
+  .ivc-top-header__logos img.l-naowee { height: 22px; width: auto; display: block; opacity: .9; }
+  .ivc-top-header__sep {
+    width: 1px; height: 28px; background: var(--border);
+  }
+  .ivc-top-header__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .ivc-top-header__subtitle {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .ivc-top-header__meta {
+    display: flex; align-items: center; gap: 12px;
+  }
+  @media (max-width: 760px) {
+    .ivc-top-header { padding: 0 16px; }
+    .ivc-top-header__logos img.l-naowee,
+    .ivc-top-header__sep { display: none; }
+    .ivc-top-header__title-wrap { display: none; }
+  }
+
+  /* ============================================================
+     WIZARD-PAGE pattern (espejo de v2.0.3/shared/wizard-page.css)
+     ============================================================ */
+  .wz-page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  .wz-page__header { margin-bottom: 18px; }
+  .wz-page__title {
+    margin: 8px 0 4px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    color: var(--text-primary);
+    line-height: 1.15;
+  }
+  .wz-page__subtitle {
+    color: var(--text-secondary);
+    margin: 0 0 8px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wz-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow:
+      0 0 2px rgba(145,158,171,.2),
+      0 12px 24px -4px rgba(145,158,171,.12);
+    overflow: hidden;
+  }
+
+  /* Stepper wrapper (usa .naowee-stepper canónico) */
+  .wz-stepper-wrap {
+    padding: 18px 28px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    background: #fff;
+  }
+  .wz-stepper-wrap .naowee-stepper {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border-bottom: 0;
+    overflow-x: auto;
+  }
+  .wz-stepper-wrap .naowee-stepper__step {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+    cursor: default;
+  }
+  .wz-stepper-wrap .naowee-stepper__number {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700;
+    flex-shrink: 0;
+    background: #f5f6fa;
+    color: var(--text-secondary);
+    transition: all .2s;
+  }
+  .wz-stepper-wrap .naowee-stepper__label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    transition: color .2s;
+  }
+  .wz-stepper-wrap .naowee-stepper__step--active .naowee-stepper__number {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(215,64,9,.12);
+  }
+  .wz-stepper-wrap .naowee-stepper--pulse .naowee-stepper__step--active .naowee-stepper__number {
+    animation: wzStepperPulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
+  }
+  @keyframes wzStepperPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(215, 64, 9, .45); }
+    50%      { box-shadow: 0 0 0 8px rgba(215, 64, 9, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wz-stepper-wrap .naowee-stepper--pulse .naowee-stepper__step--active .naowee-stepper__number {
+      animation: none;
+    }
+  }
+  .wz-stepper-wrap .naowee-stepper__step--active .naowee-stepper__label {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .wz-stepper-wrap .naowee-stepper__step--done .naowee-stepper__number {
+    background: #15803d; color: #fff;
+  }
+  .wz-stepper-wrap .naowee-stepper__step--done .naowee-stepper__label {
+    color: var(--text-primary);
+  }
+  .wz-stepper-wrap .naowee-stepper__step--done { cursor: pointer; }
+  .wz-stepper-wrap .naowee-stepper__step--done:hover .naowee-stepper__label { color: var(--accent); }
+  .wz-stepper-wrap .naowee-stepper__connector {
+    flex: 1 1 auto;
+    height: 2px;
+    background: var(--border);
+    margin: 0 6px;
+    border-radius: 1px;
+    min-width: 12px;
+  }
+  .wz-stepper-wrap .naowee-stepper__connector--done { background: #15803d; }
+
+  .wz-stepper-mobile {
+    display: none;
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .wz-stepper-mobile small {
+    display: block;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  @media (max-width: 760px) {
+    .wz-stepper-wrap { display: none; }
+    .wz-stepper-mobile { display: block; }
+  }
+
+  /* Body wizard */
+  .wz-body { padding: 24px 28px; }
+  .wz-step-panel { display: none; animation: wzStepFadeIn .3s cubic-bezier(.32,.72,0,1) both; }
+  .wz-step-panel.is-active { display: block; }
+  @keyframes wzStepFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .wz-section {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: #b5b9d4;
+    margin: 22px 0 12px;
+  }
+  .wz-section:first-child { margin-top: 0; }
+  .wz-grid-2 {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    margin-bottom: 18px;
+    align-items: start;
+  }
+  .wz-grid-3 {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+    margin-bottom: 18px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .wz-grid-2, .wz-grid-3 { grid-template-columns: 1fr; }
+  }
+  .wz-step-panel > .naowee-textfield,
+  .wz-step-panel > .naowee-dropdown { margin-bottom: 18px; }
+  .wz-grid-2 > .naowee-textfield,
+  .wz-grid-2 > .naowee-dropdown,
+  .wz-grid-3 > .naowee-textfield,
+  .wz-grid-3 > .naowee-dropdown { margin-bottom: 0; }
+
+  /* Footer wizard */
+  .wz-footer {
+    padding: 18px 28px;
+    border-top: 1px solid var(--border);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .wz-footer__prefix { margin-right: auto; }
+  .wz-save-draft {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; border: 0;
+    height: 46px; padding: 0 18px;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background .15s, transform .12s;
+    white-space: nowrap;
+  }
+  .wz-save-draft:hover { background: var(--orange-bg); }
+  .wz-save-draft:active { transform: scale(.97); }
+
+  /* File drop (canónico v2.0.3) */
+  .wz-file-drop {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    padding: 24px 18px;
+    border: 1.5px dashed var(--border-dark);
+    border-radius: 12px;
+    background: #fafbff;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    position: relative;
+  }
+  .wz-file-drop:hover { border-color: var(--accent); background: #fff8f4; }
+  .wz-file-drop.is-filled {
+    border-style: solid;
+    border-color: #15803d;
+    background: #f0faf2;
+  }
+  .wz-file-drop__icon { color: var(--text-secondary); }
+  .wz-file-drop.is-filled .wz-file-drop__icon { color: #15803d; }
+  .wz-file-drop__title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+  .wz-file-drop__hint { font-size: 12px; color: var(--text-secondary); text-align: center; }
+  .wz-file-drop__name { font-size: 12.5px; font-weight: 600; color: #15803d; margin-top: 4px; }
+  .wz-file-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  /* Cards de documento (lista de cargas paso 6) */
+  .ivc-doc-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: #fff;
+    margin-bottom: 14px;
+  }
+  .ivc-doc-card__head {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 10px;
+  }
+  .ivc-doc-card__title {
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    margin: 0;
+  }
+  .ivc-doc-card__desc {
+    font-size: 12.5px; color: var(--text-secondary);
+    margin: 2px 0 0;
+  }
+
+  /* Tablas repeatable */
+  .ivc-repeatable {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    /* overflow visible para que el .naowee-dropdown__menu pueda
+       desbordar la fila sin ser clipped por el contenedor */
+    overflow: visible;
+    background: #fff;
+  }
+  /* Dropdown inline en filas repetibles: ancho 100%, mismo look que ivc-mini-input.
+     `.ivc-dropdown--inline` es scope custom IVC, NO del DS canónico (el DS solo define
+     .naowee-dropdown sin variante --inline). Lo usamos junto a .naowee-dropdown. */
+  .ivc-repeatable__row .ivc-dropdown--inline { width: 100%; }
+  .ivc-repeatable__row .ivc-dropdown--inline .naowee-dropdown__menu {
+    /* Permite el menú flotante por encima de filas siguientes */
+    z-index: 1000;
+  }
+  .ivc-repeatable__head,
+  .ivc-repeatable__row {
+    display: grid;
+    gap: 10px;
+    padding: 12px 14px;
+    align-items: center;
+  }
+  .ivc-repeatable__head {
+    background: #fafbff;
+    border-bottom: 1px solid var(--border);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+  .ivc-repeatable__row + .ivc-repeatable__row { border-top: 1px dashed var(--border); }
+  .ivc-repeatable__row input.ivc-mini-input,
+  .ivc-repeatable__row select.ivc-mini-input {
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--border-dark);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-primary);
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .ivc-repeatable__row input.ivc-mini-input:focus,
+  .ivc-repeatable__row select.ivc-mini-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(215,64,9,.15);
+  }
+  .ivc-repeatable__row-display {
+    font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+  }
+  .ivc-repeatable__remove {
+    background: transparent;
+    border: 0;
+    color: var(--text-secondary);
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
+  }
+  .ivc-repeatable__remove:hover { background: #fff0ee; color: #C00000; }
+  .ivc-repeatable__remove[disabled] { opacity: .35; cursor: not-allowed; }
+  .ivc-repeatable__add {
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    background: #fafbff;
+    text-align: center;
+  }
+
+  /* Resumen final (paso 7) */
+  .wz-review { display: grid; gap: 14px; }
+  .wz-review__group {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: #fbfbfd;
+  }
+  .wz-review__group-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  .wz-review__row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 12px;
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .wz-review__row:last-child { border-bottom: 0; }
+  .wz-review__label { color: var(--text-secondary); font-weight: 500; }
+  .wz-review__value { color: var(--text-primary); font-weight: 600; word-break: break-word; }
+  @media (max-width: 640px) {
+    .wz-review__row { grid-template-columns: 1fr; gap: 2px; }
+  }
+
+  /* Success view (radicación completada) */
+  .wz-success {
+    position: relative;
+    text-align: center;
+    padding: 56px 32px;
+    overflow: hidden;
+  }
+  .wz-success__check {
+    width: 88px; height: 88px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    background: #15803d; color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 8px rgba(21,128,61,.12);
+    animation: wzCheckPop .5s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes wzCheckPop {
+    from { transform: scale(.4); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .wz-success h2 { margin: 0 0 8px; font-size: 22px; font-weight: 700; color: var(--text-primary); }
+  .wz-success p { margin: 0 auto 14px; max-width: 480px; font-size: 14px; color: var(--text-secondary); }
+  .wz-success__radicado {
+    display: inline-block; margin: 4px 0 18px;
+    padding: 10px 18px;
+    background: var(--orange-bg);
+    border: 1px solid #ffbf75;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', 'Menlo', monospace;
+    font-size: 18px; font-weight: 700;
+    color: var(--accent);
+    letter-spacing: .5px;
+  }
+
+  /* Skip view (paso no aplica para asociaciones) */
+  .ivc-skip-view { padding: 48px 32px; text-align: center; }
+  .ivc-skip-view svg { color: var(--text-secondary); margin-bottom: 12px; }
+  .ivc-skip-view h2 { margin: 0 0 6px; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  .ivc-skip-view p { color: var(--text-secondary); font-size: 13.5px; margin: 0; }
+
+  /* Counter para textarea */
+  .ivc-counter {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    text-align: right;
+  }
+
+  /* Spacing default para .naowee-message embebido */
+  .wz-step-panel > .naowee-message { margin-bottom: 18px; }
+
+</style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     HEADER · Ministerio + SUID + Naowee
+     ============================================================ -->
+<header class="ivc-top-header">
+  <div class="ivc-top-header__brand">
+    <div class="ivc-top-header__logos">
+      <img class="l-min" src="logos/ministerio.svg" alt="Ministerio del Deporte" onerror="this.style.display='none'"/>
+      <div class="ivc-top-header__sep"></div>
+      <img class="l-suid" src="logos/suid.png" alt="SUID — Sistema Único de Información del Deporte" onerror="this.style.display='none'"/>
+    </div>
+    <div class="ivc-top-header__title-wrap">
+      <div class="ivc-top-header__title">Trámite IVC · Reconocimiento Deportivo</div>
+      <div class="ivc-top-header__subtitle">Inspección, Vigilancia y Control</div>
+    </div>
+    <span class="naowee-badge naowee-badge--brand naowee-badge--quiet naowee-badge--small">Demo · Fase 1</span>
+  </div>
+  <div class="ivc-top-header__meta">
+    <img class="l-naowee" src="logos/naowee.svg" alt="Naowee" onerror="this.style.display='none'"/>
+  </div>
+</header>
+
+<!-- ============================================================
+     PAGE
+     ============================================================ -->
+<main class="wz-page">
+
+  <div class="wz-page__header">
+    <h1 class="wz-page__title">Radicación de trámite</h1>
+    <p class="wz-page__subtitle">Otorgamiento de Reconocimiento Deportivo · Completa los pasos siguientes para radicar tu solicitud.</p>
+  </div>
+
+  <article class="wz-card">
+
+    <!-- Stepper desktop -->
+    <div class="wz-stepper-wrap" id="stepperWrap">
+      <div class="naowee-stepper naowee-stepper--pulse" id="stepperDesktop" role="list">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Stepper mobile -->
+    <div class="wz-stepper-mobile" id="stepperMobile"></div>
+
+    <!-- Body -->
+    <div class="wz-body" id="wzBody"></div>
+
+    <!-- Footer -->
+    <div class="wz-footer">
+      <div class="wz-footer__prefix">
+        <button type="button" class="wz-save-draft" id="btnDraft" title="Guardar borrador">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar borrador
+        </button>
+      </div>
+      <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--large" id="btnBack">← Anterior</button>
+      <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnNext">Continuar →</button>
+    </div>
+
+  </article>
+</main>
+
+<script>
+/* ============================================================
+   IVC Demo Fase 1 — JS de orquestación
+   ============================================================ */
+
+const STEPS = [
+  { label: 'Pre-selección', short: 'Pre-selección' },
+  { label: 'Datos generales', short: 'Datos generales' },
+  { label: 'Personería', short: 'Personería' },
+  { label: 'Asamblea', short: 'Asamblea' },
+  { label: 'Estructura', short: 'Estructura' },
+  { label: 'Documentos', short: 'Documentos' },
+  { label: 'Confirmación', short: 'Confirmación' }
+];
+
+const MUNICIPIOS = [
+  { v:'', t:'Selecciona un municipio…' },
+  { v:'bogota', t:'Bogotá D.C.' },
+  { v:'medellin', t:'Medellín' },
+  { v:'cali', t:'Cali' },
+  { v:'cartagena', t:'Cartagena' },
+  { v:'barranquilla', t:'Barranquilla' },
+  { v:'bucaramanga', t:'Bucaramanga' },
+  { v:'manizales', t:'Manizales' }
+];
+
+const STATE = {
+  step: 0,
+  tipoOrganismo: '',
+  tipoTramite: 'otorgamiento',
+  data: {
+    nombre: 'Liga de Atletismo de Antioquia',
+    nit: '800123456-7',
+    direccion: '',
+    municipio: '',
+    telefono: '',
+    correo: '',
+    f1: { no_res_personeria:'', radicado_personeria:'', fecha_reforma:'', radicado_estatutos:'', no_res_estatutos:'', periodo_inicial:'', periodo_vigente:'', tiene_constancia:'', fecha_constancia:'', no_res_minimos:'', n_minimos:'' },
+    f2: { no_personeria:'', radicado_personeria:'', fecha_estatutos:'', radicado_estatutos:'', no_acta_sede:'', radicado_acta_sede:'', no_acta_constitucion:'', radicado_acta_constitucion:'', tiene_inventario:'', tiene_afiliacion:'' },
+    f3: { no_res_personeria:'', radicado_personeria:'', fecha_reforma:'', radicado_estatutos:'', no_res_estatutos:'', periodo_inicial:'', periodo_vigente:'', tipo_convocatoria:'', fecha_convocatoria:'', fecha_realizacion:'' },
+    asamblea: {
+      f1_tema: '',
+      f1_reuniones: [
+        { tipo:'1ª Convocatoria a Asamblea', fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'2ª Convocatoria (si aplica)', fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'Asamblea Ordinaria', fechaConv:'', fechaReal:'', antelacion:'', cumple:'' }
+      ],
+      f3_n_asistentes: '',
+      f3_cumple_quorum: '',
+      f3_archivo_cert: null
+    },
+    estructura: {
+      f1_fundadores: [{ nombre:'', no_res_reconocimiento:'' }],
+      f1_miembros_oa: [{ nombre:'', identificacion:'', cargo:'', capacitacion:'', nombrado_por:'', no_periodos:'' }],
+      f1_revisor_fiscal: [
+        { display:'RF Principal', nombre:'', identificacion:'' },
+        { display:'RF Suplente', nombre:'', identificacion:'' }
+      ],
+      f1_comision_disciplinaria: [
+        { display:'Asamblea M1', nombre:'' },
+        { display:'Asamblea M2', nombre:'' },
+        { display:'OA M3',       nombre:'' }
+      ],
+      f1_comision_tecnica:     [ { display:'1°', nombre:'' }, { display:'2°', nombre:'' }, { display:'3°', nombre:'' } ],
+      f1_comision_juzgamiento: [ { display:'1°', nombre:'' }, { display:'2°', nombre:'' }, { display:'3°', nombre:'' } ],
+      f1_aplica_paradeporte: '',
+      f1_comision_paradeporte: [ { display:'1°', nombre:'' }, { display:'2°', nombre:'' }, { display:'3°', nombre:'' } ],
+      f2_seccionales: [{ nombre_seccional:'', nombre_directivo:'' }],
+      f3_afiliados: [{ nombre:'', no_res_reconocimiento:'' }],
+      f3_miembros_oa: [{ nombre:'', identificacion:'', cargo:'', acepta:'' }]
+    },
+    documentos: {},
+    aceptaRadicacion: false
+  },
+  radicado: null
+};
+
+const DOCUMENTOS_DECRETO = [
+  { id:'acta',        title:'Copia del Acta de Constitución o última Acta de elección del actual órgano de administración', required:true },
+  { id:'seccionales', title:'Relación de entidades seccionales con lista de organismos afiliados y nóminas de Directivos', required:true },
+  { id:'estatutos',   title:'Copia de Estatutos y Reglamentos', required:true },
+  { id:'personeria',  title:'Documentos donde conste el Reconocimiento de la Personería Jurídica', required:true },
+  { id:'afiliacion',  title:'Documentos donde conste la afiliación internacional', required:false },
+  { id:'inventario',  title:'Inventario de bienes', required:true },
+  { id:'sede',        title:'Copia del acta donde se haya designado la sede', required:true }
+];
+
+/* ============================================================
+   Helpers
+   ============================================================ */
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escAttr(s) { return esc(s); }
+function todayISO() { return new Date().toISOString().slice(0,10); }
+function dispValue(v) { return v && String(v).trim() ? esc(v) : '<span style="color:var(--text-secondary);font-style:italic">(no diligenciado)</span>'; }
+
+function isStepApplicable(idx) {
+  if (idx === 3 && STATE.tipoOrganismo === 'asociacion') return false;
+  return true;
+}
+
+function fileSizeFmt(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1024*1024) return Math.round(n/1024) + ' KB';
+  return (n/1024/1024).toFixed(1) + ' MB';
+}
+
+function getStateAtPath(path) {
+  const parts = path.split('.');
+  let cur = STATE;
+  for (const p of parts) { if (cur == null) return null; cur = cur[p]; }
+  return cur;
+}
+function setStateAtPath(path, val) {
+  const parts = path.split('.');
+  let cur = STATE;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (cur[parts[i]] == null) cur[parts[i]] = {};
+    cur = cur[parts[i]];
+  }
+  cur[parts[parts.length - 1]] = val;
+}
+function clearStateAtPath(path) { setStateAtPath(path, null); }
+
+function mockUpload(input, statePath) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  setStateAtPath(statePath, { name: f.name, size: fileSizeFmt(f.size) });
+  render();
+}
+
+/* ============================================================
+   Componentes canónicos
+   ============================================================ */
+
+// Textfield canónico .naowee-textfield
+function tf(opts) {
+  const id = opts.id || ('tf-' + Math.random().toString(36).slice(2,8));
+  const label = opts.label || '';
+  const required = !!opts.required;
+  const value = opts.value || '';
+  const placeholder = opts.placeholder || '';
+  const type = opts.type || 'text';
+  const onInput = opts.onInput || '';
+  const helper = opts.helper || '';
+  const error = opts.error || '';
+  const variant = error ? ' naowee-textfield--error' : '';
+  return `
+    <div class="naowee-textfield${variant}" data-tf-id="${id}">
+      <label class="naowee-textfield__label${required ? ' naowee-textfield__label--required' : ''}" for="${id}">${esc(label)}</label>
+      <div class="naowee-textfield__input-wrap">
+        <input class="naowee-textfield__input" id="${id}" type="${type}" placeholder="${escAttr(placeholder)}" value="${escAttr(value)}" oninput="${onInput}" />
+      </div>
+      ${helper ? `<span class="naowee-textfield__helper" style="font-size:11.5px;color:var(--text-secondary);margin-top:6px;display:block;">${esc(helper)}</span>` : ''}
+      ${error ? helperNegative(error) : ''}
+    </div>
+  `;
+}
+
+// Textarea (usa .naowee-textfield--textarea)
+function ta(opts) {
+  const id = opts.id || ('ta-' + Math.random().toString(36).slice(2,8));
+  const label = opts.label || '';
+  const required = !!opts.required;
+  const value = opts.value || '';
+  const placeholder = opts.placeholder || '';
+  const maxlength = opts.maxlength || 2000;
+  const onInput = opts.onInput || '';
+  const counterId = opts.counterId || '';
+  return `
+    <div class="naowee-textfield naowee-textfield--textarea">
+      <label class="naowee-textfield__label${required ? ' naowee-textfield__label--required' : ''}" for="${id}">${esc(label)}</label>
+      <div class="naowee-textfield__input-wrap" style="height:auto;padding:10px 12px;">
+        <textarea class="naowee-textfield__input" id="${id}" placeholder="${escAttr(placeholder)}" maxlength="${maxlength}" rows="4" style="min-height:88px;resize:vertical;line-height:1.5;border:0;outline:none;width:100%;background:transparent;font-family:inherit;font-size:14px;color:inherit;" oninput="${onInput}">${esc(value)}</textarea>
+      </div>
+      ${counterId ? `<div class="ivc-counter"><span id="${counterId}">${value.length}</span>/${maxlength}</div>` : ''}
+    </div>
+  `;
+}
+
+// Helper canónico .naowee-helper--negative
+function helperNegative(msg) {
+  return `
+    <div class="naowee-helper naowee-helper--negative" style="margin-top:6px;">
+      <span class="naowee-helper__badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+      <span class="naowee-helper__text">${esc(msg)}</span>
+    </div>
+  `;
+}
+
+// Dropdown — componente canónico .naowee-dropdown del DS Naowee v1.8.0
+// El JS controlador está al final del archivo (initDropdowns)
+function dd(opts) {
+  const id = opts.id || ('dd-' + Math.random().toString(36).slice(2,8));
+  const label = opts.label || '';
+  const required = !!opts.required;
+  const value = opts.value || '';
+  const options = opts.options || [];
+  // onChange recibe el valor seleccionado. Se invoca desde el controlador
+  // simulando un input con .value (compatibilidad con strings tipo "STATE.x=this.value")
+  const onChange = opts.onChange || '';
+  // Encuentra placeholder (option con v='') y opción seleccionada
+  const placeholderOpt = options.find(o => o.v === '');
+  const placeholderText = placeholderOpt ? placeholderOpt.t : 'Selecciona…';
+  const selectedOpt = options.find(o => o.v === value && o.v !== '');
+  const hasValue = !!selectedOpt;
+  // Filtra placeholder fuera del menú visible (DS usa el placeholder en el trigger, no como opción)
+  const menuOptions = options.filter(o => o.v !== '');
+  return `
+    <div class="naowee-dropdown" id="${id}-wrap" data-dd-id="${id}"${required ? ' data-required="true"' : ''} data-on-change="${escAttr(onChange)}">
+      <label class="naowee-dropdown__label${required ? ' naowee-dropdown__label--required' : ''}">${esc(label)}</label>
+      <button type="button" id="${id}" class="naowee-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">
+        ${hasValue
+          ? `<span class="naowee-dropdown__value">${esc(selectedOpt.t)}</span>`
+          : `<span class="naowee-dropdown__placeholder">${esc(placeholderText)}</span>`}
+        <div class="naowee-dropdown__controls">
+          <span class="naowee-dropdown__chevron">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 7.5 10 12.5 15 7.5"/></svg>
+          </span>
+        </div>
+      </button>
+      <div class="naowee-dropdown__menu" role="listbox" data-placeholder="${escAttr(placeholderText)}">
+        ${menuOptions.map(o => `<div class="naowee-dropdown__option${o.v === value ? ' naowee-dropdown__option--selected' : ''}" role="option" data-value="${escAttr(o.v)}" tabindex="-1">${esc(o.t)}</div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// Dropdown compacto para filas repetibles (mismo .naowee-dropdown del DS pero sin label,
+// con --inline para celdas estrechas de tablas dinámicas)
+function ddInline(opts) {
+  const id = opts.id || ('ddi-' + Math.random().toString(36).slice(2,8));
+  const value = opts.value || '';
+  const options = opts.options || [];
+  const onChange = opts.onChange || '';
+  const placeholderOpt = options.find(o => o.v === '');
+  const placeholderText = placeholderOpt ? placeholderOpt.t : '—';
+  const selectedOpt = options.find(o => o.v === value && o.v !== '');
+  const hasValue = !!selectedOpt;
+  const menuOptions = options.filter(o => o.v !== '');
+  return `
+    <div class="naowee-dropdown ivc-dropdown--inline" id="${id}-wrap" data-dd-id="${id}" data-on-change="${escAttr(onChange)}" style="position:relative;">
+      <button type="button" id="${id}" class="naowee-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false" style="height:38px;padding:0 10px;font-size:13px;">
+        ${hasValue
+          ? `<span class="naowee-dropdown__value" style="font-size:13px;">${esc(selectedOpt.t)}</span>`
+          : `<span class="naowee-dropdown__placeholder" style="font-size:13px;">${esc(placeholderText)}</span>`}
+        <div class="naowee-dropdown__controls">
+          <span class="naowee-dropdown__chevron">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 7.5 10 12.5 15 7.5"/></svg>
+          </span>
+        </div>
+      </button>
+      <div class="naowee-dropdown__menu" role="listbox" data-placeholder="${escAttr(placeholderText)}">
+        ${menuOptions.map(o => `<div class="naowee-dropdown__option${o.v === value ? ' naowee-dropdown__option--selected' : ''}" role="option" data-value="${escAttr(o.v)}" tabindex="-1">${esc(o.t)}</div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// Radio canónico .naowee-radio
+function radio(opts) {
+  const name = opts.name;
+  const value = opts.value;
+  const checked = opts.checked === value;
+  const label = opts.label || '';
+  const sub = opts.sub || '';
+  const onClick = opts.onClick || '';
+  return `
+    <label class="naowee-radio${checked ? ' naowee-radio--selected' : ''}" style="cursor:pointer;align-items:flex-start;padding:14px 16px;border:1.5px solid ${checked ? 'var(--accent)' : 'var(--border-dark)'};border-radius:8px;transition:all .15s;background:${checked ? 'var(--orange-bg)' : '#fff'};display:flex;gap:12px;" onclick="${onClick}">
+      <span class="naowee-radio__circle" style="margin-top:1px;flex-shrink:0;"></span>
+      <span class="naowee-radio__label" style="font-size:14px;font-weight:${sub ? '600' : '500'};">
+        ${esc(label)}
+        ${sub ? `<div style="margin-top:2px;font-size:12.5px;color:var(--text-secondary);font-weight:400;">${esc(sub)}</div>` : ''}
+      </span>
+      <input type="radio" name="${name}" value="${value}" ${checked ? 'checked' : ''} style="position:absolute;opacity:0;pointer-events:none;" />
+    </label>
+  `;
+}
+
+// Radio inline (Sí/No)
+function radioYN(opts) {
+  const name = opts.name;
+  const value = opts.value;
+  const onYes = opts.onYes || '';
+  const onNo = opts.onNo || '';
+  const extra = opts.extra || [];
+  const items = [
+    { v:'si', t:'Sí', onClick: onYes },
+    { v:'no', t:'No', onClick: onNo },
+    ...extra
+  ];
+  return `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      ${items.map(it => {
+        const selected = value === it.v;
+        return `
+          <label class="naowee-radio${selected ? ' naowee-radio--selected' : ''}" style="cursor:pointer;padding:10px 16px;border:1.5px solid ${selected ? 'var(--accent)' : 'var(--border-dark)'};border-radius:8px;background:${selected ? 'var(--orange-bg)' : '#fff'};display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;" onclick="${it.onClick}">
+            <span class="naowee-radio__circle" style="flex-shrink:0;"></span>
+            <span class="naowee-radio__label">${esc(it.t)}</span>
+          </label>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+// Checkbox canónico .naowee-checkbox
+function checkbox(opts) {
+  const checked = !!opts.checked;
+  const label = opts.label || '';
+  const onClick = opts.onClick || '';
+  return `
+    <label class="naowee-checkbox${checked ? ' naowee-checkbox--checked' : ''}" style="cursor:pointer;display:inline-flex;align-items:flex-start;gap:10px;" onclick="${onClick}">
+      <span class="naowee-checkbox__box" style="flex-shrink:0;margin-top:1px;">
+        ${checked ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </span>
+      <span class="naowee-checkbox__label" style="font-size:13.5px;line-height:1.4;">${label}</span>
+    </label>
+  `;
+}
+
+// File drop (canónico wz-file-drop)
+function uploadField(opts) {
+  const stateKey = opts.stateKey;
+  const cur = getStateAtPath(stateKey);
+  const filled = !!cur;
+  return `
+    <label class="wz-file-drop${filled ? ' is-filled' : ''}">
+      <span class="wz-file-drop__icon">
+        ${filled
+          ? '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>'
+          : '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'}
+      </span>
+      ${filled
+        ? `<div class="wz-file-drop__title">Archivo cargado</div>
+           <div class="wz-file-drop__name">${esc(cur.name)} · ${esc(cur.size)}</div>
+           <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="event.preventDefault();event.stopPropagation();clearStateAtPath('${stateKey}');render();" style="margin-top:6px;">Quitar archivo</button>`
+        : `<div class="wz-file-drop__title">Haz clic o arrastra para cargar</div>
+           <div class="wz-file-drop__hint">PDF, DOC o DOCX · máx 10 MB</div>`}
+      <input type="file" accept=".pdf,.doc,.docx,application/pdf" onchange="mockUpload(this, '${stateKey}')" />
+    </label>
+  `;
+}
+
+// Mensaje canónico .naowee-message
+function messageInfo(title, body) {
+  return `
+    <div class="naowee-message naowee-message--informative">
+      <div class="naowee-message__header">
+        <span class="naowee-message__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </span>
+        <div class="naowee-message__content">
+          ${title ? `<p class="naowee-message__title" style="font-size:13.5px;margin:0 0 4px;">${esc(title)}</p>` : ''}
+          <p class="naowee-message__text" style="font-size:13px;margin:0;">${body}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   Stepper
+   ============================================================ */
+function renderStepper() {
+  const wrap = document.getElementById('stepperDesktop');
+  let html = '';
+  STEPS.forEach((s, i) => {
+    let stateCls = '';
+    if (i < STATE.step) stateCls = 'naowee-stepper__step--done';
+    else if (i === STATE.step) stateCls = 'naowee-stepper__step--active';
+
+    const numberHtml = i < STATE.step
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+      : (i + 1);
+
+    html += `
+      <div class="naowee-stepper__step ${stateCls}" role="listitem"${i < STATE.step ? ` onclick="STATE.step=${i};render();"` : ''}>
+        <span class="naowee-stepper__number">${numberHtml}</span>
+        <span class="naowee-stepper__label">${esc(s.label)}</span>
+      </div>
+    `;
+    if (i < STEPS.length - 1) {
+      html += `<div class="naowee-stepper__connector${i < STATE.step ? ' naowee-stepper__connector--done' : ''}"></div>`;
+    }
+  });
+  wrap.innerHTML = html;
+
+  document.getElementById('stepperMobile').innerHTML = `
+    Paso ${STATE.step + 1} de ${STEPS.length}
+    <small>${esc(STEPS[STATE.step].label)}</small>
+  `;
+}
+
+/* ============================================================
+   Step 0 — Pre-selección
+   ============================================================ */
+function renderStep0() {
+  return `
+    <h2 class="wz-section">¿Qué tipo de organismo eres?</h2>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+      ${radio({ name:'tipoOrg', value:'liga', checked: STATE.tipoOrganismo,
+                 label:'Liga Deportiva Departamental',
+                 sub:'F1 · Personería jurídica, Asamblea con 9 tipos de reunión y comisiones.',
+                 onClick:"STATE.tipoOrganismo='liga';render();" })}
+      ${radio({ name:'tipoOrg', value:'asociacion', checked: STATE.tipoOrganismo,
+                 label:'Asociación Deportiva (Juvenil/Recreativa)',
+                 sub:'F2 · Datos de constitución, entidades seccionales y afiliación internacional.',
+                 onClick:"STATE.tipoOrganismo='asociacion';render();" })}
+      ${radio({ name:'tipoOrg', value:'federacion', checked: STATE.tipoOrganismo,
+                 label:'Federación Deportiva Nacional',
+                 sub:'F3 · Convocatoria nacional, asistentes con quórum y certificaciones de Revisor Fiscal.',
+                 onClick:"STATE.tipoOrganismo='federacion';render();" })}
+    </div>
+
+    <h2 class="wz-section">¿Qué trámite quieres realizar?</h2>
+    ${messageInfo('Tipo de trámite pre-seleccionado para esta demo', 'En el sistema real, el Usuario elige entre Otorgamiento, Renovación o Actualización del Reconocimiento Deportivo. Esta demo se centra en <strong>Otorgamiento</strong>.')}
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${radio({ name:'tipoTramite', value:'otorgamiento', checked: STATE.tipoTramite,
+                label:'Otorgamiento de Reconocimiento Deportivo',
+                sub:'Para organismos que solicitan por primera vez su reconocimiento.',
+                onClick:"STATE.tipoTramite='otorgamiento';render();" })}
+    </div>
+  `;
+}
+
+/* ============================================================
+   Step 1 — Datos generales
+   ============================================================ */
+function renderStep1() {
+  const d = STATE.data;
+  const orgLabel = ({ liga:'Liga Deportiva Departamental', asociacion:'Asociación Deportiva', federacion:'Federación Deportiva Nacional' })[STATE.tipoOrganismo] || '';
+  return `
+    ${messageInfo('', `Estás radicando como <strong>${esc(orgLabel)}</strong>. Si te equivocaste, <a href="#" onclick="STATE.step=0;render();return false;">vuelve al paso anterior</a>.`)}
+    <h2 class="wz-section">Identificación del organismo</h2>
+    ${tf({ id:'f-nombre', label:'Nombre del organismo', required:true,
+            placeholder:'Ej: Liga de Atletismo de Antioquia',
+            value:d.nombre, onInput:'STATE.data.nombre=this.value' })}
+    <div class="wz-grid-2">
+      ${tf({ id:'f-nit', label:'NIT', required:true,
+              placeholder:'800123456-7', value:d.nit,
+              onInput:'STATE.data.nit=this.value' })}
+      ${tf({ id:'f-tel', label:'Teléfono de contacto', required:true,
+              type:'tel', placeholder:'+57 300 123 4567',
+              value:d.telefono, onInput:'STATE.data.telefono=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Domicilio</h2>
+    ${tf({ id:'f-dir', label:'Dirección', required:true,
+            placeholder:'Calle 50 # 20-30', value:d.direccion,
+            onInput:'STATE.data.direccion=this.value' })}
+    <div class="wz-grid-2">
+      ${dd({ id:'f-mun', label:'Municipio', required:true,
+              value:d.municipio, options:MUNICIPIOS,
+              onChange:'STATE.data.municipio=this.value' })}
+      ${tf({ id:'f-correo', label:'Correo electrónico', required:true,
+              type:'email', placeholder:'contacto@organismo.org',
+              value:d.correo, onInput:'STATE.data.correo=this.value' })}
+    </div>
+  `;
+}
+
+/* ============================================================
+   Step 2 — Personería · F1/F2/F3
+   ============================================================ */
+function renderStep2() {
+  if (STATE.tipoOrganismo === 'liga')       return renderStep2_F1();
+  if (STATE.tipoOrganismo === 'asociacion') return renderStep2_F2();
+  if (STATE.tipoOrganismo === 'federacion') return renderStep2_F3();
+  return '';
+}
+
+function renderStep2_F1() {
+  const f1 = STATE.data.f1;
+  return `
+    <h2 class="wz-section">Personería Jurídica</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'N° Resolución de Personería Jurídica', required:true,
+              placeholder:'Resolución 0001 del 01/01/2010',
+              value:f1.no_res_personeria,
+              onInput:'STATE.data.f1.no_res_personeria=this.value' })}
+      ${tf({ label:'Radicado del documento de Personería Jurídica en IVC', required:true,
+              placeholder:'IVC-2010-000123', value:f1.radicado_personeria,
+              onInput:'STATE.data.f1.radicado_personeria=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Estatutos vigentes</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'Fecha de la última Reforma Estatutaria', required:true,
+              type:'date', value:f1.fecha_reforma,
+              onInput:'STATE.data.f1.fecha_reforma=this.value' })}
+      ${tf({ label:'Radicado de Estatutos vigentes en IVC', required:true,
+              placeholder:'IVC-2024-000456', value:f1.radicado_estatutos,
+              onInput:'STATE.data.f1.radicado_estatutos=this.value' })}
+    </div>
+    ${tf({ label:'N° Resolución de Inscripción de Estatutos vigentes', required:true,
+            placeholder:'Resolución 0050 del 15/03/2024', value:f1.no_res_estatutos,
+            onInput:'STATE.data.f1.no_res_estatutos=this.value' })}
+
+    <h2 class="wz-section">Períodos estatutarios</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'Período Estatutario Inicial', required:true,
+              placeholder:'2020–2024', value:f1.periodo_inicial,
+              onInput:'STATE.data.f1.periodo_inicial=this.value' })}
+      ${tf({ label:'Período Estatutario Vigente', required:true,
+              placeholder:'2024–2028', value:f1.periodo_vigente,
+              onInput:'STATE.data.f1.periodo_vigente=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Constancia de Personería Jurídica</h2>
+    <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Tiene Constancia de Personería Jurídica vigente?</label>
+    ${radioYN({
+      name:'tieneConstancia', value:f1.tiene_constancia,
+      onYes:"STATE.data.f1.tiene_constancia='si';render();",
+      onNo:"STATE.data.f1.tiene_constancia='no';STATE.data.f1.fecha_constancia='';render();"
+    })}
+    ${f1.tiene_constancia === 'si' ? `
+      <div style="margin-top:14px;">
+        ${tf({ label:'Fecha de la Constancia', required:true, type:'date',
+                value:f1.fecha_constancia, onInput:'STATE.data.f1.fecha_constancia=this.value' })}
+      </div>
+    ` : ''}
+
+    <h2 class="wz-section">Mínimos legales</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'N° Resolución de Mínimos', required:true,
+              placeholder:'Resolución 0123 del 01/01/2020', value:f1.no_res_minimos,
+              onInput:'STATE.data.f1.no_res_minimos=this.value' })}
+      ${tf({ label:'N° de Mínimos legales', required:true, type:'number',
+              placeholder:'15', value:f1.n_minimos,
+              onInput:'STATE.data.f1.n_minimos=this.value' })}
+    </div>
+  `;
+}
+
+function renderStep2_F2() {
+  const f2 = STATE.data.f2;
+  return `
+    <h2 class="wz-section">Personería Jurídica</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'N° y fecha del documento de Personería Jurídica', required:true,
+              placeholder:'Resolución 0001 del 01/01/2010',
+              value:f2.no_personeria, onInput:'STATE.data.f2.no_personeria=this.value' })}
+      ${tf({ label:'Radicado de Personería Jurídica en IVC', required:true,
+              placeholder:'IVC-2010-000123', value:f2.radicado_personeria,
+              onInput:'STATE.data.f2.radicado_personeria=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Estatutos sociales</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'Fecha de los Estatutos Sociales vigentes', required:true, type:'date',
+              value:f2.fecha_estatutos, onInput:'STATE.data.f2.fecha_estatutos=this.value' })}
+      ${tf({ label:'Radicado Estatutos vigentes en IVC', required:true,
+              placeholder:'IVC-2024-000456', value:f2.radicado_estatutos,
+              onInput:'STATE.data.f2.radicado_estatutos=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Sede</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'N° del Acta de designación de sede', required:true,
+              placeholder:'Acta 003 del 14/02/2020', value:f2.no_acta_sede,
+              onInput:'STATE.data.f2.no_acta_sede=this.value' })}
+      ${tf({ label:'Radicado del Acta de sede en IVC', required:true,
+              placeholder:'IVC-2020-000055', value:f2.radicado_acta_sede,
+              onInput:'STATE.data.f2.radicado_acta_sede=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Constitución / Elección del Órgano de Administración</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'N° del Acta de Constitución o última elección OA', required:true,
+              placeholder:'Acta 001 del 05/03/2014', value:f2.no_acta_constitucion,
+              onInput:'STATE.data.f2.no_acta_constitucion=this.value' })}
+      ${tf({ label:'Radicado del Acta de constitución / elección OA en IVC', required:true,
+              placeholder:'IVC-2014-000080', value:f2.radicado_acta_constitucion,
+              onInput:'STATE.data.f2.radicado_acta_constitucion=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Inventario y afiliación internacional</h2>
+    <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Cuenta con inventario de bienes?</label>
+    ${radioYN({
+      name:'tieneInventario', value:f2.tiene_inventario,
+      onYes:"STATE.data.f2.tiene_inventario='si';render();",
+      onNo:"STATE.data.f2.tiene_inventario='no';render();"
+    })}
+
+    <label class="naowee-textfield__label naowee-textfield__label--required" style="margin:14px 0 8px;display:block;">¿Cuenta con documentos de afiliación internacional?</label>
+    ${radioYN({
+      name:'tieneAfiliacion', value:f2.tiene_afiliacion,
+      onYes:"STATE.data.f2.tiene_afiliacion='si';render();",
+      onNo:"STATE.data.f2.tiene_afiliacion='no';render();",
+      extra:[{ v:'no_aplica', t:'No aplica', onClick:"STATE.data.f2.tiene_afiliacion='no_aplica';render();" }]
+    })}
+  `;
+}
+
+function renderStep2_F3() {
+  const f3 = STATE.data.f3;
+  return `
+    <h2 class="wz-section">Personería Jurídica</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'N° Resolución de Personería Jurídica', required:true,
+              placeholder:'Resolución 0001 del 01/01/2010',
+              value:f3.no_res_personeria, onInput:'STATE.data.f3.no_res_personeria=this.value' })}
+      ${tf({ label:'Radicado del documento de Personería Jurídica en IVC', required:true,
+              placeholder:'IVC-2010-000123', value:f3.radicado_personeria,
+              onInput:'STATE.data.f3.radicado_personeria=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Estatutos y períodos</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'Fecha última Reforma Estatutaria', required:true, type:'date',
+              value:f3.fecha_reforma, onInput:'STATE.data.f3.fecha_reforma=this.value' })}
+      ${tf({ label:'Radicado de Estatutos en IVC', required:true,
+              placeholder:'IVC-2024-000456', value:f3.radicado_estatutos,
+              onInput:'STATE.data.f3.radicado_estatutos=this.value' })}
+    </div>
+    <div class="wz-grid-2">
+      ${tf({ label:'Período Estatutario Inicial', required:true,
+              placeholder:'2020–2024', value:f3.periodo_inicial,
+              onInput:'STATE.data.f3.periodo_inicial=this.value' })}
+      ${tf({ label:'Período Estatutario Vigente', required:true,
+              placeholder:'2024–2028', value:f3.periodo_vigente,
+              onInput:'STATE.data.f3.periodo_vigente=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Convocatoria nacional</h2>
+    ${dd({ label:'Tipo de convocatoria', required:true, value:f3.tipo_convocatoria,
+            options:[
+              { v:'', t:'Selecciona tipo…' },
+              { v:'COMITE_PROVISIONAL', t:'Comité provisional' },
+              { v:'INICIATIVA_PROPIA',  t:'Iniciativa propia' }
+            ],
+            onChange:'STATE.data.f3.tipo_convocatoria=this.value' })}
+    <div class="wz-grid-2">
+      ${tf({ label:'Fecha de Convocatoria', required:true, type:'date',
+              value:f3.fecha_convocatoria, onInput:'STATE.data.f3.fecha_convocatoria=this.value' })}
+      ${tf({ label:'Fecha de Realización', required:true, type:'date',
+              value:f3.fecha_realizacion, onInput:'STATE.data.f3.fecha_realizacion=this.value' })}
+    </div>
+  `;
+}
+
+/* ============================================================
+   Step 3 — Asamblea
+   ============================================================ */
+function renderStep3() {
+  if (STATE.tipoOrganismo === 'asociacion') return renderSkipView('El paso de Asamblea no aplica para Asociaciones Deportivas. Continúa al siguiente paso.');
+  if (STATE.tipoOrganismo === 'liga')       return renderStep3_F1();
+  if (STATE.tipoOrganismo === 'federacion') return renderStep3_F3();
+  return '';
+}
+
+function renderSkipView(msg) {
+  return `
+    <div class="ivc-skip-view">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      <h2>Paso no aplicable</h2>
+      <p>${esc(msg)}</p>
+    </div>
+  `;
+}
+
+function renderStep3_F1() {
+  const a = STATE.data.asamblea;
+  return `
+    <h2 class="wz-section">Tema u objeto de la reunión</h2>
+    ${ta({ id:'tema-asamblea', label:'Tema tratado u objeto de la reunión', required:true,
+            placeholder:'Ej: Asamblea ordinaria para elección de miembros del Órgano de Administración período 2024–2028…',
+            value:a.f1_tema, maxlength:2000, counterId:'temaCount',
+            onInput:"STATE.data.asamblea.f1_tema=this.value;document.getElementById('temaCount').textContent=this.value.length" })}
+
+    <h2 class="wz-section">Tipos de reunión realizados</h2>
+    ${messageInfo('', '9 tipos según Decreto 1085/2015. Solo diligencia las filas donde la reunión efectivamente se realizó.')}
+    <div class="ivc-repeatable">
+      <div class="ivc-repeatable__head" style="grid-template-columns: 1.3fr 1fr 1fr 1fr 90px 36px;">
+        <div>Tipo / Clase</div>
+        <div>Fecha Convocatoria</div>
+        <div>Fecha Realización</div>
+        <div>Fecha Antelación</div>
+        <div>¿Cumple?</div>
+        <div></div>
+      </div>
+      ${a.f1_reuniones.map((row, i) => `
+        <div class="ivc-repeatable__row" style="grid-template-columns: 1.3fr 1fr 1fr 1fr 90px 36px;">
+          <input type="text" class="ivc-mini-input" value="${escAttr(row.tipo)}" placeholder="Tipo de reunión"
+            oninput="STATE.data.asamblea.f1_reuniones[${i}].tipo=this.value" />
+          <input type="date" class="ivc-mini-input" value="${escAttr(row.fechaConv)}" max="${todayISO()}"
+            oninput="STATE.data.asamblea.f1_reuniones[${i}].fechaConv=this.value" />
+          <input type="date" class="ivc-mini-input" value="${escAttr(row.fechaReal)}" max="${todayISO()}"
+            oninput="STATE.data.asamblea.f1_reuniones[${i}].fechaReal=this.value" />
+          <input type="text" class="ivc-mini-input" value="${escAttr(row.antelacion)}" placeholder="15 días"
+            oninput="STATE.data.asamblea.f1_reuniones[${i}].antelacion=this.value" />
+          ${ddInline({ value:row.cumple, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.asamblea.f1_reuniones[${i}].cumple=this.value` })}
+          <button type="button" class="ivc-repeatable__remove" onclick="STATE.data.asamblea.f1_reuniones.splice(${i},1);render();" aria-label="Eliminar fila">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+      `).join('')}
+      <div class="ivc-repeatable__add">
+        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="STATE.data.asamblea.f1_reuniones.push({tipo:'',fechaConv:'',fechaReal:'',antelacion:'',cumple:''});render();">+ Agregar tipo de reunión</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderStep3_F3() {
+  const a = STATE.data.asamblea;
+  return `
+    <h2 class="wz-section">Asistentes y quórum</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'N° de asistentes a la Asamblea Constitutiva', required:true, type:'number',
+              placeholder:'25', value:a.f3_n_asistentes,
+              onInput:'STATE.data.asamblea.f3_n_asistentes=this.value' })}
+      ${dd({ label:'¿Cumple quórum?', required:true, value:a.f3_cumple_quorum,
+              options:[
+                { v:'', t:'Selecciona…' },
+                { v:'si', t:'Sí' },
+                { v:'no', t:'No' }
+              ],
+              onChange:'STATE.data.asamblea.f3_cumple_quorum=this.value' })}
+    </div>
+
+    <h2 class="wz-section">Certificación del Revisor Fiscal</h2>
+    <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Carga la certificación del Revisor Fiscal</label>
+    ${uploadField({ stateKey:'data.asamblea.f3_archivo_cert' })}
+  `;
+}
+
+/* ============================================================
+   Step 4 — Estructura (REPEATABLES)
+   ============================================================ */
+function renderStep4() {
+  if (STATE.tipoOrganismo === 'liga')       return renderStep4_F1();
+  if (STATE.tipoOrganismo === 'asociacion') return renderStep4_F2();
+  if (STATE.tipoOrganismo === 'federacion') return renderStep4_F3();
+  return '';
+}
+
+function repeatableDynamic(opts) {
+  const head = opts.head;
+  const cols = opts.cols;
+  const rows = opts.rows;
+  const cellRenderer = opts.cellRenderer;
+  const onAdd = opts.onAdd;
+  const onRemove = opts.onRemove;
+  const minRows = opts.minRows ?? 1;
+  return `
+    <div class="ivc-repeatable">
+      <div class="ivc-repeatable__head" style="grid-template-columns: ${cols};">
+        ${head.map(h => `<div>${esc(h)}</div>`).join('')}
+        <div></div>
+      </div>
+      ${rows.map((row, i) => `
+        <div class="ivc-repeatable__row" style="grid-template-columns: ${cols};">
+          ${cellRenderer(row, i)}
+          <button type="button" class="ivc-repeatable__remove"${rows.length <= minRows ? ' disabled' : ` onclick="${onRemove(i)}"`} aria-label="Eliminar fila">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+      `).join('')}
+      <div class="ivc-repeatable__add">
+        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="${onAdd}">+ Agregar fila</button>
+      </div>
+    </div>
+  `;
+}
+
+function repeatableFixed(opts) {
+  const head = opts.head;
+  const cols = opts.cols;
+  const rows = opts.rows;
+  const cellRenderer = opts.cellRenderer;
+  return `
+    <div class="ivc-repeatable">
+      <div class="ivc-repeatable__head" style="grid-template-columns: ${cols};">
+        ${head.map(h => `<div>${esc(h)}</div>`).join('')}
+      </div>
+      ${rows.map((row, i) => `
+        <div class="ivc-repeatable__row" style="grid-template-columns: ${cols};">
+          ${cellRenderer(row, i)}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderStep4_F1() {
+  const e = STATE.data.estructura;
+  return `
+    <h2 class="wz-section">A. Fundadores / Afiliados Asistentes</h2>
+    ${repeatableDynamic({
+      head:['Nombre', 'N° Resolución de Reconocimiento Deportivo'],
+      cols:'1.5fr 1.5fr 36px',
+      rows:e.f1_fundadores,
+      cellRenderer:(r,i) => `
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre completo"
+          oninput="STATE.data.estructura.f1_fundadores[${i}].nombre=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.no_res_reconocimiento)}" placeholder="N° Resolución"
+          oninput="STATE.data.estructura.f1_fundadores[${i}].no_res_reconocimiento=this.value" />
+      `,
+      onAdd:"STATE.data.estructura.f1_fundadores.push({nombre:'',no_res_reconocimiento:''});render();",
+      onRemove:(i) => `STATE.data.estructura.f1_fundadores.splice(${i},1);render();`
+    })}
+
+    <h2 class="wz-section">B. Miembros del Órgano de Administración</h2>
+    ${messageInfo('', 'Mínimo 3 miembros (Res. 705/2024).')}
+    ${repeatableDynamic({
+      head:['Nombre', 'Identificación', 'Cargo', '¿Capacitación?', 'Nombrado por', 'N° Períodos'],
+      cols:'1.3fr 1fr 1fr 90px 1fr 90px 36px',
+      rows:e.f1_miembros_oa,
+      cellRenderer:(r,i) => `
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre"
+          oninput="STATE.data.estructura.f1_miembros_oa[${i}].nombre=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.identificacion)}" placeholder="C.C."
+          oninput="STATE.data.estructura.f1_miembros_oa[${i}].identificacion=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.cargo)}" placeholder="Presidente"
+          oninput="STATE.data.estructura.f1_miembros_oa[${i}].cargo=this.value" />
+        ${ddInline({ value:r.capacitacion, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f1_miembros_oa[${i}].capacitacion=this.value` })}
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombrado_por)}" placeholder="Asamblea"
+          oninput="STATE.data.estructura.f1_miembros_oa[${i}].nombrado_por=this.value" />
+        <input type="number" class="ivc-mini-input" value="${escAttr(r.no_periodos)}" placeholder="1"
+          oninput="STATE.data.estructura.f1_miembros_oa[${i}].no_periodos=this.value" />
+      `,
+      minRows:3,
+      onAdd:"STATE.data.estructura.f1_miembros_oa.push({nombre:'',identificacion:'',cargo:'',capacitacion:'',nombrado_por:'',no_periodos:''});render();",
+      onRemove:(i) => `STATE.data.estructura.f1_miembros_oa.splice(${i},1);render();`
+    })}
+
+    <h2 class="wz-section">C. Revisor Fiscal (Órgano de Control)</h2>
+    ${repeatableFixed({
+      head:['Cargo', 'Nombre', 'Identificación'],
+      cols:'120px 1.5fr 1fr',
+      rows:e.f1_revisor_fiscal,
+      cellRenderer:(r,i) => `
+        <div class="ivc-repeatable__row-display">${esc(r.display)}</div>
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre completo"
+          oninput="STATE.data.estructura.f1_revisor_fiscal[${i}].nombre=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.identificacion)}" placeholder="C.C."
+          oninput="STATE.data.estructura.f1_revisor_fiscal[${i}].identificacion=this.value" />
+      `
+    })}
+
+    <h2 class="wz-section">D. Comisión Disciplinaria</h2>
+    ${repeatableFixed({
+      head:['Órgano que designa', 'Nombre'],
+      cols:'140px 1fr',
+      rows:e.f1_comision_disciplinaria,
+      cellRenderer:(r,i) => `
+        <div class="ivc-repeatable__row-display">${esc(r.display)}</div>
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre completo"
+          oninput="STATE.data.estructura.f1_comision_disciplinaria[${i}].nombre=this.value" />
+      `
+    })}
+
+    <h2 class="wz-section">E. Comisión Técnica</h2>
+    ${repeatableFixed({
+      head:['Integrante', 'Nombre'],
+      cols:'90px 1fr',
+      rows:e.f1_comision_tecnica,
+      cellRenderer:(r,i) => `
+        <div class="ivc-repeatable__row-display">${esc(r.display)}</div>
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre completo"
+          oninput="STATE.data.estructura.f1_comision_tecnica[${i}].nombre=this.value" />
+      `
+    })}
+
+    <h2 class="wz-section">F. Comisión de Juzgamiento</h2>
+    ${repeatableFixed({
+      head:['Integrante', 'Nombre'],
+      cols:'90px 1fr',
+      rows:e.f1_comision_juzgamiento,
+      cellRenderer:(r,i) => `
+        <div class="ivc-repeatable__row-display">${esc(r.display)}</div>
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre completo"
+          oninput="STATE.data.estructura.f1_comision_juzgamiento[${i}].nombre=this.value" />
+      `
+    })}
+
+    <h2 class="wz-section">G. Paradeporte (opcional)</h2>
+    <label class="naowee-textfield__label" style="margin-bottom:8px;display:block;">¿Aplica Paradeporte?</label>
+    ${radioYN({
+      name:'aplicaPara', value:e.f1_aplica_paradeporte,
+      onYes:"STATE.data.estructura.f1_aplica_paradeporte='si';render();",
+      onNo:"STATE.data.estructura.f1_aplica_paradeporte='no';render();"
+    })}
+    ${e.f1_aplica_paradeporte === 'si' ? `
+      <div style="margin-top:14px;">
+        ${repeatableFixed({
+          head:['Integrante', 'Nombre'],
+          cols:'90px 1fr',
+          rows:e.f1_comision_paradeporte,
+          cellRenderer:(r,i) => `
+            <div class="ivc-repeatable__row-display">${esc(r.display)}</div>
+            <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre completo"
+              oninput="STATE.data.estructura.f1_comision_paradeporte[${i}].nombre=this.value" />
+          `
+        })}
+      </div>
+    ` : ''}
+  `;
+}
+
+function renderStep4_F2() {
+  const e = STATE.data.estructura;
+  return `
+    <h2 class="wz-section">Entidades seccionales con afiliados y directivos</h2>
+    ${repeatableDynamic({
+      head:['Nombre seccional', 'Nombre del directivo'],
+      cols:'1.5fr 1.5fr 36px',
+      rows:e.f2_seccionales,
+      cellRenderer:(r,i) => `
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre_seccional)}" placeholder="Seccional Antioquia"
+          oninput="STATE.data.estructura.f2_seccionales[${i}].nombre_seccional=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre_directivo)}" placeholder="Nombre completo"
+          oninput="STATE.data.estructura.f2_seccionales[${i}].nombre_directivo=this.value" />
+      `,
+      onAdd:"STATE.data.estructura.f2_seccionales.push({nombre_seccional:'',nombre_directivo:''});render();",
+      onRemove:(i) => `STATE.data.estructura.f2_seccionales.splice(${i},1);render();`
+    })}
+  `;
+}
+
+function renderStep4_F3() {
+  const e = STATE.data.estructura;
+  return `
+    <h2 class="wz-section">A. Afiliados constituyentes</h2>
+    ${repeatableDynamic({
+      head:['Nombre', 'N° Resolución de Reconocimiento Deportivo'],
+      cols:'1.5fr 1.5fr 36px',
+      rows:e.f3_afiliados,
+      cellRenderer:(r,i) => `
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre del afiliado"
+          oninput="STATE.data.estructura.f3_afiliados[${i}].nombre=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.no_res_reconocimiento)}" placeholder="N° Resolución"
+          oninput="STATE.data.estructura.f3_afiliados[${i}].no_res_reconocimiento=this.value" />
+      `,
+      onAdd:"STATE.data.estructura.f3_afiliados.push({nombre:'',no_res_reconocimiento:''});render();",
+      onRemove:(i) => `STATE.data.estructura.f3_afiliados.splice(${i},1);render();`
+    })}
+
+    <h2 class="wz-section">B. Miembros del Órgano de Administración</h2>
+    ${repeatableDynamic({
+      head:['Nombre', 'Identificación', 'Cargo', '¿Acepta cargo?'],
+      cols:'1.3fr 1fr 1fr 100px 36px',
+      rows:e.f3_miembros_oa,
+      cellRenderer:(r,i) => `
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre"
+          oninput="STATE.data.estructura.f3_miembros_oa[${i}].nombre=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.identificacion)}" placeholder="C.C."
+          oninput="STATE.data.estructura.f3_miembros_oa[${i}].identificacion=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.cargo)}" placeholder="Presidente"
+          oninput="STATE.data.estructura.f3_miembros_oa[${i}].cargo=this.value" />
+        ${ddInline({ value:r.acepta, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f3_miembros_oa[${i}].acepta=this.value` })}
+      `,
+      onAdd:"STATE.data.estructura.f3_miembros_oa.push({nombre:'',identificacion:'',cargo:'',acepta:''});render();",
+      onRemove:(i) => `STATE.data.estructura.f3_miembros_oa.splice(${i},1);render();`
+    })}
+  `;
+}
+
+/* ============================================================
+   Step 5 — Documentos
+   ============================================================ */
+function renderStep5() {
+  return `
+    ${messageInfo('Documentos del Decreto 1387/1970 — Art. 2.1.1.2', 'Carga cada documento en formato PDF, DOC o DOCX. Tamaño máximo 10 MB por archivo.')}
+    ${DOCUMENTOS_DECRETO.map(doc => `
+      <div class="ivc-doc-card">
+        <div class="ivc-doc-card__head">
+          <div>
+            <h3 class="ivc-doc-card__title">${esc(doc.title)}</h3>
+            ${!doc.required ? '<p class="ivc-doc-card__desc">No es obligatorio para este trámite.</p>' : ''}
+          </div>
+          ${doc.required
+            ? '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small" style="margin-left:auto;">Obligatorio</span>'
+            : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small" style="margin-left:auto;">Opcional</span>'}
+        </div>
+        ${uploadField({ stateKey:'data.documentos.' + doc.id })}
+      </div>
+    `).join('')}
+  `;
+}
+
+/* ============================================================
+   Step 6 — Confirmación
+   ============================================================ */
+function renderStep6() {
+  if (STATE.radicado) return renderSuccess();
+
+  const d = STATE.data;
+  const orgLabel = ({ liga:'Liga Deportiva Departamental', asociacion:'Asociación Deportiva', federacion:'Federación Deportiva Nacional' })[STATE.tipoOrganismo] || '';
+
+  return `
+    ${messageInfo('Revisa antes de radicar', 'Una vez radicado, recibirás un número único de radicado y notificaciones por correo electrónico. Tu trámite tomará hasta <strong>15 días hábiles</strong> para ser revisado por el Profesional asignado.')}
+
+    <div class="wz-review">
+      <div class="wz-review__group">
+        <div class="wz-review__group-title">Identificación</div>
+        <div class="wz-review__row"><div class="wz-review__label">Tipo de organismo</div><div class="wz-review__value">${esc(orgLabel)}</div></div>
+        <div class="wz-review__row"><div class="wz-review__label">Trámite</div><div class="wz-review__value">Otorgamiento de Reconocimiento Deportivo</div></div>
+      </div>
+
+      <div class="wz-review__group">
+        <div class="wz-review__group-title">Datos generales</div>
+        <div class="wz-review__row"><div class="wz-review__label">Nombre</div><div class="wz-review__value">${dispValue(d.nombre)}</div></div>
+        <div class="wz-review__row"><div class="wz-review__label">NIT</div><div class="wz-review__value">${dispValue(d.nit)}</div></div>
+        <div class="wz-review__row"><div class="wz-review__label">Dirección</div><div class="wz-review__value">${dispValue(d.direccion)}</div></div>
+        <div class="wz-review__row"><div class="wz-review__label">Municipio</div><div class="wz-review__value">${dispValue(d.municipio)}</div></div>
+        <div class="wz-review__row"><div class="wz-review__label">Teléfono</div><div class="wz-review__value">${dispValue(d.telefono)}</div></div>
+        <div class="wz-review__row"><div class="wz-review__label">Correo</div><div class="wz-review__value">${dispValue(d.correo)}</div></div>
+      </div>
+
+      <div class="wz-review__group">
+        <div class="wz-review__group-title">Documentos cargados</div>
+        ${DOCUMENTOS_DECRETO.map(doc => {
+          const f = d.documentos[doc.id];
+          if (!f) {
+            return `<div class="wz-review__row">
+              <div class="wz-review__label">${esc(doc.title)}</div>
+              <div class="wz-review__value" style="color:${doc.required ? '#C00000' : 'var(--text-secondary)'};font-weight:${doc.required ? '700' : '500'};">
+                ${doc.required ? 'Falta cargar' : 'No aplica / opcional'}
+              </div>
+            </div>`;
+          }
+          return `<div class="wz-review__row">
+            <div class="wz-review__label">${esc(doc.title)}</div>
+            <div class="wz-review__value" style="color:#15803d;">✓ ${esc(f.name)} · ${esc(f.size)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div style="margin-top:18px;padding:14px;border:1px solid var(--border);border-radius:10px;background:#fbfbfd;">
+      ${checkbox({
+        checked:STATE.data.aceptaRadicacion,
+        label:'<strong>He revisado la información</strong> y autorizo la radicación del trámite ante el Ministerio del Deporte.',
+        onClick:"STATE.data.aceptaRadicacion=!STATE.data.aceptaRadicacion;render();"
+      })}
+    </div>
+  `;
+}
+
+function renderSuccess() {
+  return `
+    <div class="wz-success">
+      <div class="wz-success__check">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>Trámite radicado con éxito</h2>
+      <p>Tu solicitud fue recibida por el Ministerio del Deporte. Te notificaremos por correo cuando el Profesional de IVC inicie la revisión.</p>
+      <div class="wz-success__radicado">${esc(STATE.radicado)}</div>
+      <p style="font-size:12.5px;">Plazo de revisión: hasta <strong>15 días hábiles</strong>.</p>
+      <div style="margin-top:24px;">
+        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--large" onclick="window.print()">Imprimir comprobante</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   Render principal
+   ============================================================ */
+function render() {
+  renderStepper();
+  const body = document.getElementById('wzBody');
+
+  if (!isStepApplicable(STATE.step)) {
+    body.innerHTML = `<div class="wz-step-panel is-active">${renderSkipView('Este paso no aplica para tu tipo de organismo.')}</div>`;
+    setupFooter();
+    return;
+  }
+
+  let inner = '';
+  switch (STATE.step) {
+    case 0: inner = renderStep0(); break;
+    case 1: inner = renderStep1(); break;
+    case 2: inner = renderStep2(); break;
+    case 3: inner = renderStep3(); break;
+    case 4: inner = renderStep4(); break;
+    case 5: inner = renderStep5(); break;
+    case 6: inner = renderStep6(); break;
+  }
+  body.innerHTML = `<div class="wz-step-panel is-active">${inner}</div>`;
+
+  setupFooter();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setupFooter() {
+  const btnBack = document.getElementById('btnBack');
+  const btnNext = document.getElementById('btnNext');
+  const btnDraft = document.getElementById('btnDraft');
+
+  if (STATE.radicado) {
+    btnBack.style.display = 'none';
+    btnNext.style.display = 'none';
+    btnDraft.style.display = 'none';
+    return;
+  }
+  btnBack.style.display = '';
+  btnNext.style.display = '';
+  btnDraft.style.display = '';
+
+  btnBack.style.visibility = STATE.step === 0 ? 'hidden' : 'visible';
+
+  if (STATE.step === 6) {
+    btnNext.innerHTML = 'Radicar trámite';
+    btnNext.disabled = !STATE.data.aceptaRadicacion;
+  } else if (STATE.step === 0) {
+    btnNext.textContent = 'Continuar →';
+    btnNext.disabled = !(STATE.tipoOrganismo && STATE.tipoTramite);
+  } else {
+    btnNext.textContent = 'Continuar →';
+    btnNext.disabled = false;
+  }
+}
+
+/* ============================================================
+   Validación con shake canónico .naowee-shake
+   ============================================================ */
+function validateStep1() {
+  const errors = [];
+  const required = [
+    { key:'nombre',    sel:'#f-nombre' },
+    { key:'nit',       sel:'#f-nit' },
+    { key:'telefono',  sel:'#f-tel' },
+    { key:'direccion', sel:'#f-dir' },
+    { key:'municipio', sel:'#f-mun' },
+    { key:'correo',    sel:'#f-correo' }
+  ];
+  required.forEach(r => {
+    if (!String(STATE.data[r.key] || '').trim()) errors.push(r);
+  });
+  const correo = String(STATE.data.correo || '').trim();
+  if (correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) errors.push({ key:'correo', sel:'#f-correo' });
+  return errors;
+}
+
+function shakeFields(errors) {
+  errors.forEach(e => {
+    if (!e.sel) return;
+    const el = document.querySelector(e.sel);
+    if (!el) return;
+    // Caso A: el target está dentro de un .naowee-dropdown (componente canónico DS)
+    const ddRoot = el.closest('.naowee-dropdown');
+    if (ddRoot) {
+      ddRoot.classList.add('naowee-dropdown--error', 'naowee-shake');
+      setTimeout(() => ddRoot.classList.remove('naowee-shake'), 500);
+      if (!ddRoot.querySelector('.naowee-helper--negative')) {
+        const helper = document.createElement('div');
+        helper.className = 'naowee-helper naowee-helper--negative';
+        helper.style.marginTop = '6px';
+        helper.innerHTML = `
+          <span class="naowee-helper__badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span class="naowee-helper__text">Este campo es obligatorio</span>
+        `;
+        ddRoot.appendChild(helper);
+      }
+      return;
+    }
+    // Caso B: el target está dentro de un .naowee-textfield
+    const wrap = el.closest('.naowee-textfield__input-wrap');
+    if (wrap) {
+      wrap.classList.add('naowee-shake');
+      setTimeout(() => wrap.classList.remove('naowee-shake'), 500);
+    }
+    const tfRoot = el.closest('.naowee-textfield');
+    if (tfRoot) {
+      tfRoot.classList.add('naowee-textfield--error');
+      // Insertar helper de error si no existe
+      if (!tfRoot.querySelector('.naowee-helper--negative')) {
+        const helper = document.createElement('div');
+        helper.className = 'naowee-helper naowee-helper--negative';
+        helper.style.marginTop = '6px';
+        helper.innerHTML = `
+          <span class="naowee-helper__badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span class="naowee-helper__text">Este campo es obligatorio</span>
+        `;
+        tfRoot.appendChild(helper);
+      }
+    }
+  });
+}
+
+/* ============================================================
+   Navegación
+   ============================================================ */
+function next() {
+  if (STATE.step === 0) {
+    if (!STATE.tipoOrganismo || !STATE.tipoTramite) {
+      alert('Selecciona tipo de organismo y trámite para continuar.');
+      return;
+    }
+  }
+  if (STATE.step === 1) {
+    const errs = validateStep1();
+    if (errs.length) { shakeFields(errs); return; }
+  }
+
+  if (STATE.step === 6) {
+    STATE.radicado = 'IVC-2026-' + String(Math.floor(10000 + Math.random() * 89999));
+    render();
+    return;
+  }
+
+  let nextStep = STATE.step + 1;
+  while (nextStep <= 6 && !isStepApplicable(nextStep)) nextStep++;
+  STATE.step = Math.min(nextStep, 6);
+  render();
+}
+
+function prev() {
+  let prevStep = STATE.step - 1;
+  while (prevStep >= 0 && !isStepApplicable(prevStep)) prevStep--;
+  STATE.step = Math.max(prevStep, 0);
+  render();
+}
+
+function saveDraft() {
+  const btn = document.getElementById('btnDraft');
+  if (!btn) return;
+  const original = btn.innerHTML;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Borrador guardado';
+  btn.disabled = true;
+  setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 1800);
+}
+
+document.getElementById('btnNext').addEventListener('click', next);
+document.getElementById('btnBack').addEventListener('click', prev);
+document.getElementById('btnDraft').addEventListener('click', saveDraft);
+
+/* ============================================================
+   Controlador del componente canónico .naowee-dropdown
+   (event delegation — sobrevive re-renders)
+   ============================================================ */
+(function setupNaoweeDropdownController(){
+  function closeAll(except){
+    document.querySelectorAll('.naowee-dropdown.naowee-dropdown--open').forEach(d => {
+      if (d === except) return;
+      d.classList.remove('naowee-dropdown--open');
+      const trg = d.querySelector('.naowee-dropdown__trigger');
+      if (trg) trg.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function runOnChange(wrap, value, text){
+    const onChange = wrap.getAttribute('data-on-change') || '';
+    if (onChange) {
+      try {
+        // Los handlers son strings tipo "STATE.x=this.value". Reemplazamos
+        // this.value por una referencia literal al valor seleccionado y eval-uamos.
+        const literal = JSON.stringify(String(value));
+        const code = onChange.replace(/this\.value/g, literal);
+        // eslint-disable-next-line no-new-func
+        new Function(code)();
+      } catch(err) {
+        console.error('[naowee-dropdown] onChange error:', err, onChange);
+      }
+    }
+    // CustomEvent para listeners externos
+    wrap.dispatchEvent(new CustomEvent('change', { detail:{ value, text }, bubbles:true }));
+  }
+
+  // Click delegado
+  document.addEventListener('click', function(ev){
+    const trigger = ev.target.closest('.naowee-dropdown__trigger');
+    const option  = ev.target.closest('.naowee-dropdown__option');
+
+    // Click en una opción
+    if (option) {
+      const wrap = option.closest('.naowee-dropdown');
+      if (!wrap) return;
+      const value = option.getAttribute('data-value') || '';
+      const text  = option.textContent.trim();
+      // marca seleccionada
+      wrap.querySelectorAll('.naowee-dropdown__option--selected')
+          .forEach(o => o.classList.remove('naowee-dropdown__option--selected'));
+      option.classList.add('naowee-dropdown__option--selected');
+      // actualiza trigger
+      const trg = wrap.querySelector('.naowee-dropdown__trigger');
+      const labelSpan = trg.querySelector('.naowee-dropdown__placeholder, .naowee-dropdown__value');
+      if (labelSpan) {
+        labelSpan.className = 'naowee-dropdown__value';
+        labelSpan.textContent = text;
+      }
+      // limpia error si lo tenía
+      wrap.classList.remove('naowee-dropdown--error');
+      const helper = wrap.querySelector('.naowee-helper--negative');
+      if (helper) helper.remove();
+      // cierra
+      wrap.classList.remove('naowee-dropdown--open');
+      trg.setAttribute('aria-expanded', 'false');
+      // dispara onChange
+      runOnChange(wrap, value, text);
+      ev.stopPropagation();
+      return;
+    }
+
+    // Click en el trigger → toggle
+    if (trigger) {
+      const wrap = trigger.closest('.naowee-dropdown');
+      if (!wrap) return;
+      if (wrap.classList.contains('naowee-dropdown--disabled')) return;
+      const wasOpen = wrap.classList.contains('naowee-dropdown--open');
+      closeAll(wasOpen ? null : wrap);
+      wrap.classList.toggle('naowee-dropdown--open');
+      trigger.setAttribute('aria-expanded', wrap.classList.contains('naowee-dropdown--open') ? 'true' : 'false');
+      ev.stopPropagation();
+      return;
+    }
+
+    // Click fuera → cierra todos
+    closeAll(null);
+  });
+
+  // Teclado
+  document.addEventListener('keydown', function(ev){
+    const wrap = document.activeElement && document.activeElement.closest && document.activeElement.closest('.naowee-dropdown');
+    if (!wrap) {
+      if (ev.key === 'Escape') closeAll(null);
+      return;
+    }
+    const isOpen = wrap.classList.contains('naowee-dropdown--open');
+    const trg = wrap.querySelector('.naowee-dropdown__trigger');
+    const options = Array.from(wrap.querySelectorAll('.naowee-dropdown__option'));
+
+    if (ev.key === 'Escape') {
+      wrap.classList.remove('naowee-dropdown--open');
+      if (trg) { trg.setAttribute('aria-expanded', 'false'); trg.focus(); }
+      ev.preventDefault();
+      return;
+    }
+    if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown') && !isOpen && document.activeElement === trg) {
+      wrap.classList.add('naowee-dropdown--open');
+      trg.setAttribute('aria-expanded', 'true');
+      if (options[0]) options[0].focus();
+      ev.preventDefault();
+      return;
+    }
+    if (isOpen && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp')) {
+      const focused = document.activeElement.closest('.naowee-dropdown__option');
+      const idx = focused ? options.indexOf(focused) : -1;
+      const next = ev.key === 'ArrowDown' ? Math.min(options.length - 1, idx + 1) : Math.max(0, idx - 1);
+      if (options[next]) options[next].focus();
+      ev.preventDefault();
+      return;
+    }
+    if (isOpen && ev.key === 'Enter') {
+      const focused = document.activeElement.closest('.naowee-dropdown__option');
+      if (focused) { focused.click(); ev.preventDefault(); }
+      return;
+    }
+  });
+})();
+
+render();
+</script>
+
+</body>
+</html>

@@ -6,6 +6,49 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.3.0] — 2026-05-22
+
+> 🧑‍💼 **Fase 1 demo navegable end-to-end (lado Usuario Externo / Organismo).** Formulario de Radicación de Reconocimiento Deportivo (Otorgamiento) con wizard de 7 pasos, 3 form variants por tipo de organismo (F1 Liga / F2 Asociación / F3 Federación), 12 tablas REPEATABLE, 5 grupos de campos condicionales y los 7 documentos del Decreto 1387/1970 Art 2.1.1.2. Toda la UI refactorizada para usar los componentes canónicos del Naowee Design System v1.8.0 cargado vía CDN — cero invención de clases `.naowee-*`.
+
+### Added — `prototype/usuario-externo/`
+- `usuario-externo/formulario-fase-1.html` — Demo navegable de Fase 1 (Radicación). Pre-selección Tipo de organización (Ligas / Asociaciones / Federaciones) + Tipo de trámite (Otorgamiento), wizard 7 pasos (Pre-selección → Datos generales → Personería jurídica → Asamblea → Estructura → Documentos → Confirmación), generación de radicado `IVC-2026-NNNNN` y success state con descarga de comprobante.
+- `usuario-externo/logos/ministerio.svg`, `naowee.svg`, `suid.png` — Assets del header institucional (Ministerio del Deporte + Naowee + SUID), copiados del proyecto Project v2.0.3.
+
+### Refactored — Demo Fase 1 a DS v1.8.0 canónico
+- **Stepper con pulse:** `.naowee-stepper--pulse` + `.naowee-stepper__step--active/--done` (líneas 3736-3839 del design-system.css).
+- **Textfields:** `.naowee-textfield` con sub-elementos `__label`, `__label--required`, `__input-wrap`, `__input`, modificador `--error` y `--textarea` (líneas 1671-1900). Helper error `.naowee-helper--negative` con badge + texto.
+- **Wiggle de validación:** utility `.naowee-shake` canónica del DS (líneas 3843-3865) — animación 0.45s cubic-bezier al fallar validación.
+- **Dropdowns canónicos:** `.naowee-dropdown` con `__trigger`, `__placeholder`, `__value`, `__chevron`, `__menu`, `__option`, `__option--selected` (líneas 2257-2565). Menú flotante con animación max-height + opacity. JS de control: toggle abierto, click fuera, navegación con teclado (Enter/Space/ArrowDown/ArrowUp/Escape). Reemplazó 6 `<select>` nativos (que renderizaban el menú gris del SO).
+- **Radio buttons:** `.naowee-radio` + `__circle` + `__label` + `--selected` (línea 3875).
+- **Checkboxes:** `.naowee-checkbox` + `__box` + `__label` + `--checked`.
+- **Botones:** primary glow naranja = `.naowee-btn--loud .naowee-btn--large`, ghost = `.naowee-btn--quiet .naowee-btn--large`, mini = `.naowee-btn--quiet .naowee-btn--small`.
+- **Badges:** `.naowee-badge--brand/negative/neutral/quiet/small`.
+- **Messages:** `.naowee-message--informative` con `__header`, `__icon`, `__title`, `__text`.
+- **Font:** Inter (400-800) cargado desde Google Fonts; `font-feature-settings: 'case' 1` heredado del DS.
+
+### Funcionalidad del demo
+- 3 form variants condicionales:
+  - **F1 Liga** ~38 campos + 7 tablas REPEATABLE (Junta Directiva, Comité Disciplinario, Comisión Técnica, Fiscal, Clubes Afiliados, Comisión Juzgamiento, Paradeporte).
+  - **F2 Asociación** ~22 campos + 1 tabla.
+  - **F3 Federación** ~25 campos + 4 tablas.
+- 5 grupos de campos condicionales: Constancia PJ → Fecha, Inventario → upload, Afiliación internacional → upload, Certificación RF → upload, Paradeporte → 3-row table.
+- Mock data: `Liga de Atletismo de Antioquia / NIT 800123456-7`.
+- Validación bloqueante en paso 1 (Pre-selección) con shake animation real del DS.
+- Mock file uploaders con feedback "Archivo cargado".
+- Generación de radicado dinámico `IVC-2026-NNNNN`.
+- Pantalla de confirmación con success state + opción "Descargar comprobante" + "Volver al dashboard".
+
+### Decisiones de diseño (con prefijo `.ivc-*` cuando no hay equivalente canónico)
+- **Tablas REPEATABLE:** scopeadas como `.ivc-repeatable*` (prefix custom IVC) con tokens del DS (`var(--naowee-color-*)`) — el DS no tiene componente "tabla editable con [+ Agregar]/[Eliminar]".
+- **Dropdown inline en filas de tabla:** `.ivc-dropdown--inline` (custom IVC, junto a `.naowee-dropdown` canónico) para ajustar width 100% en celdas estrechas — el DS no define variante inline.
+- **File uploader:** patrón `.wz-file-drop` heredado del wizard-page canónico v2.0.3 (no del DS pero canónico del ecosistema Naowee project).
+- **Datepicker:** `<input type="date">` HTML5 dentro de `.naowee-textfield` — consistente con patrón usado en `modal-convocatoria.js` del v2.0.3.
+
+### URL pública del demo
+`https://naowee-tech.github.io/naowee-ivc/prototype/usuario-externo/formulario-fase-1.html`
+
+---
+
 ## [ivc-v1.2.0] — 2026-05-21
 
 > 🎨 **Fase 2 Sprint 1: 5 pantallas que cubren HU-3, HU-4, HU-6 oficiales del XLSX MODULO IVC.** Habilitados perfiles Coordinador + Profesional en el demo-switcher. Cero invención de clases `.naowee-*`; todas las clases del DS verificadas contra `naowee-design-system@v1.8.0`.
