@@ -6,6 +6,38 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.3.2] — 2026-05-23
+
+> 🎨 **7 fixes UI/UX sobre Fase 1.** Demo refinada con criterio Senior UX: títulos duplicados eliminados, dropdowns con portal al body (escapa overflow:hidden), datepicker canónico Naowee con calendario popup (portado del Project v2.0.3), stepper distribuido equitativamente, container plano sin elevation, CTAs de repeatables alineados a la izquierda.
+
+### Fixed — `prototype/usuario-externo/formulario-fase-1.html`
+
+**1. Títulos duplicados en dropdowns de pre-selección.** Eliminados los `<h2 class="wz-section">` "¿Qué tipo de organismo eres?" y "¿Qué trámite quieres realizar?" — el label del dropdown ya cumple ese rol y evita repetición visual. Dropdown ya consumía `width:100%` por default del DS.
+
+**2 + 5. Menús de dropdowns enmascarados por containers padres con `overflow:hidden`.** Patrón portal aplicado al controlador `setupNaoweeDropdownController`: el `.naowee-dropdown__menu` se mueve al `<body>` con `position:fixed` cuando se abre. Coordenadas calculadas desde `getBoundingClientRect()` del trigger con flip-up cuando no cabe abajo. Mismo patrón del datepicker del v2.0.3. Conservados teclado (Enter/Space/Arrows/Escape), `aria-expanded`, y close-on-scroll/resize. Aplica a TODOS los dropdowns del wizard (organismo, trámite, municipio, departamento, etc.).
+
+**3. Elevation del container principal.** `.wz-card` ya no tiene `box-shadow`. Conservado el `border: 1px solid var(--border)` para mantener el contorno. Container queda plano contra el fondo.
+
+**4. Wizard paso 6 se cortaba sin ampliar el container.** Aplicada la clase canónica `.naowee-stepper--distributed` (línea 3830 del DS) que reparte los pasos con `width:100%`. Labels no-activos compactos (`font-size:11.5px`, `max-width:110px`, `text-overflow:ellipsis`), label activo destacado (`font-size:13px`, sin `max-width`). Los 6 pasos caben en el ancho del container sin truncar el label activo.
+
+**6. Datepicker canónico Naowee con calendario popup (reemplaza `<input type="date">` HTML5).** Portadas del Project v2.0.3 (`modal-convocatoria.js`):
+   - `datepicker({ label, name, required, placeholder })` — markup del field con `.naowee-datepicker-field` + popover oculto
+   - `buildDaysHTML()` + `renderCalendarPortal()` — render del calendario en 3 modos (días → meses → años) con clicks por nivel
+   - `setDatepickerValue()` + `formatDateLong()` — formato "16 de Junio de 2025"
+   - `bindDatepickers(scope)` — portal del popover al body, posicionamiento con flip-up, click-outside, teclado (Enter/Space abre, Esc cierra), clear button
+   - 6 fechas migradas: `fecha_reforma` (F1/F3), `fecha_constancia` (F1/F3), `fecha_estatutos` (F2), `fecha_convocatoria` (F3), `fecha_realizacion` (F3)
+   - 61 clases canónicas DS usadas, verificadas contra `design-system.css`. Clases custom IVC solo para `.dp-view--days/months/years` y `.dp-cell` (no existen en DS — son el grid de meses/años scoped al popover, patrón heredado del v2.0.3)
+
+**7. CTAs "Agregar fila" alineados a la izquierda.** `.ivc-repeatable__add` cambiado de `text-align:center` → `text-align:left`. Aplica a las 12 tablas REPEATABLE del demo (Junta Directiva, Comité Disciplinario, Comisión Técnica, Comisión Juzgamiento, Fiscal, Clubes Afiliados, Paradeporte, Seccionales, etc.).
+
+### Pendiente (NO incluido en este release — para próxima iteración si Doug lo decide)
+- 2 `<input type="date">` HTML5 quedan en las celdas compactas del repeatable de Asamblea (paso 4) — `f1_reuniones.fechaConv` y `fechaReal`. Migrarlos requiere rediseñar el grid template del repeatable inline (el datepicker portaled no encaja en celdas estrechas con grid-template-columns fija).
+
+### Tamaño
+- Demo: 2,632 líneas / 116 KB (antes: 1,987 / 86 KB → +645 líneas / +30 KB por funciones del datepicker + portal logic).
+
+---
+
 ## [ivc-v1.3.1] — 2026-05-23
 
 > 🔁 **Iteración con feedback de Juan Manuel Armero (Tech Lead).** Tres ajustes para preparar la escalabilidad a múltiples organismos y a los 18 trámites del catálogo IVC, más limpieza del flujo público.

@@ -119,9 +119,7 @@
     background: #fff;
     border: 1px solid var(--border);
     border-radius: 16px;
-    box-shadow:
-      0 0 2px rgba(145,158,171,.2),
-      0 12px 24px -4px rgba(145,158,171,.12);
+    /* FIX #3: elevation removida — card plana contra el fondo (Doug 23/05/2026) */
     overflow: hidden;
   }
 
@@ -148,28 +146,33 @@
   .wz-stepper-wrap .naowee-stepper__step {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 4px 8px;
+    gap: 8px;
+    padding: 4px 6px;
     flex-shrink: 0;
     cursor: default;
+    min-width: 0;
   }
   .wz-stepper-wrap .naowee-stepper__number {
-    width: 28px; height: 28px;
+    width: 26px; height: 26px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center; justify-content: center;
-    font-size: 12.5px; font-weight: 700;
+    font-size: 12px; font-weight: 700;
     flex-shrink: 0;
     background: #f5f6fa;
     color: var(--text-secondary);
     transition: all .2s;
   }
+  /* FIX #4: labels no-activos compactos (11.5px) — el activo destaca a 13px (Doug 23/05/2026) */
   .wz-stepper-wrap .naowee-stepper__label {
-    font-size: 12.5px;
+    font-size: 11.5px;
     font-weight: 500;
     color: var(--text-secondary);
     white-space: nowrap;
-    transition: color .2s;
+    transition: color .2s, font-size .2s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
   }
   .wz-stepper-wrap .naowee-stepper__step--active .naowee-stepper__number {
     background: var(--accent);
@@ -191,6 +194,8 @@
   .wz-stepper-wrap .naowee-stepper__step--active .naowee-stepper__label {
     color: var(--text-primary);
     font-weight: 600;
+    font-size: 13px;
+    max-width: none;
   }
   .wz-stepper-wrap .naowee-stepper__step--done .naowee-stepper__number {
     background: #15803d; color: #fff;
@@ -327,6 +332,64 @@
     margin: 2px 0 0;
   }
 
+  /* ============================================================
+     FIX #6 — Datepicker canónico (clases scoped no-DS para vistas
+     months/years que no están en design-system.css). Doug 23/05/2026.
+     ============================================================ */
+  .naowee-datepicker__month-selector {
+    background: transparent !important;
+    border: none !important;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background .12s;
+  }
+  .naowee-datepicker__month-selector:hover,
+  .naowee-datepicker__month-selector:focus-visible {
+    background: var(--naowee-color-interactive-fill-quiet-idle, #fff3e6) !important;
+    outline: none;
+  }
+  .naowee-datepicker-field__clear[hidden] {
+    display: none !important;
+  }
+  /* Vistas months/years del calendario (no están en el DS) */
+  .dp-view--months,
+  .dp-view--years {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 8px;
+  }
+  .dp-cell {
+    padding: 12px 6px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .dp-cell:hover { background: var(--naowee-color-interactive-fill-mute-hover, #f4f5f9); }
+  .dp-cell--selected {
+    background: var(--naowee-color-interactive-fill-loud-idle, #d74009) !important;
+    color: white !important;
+    font-weight: 600;
+  }
+  /* Datepicker popover portaled — necesita fixed positioning para escapar containers */
+  .naowee-datepicker--popover {
+    position: fixed;
+    z-index: 9999;
+  }
+  .naowee-datepicker-field__value.is-placeholder {
+    color: var(--text-secondary);
+  }
+
   /* Tablas repeatable */
   .ivc-repeatable {
     border: 1px solid var(--border);
@@ -399,7 +462,8 @@
     padding: 12px 14px;
     border-top: 1px solid var(--border);
     background: #fafbff;
-    text-align: center;
+    /* FIX #7: CTA "+ Agregar fila" alineado a la izquierda (Doug 23/05/2026) */
+    text-align: left;
   }
 
   /* Resumen final (paso 7) */
@@ -524,7 +588,7 @@
 
     <!-- Stepper desktop -->
     <div class="wz-stepper-wrap" id="stepperWrap">
-      <div class="naowee-stepper naowee-stepper--pulse" id="stepperDesktop" role="list">
+      <div class="naowee-stepper naowee-stepper--pulse naowee-stepper--distributed" id="stepperDesktop" role="list">
         <!-- populated by JS -->
       </div>
     </div>
@@ -852,6 +916,430 @@ function ddInline(opts) {
   `;
 }
 
+// ============================================================
+// FIX #6 — Datepicker canónico Naowee (portado desde Project v2.0.3
+// shared/modal-convocatoria.js líneas 121-180, 1610-1994).
+// Genera el field + popover. Bind real lo hace bindDatepickers().
+// Doug 23/05/2026.
+// ============================================================
+const MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_ES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function datepicker(opts) {
+  const label = opts.label || '';
+  const name = opts.name;
+  const required = !!opts.required;
+  const placeholder = opts.placeholder || 'dd mmm aaaa';
+  const helper = opts.helper || '';
+  const value = opts.value || ''; // ISO yyyy-mm-dd
+  const calendarIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
+  const clearIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+  const chevronIcon2 = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
+  // Display inicial — si hay value ISO, mostrar formato largo
+  let displayText = placeholder;
+  let isPlaceholder = true;
+  if (value) {
+    const d = new Date(value);
+    if (!isNaN(d.getTime())) {
+      displayText = `${d.getDate()} de ${MESES_ES[d.getMonth()]} de ${d.getFullYear()}`;
+      isPlaceholder = false;
+    }
+  }
+  return `
+    <div class="naowee-datepicker-field" data-name="${escAttr(name)}" data-selected="${escAttr(value)}" data-on-change="${escAttr(opts.onChange || '')}">
+      <label class="naowee-textfield__label ${required ? 'naowee-textfield__label--required' : ''}">${esc(label)}</label>
+      <div class="naowee-datepicker-field__input" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false">
+        <span class="naowee-datepicker-field__icon">${calendarIcon}</span>
+        <span class="naowee-datepicker-field__value${isPlaceholder ? ' is-placeholder' : ''}" data-placeholder="${escAttr(placeholder)}">${esc(displayText)}</span>
+        <div class="naowee-datepicker-field__controls">
+          <button type="button" class="naowee-datepicker-field__clear" aria-label="Limpiar fecha"${isPlaceholder ? ' hidden' : ''}>${clearIcon}</button>
+          <span class="naowee-datepicker-field__chevron">${chevronIcon2}</span>
+        </div>
+      </div>
+      <input type="hidden" name="${escAttr(name)}" value="${escAttr(value)}"${required ? ' required' : ''}/>
+      <div class="naowee-datepicker naowee-datepicker--popover naowee-datepicker--compact" hidden>
+        <div class="naowee-datepicker__calendar" data-mode="days">
+          <div class="naowee-datepicker__header">
+            <button type="button" class="naowee-datepicker__month-selector" aria-label="Cambiar vista">
+              <span class="naowee-datepicker__month"></span>
+              <span class="naowee-datepicker__month-chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M6 9l6 6 6-6"/></svg>
+              </span>
+            </button>
+            <div class="naowee-datepicker__controls">
+              <button type="button" class="naowee-datepicker__nav" data-nav="-1" aria-label="Anterior">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button type="button" class="naowee-datepicker__nav" data-nav="1" aria-label="Siguiente">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="naowee-datepicker__content">
+            <div class="dp-view dp-view--days">
+              <div class="naowee-datepicker__week">
+                <span class="naowee-datepicker__weekday">Lun</span>
+                <span class="naowee-datepicker__weekday">Mar</span>
+                <span class="naowee-datepicker__weekday">Mié</span>
+                <span class="naowee-datepicker__weekday">Jue</span>
+                <span class="naowee-datepicker__weekday">Vie</span>
+                <span class="naowee-datepicker__weekday">Sab</span>
+                <span class="naowee-datepicker__weekday">Dom</span>
+              </div>
+              <div class="naowee-datepicker__days"></div>
+            </div>
+            <div class="dp-view dp-view--months" hidden></div>
+            <div class="dp-view dp-view--years" hidden></div>
+          </div>
+        </div>
+      </div>
+      ${helper ? `<div class="naowee-helper"><span class="naowee-helper__text"><span>${esc(helper)}</span></span></div>` : ''}
+    </div>
+  `;
+}
+
+function formatDateLong(d) {
+  return `${d.getDate()} de ${MESES_ES[d.getMonth()]} de ${d.getFullYear()}`;
+}
+
+function buildDaysHTML(viewYear, viewMonth, selectedISO) {
+  const selected = selectedISO ? new Date(selectedISO) : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const first = new Date(viewYear, viewMonth, 1);
+  let firstDow = first.getDay() - 1; if (firstDow < 0) firstDow = 6;
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const daysInPrev = new Date(viewYear, viewMonth, 0).getDate();
+
+  let html = '';
+  for (let w = 0; w < 6; w++) {
+    html += '<div class="naowee-datepicker__week">';
+    for (let d = 0; d < 7; d++) {
+      const i = w * 7 + d;
+      let dayNum, isOther = false, year = viewYear, month = viewMonth;
+      if (i < firstDow) {
+        dayNum = daysInPrev - firstDow + 1 + i;
+        isOther = true;
+        month = viewMonth - 1;
+        if (month < 0) { month = 11; year--; }
+      } else if (i >= firstDow + daysInMonth) {
+        dayNum = i - firstDow - daysInMonth + 1;
+        isOther = true;
+        month = viewMonth + 1;
+        if (month > 11) { month = 0; year++; }
+      } else {
+        dayNum = i - firstDow + 1;
+      }
+      const cellDate = new Date(year, month, dayNum);
+      cellDate.setHours(0, 0, 0, 0);
+      const isSelected = selected && cellDate.toDateString() === selected.toDateString();
+      const isToday = cellDate.toDateString() === today.toDateString();
+      const classes = [
+        'naowee-datepicker__day',
+        isOther ? 'naowee-datepicker__day--other-month' : '',
+        isSelected ? 'naowee-datepicker__day--selected' : '',
+        isToday && !isSelected ? 'naowee-datepicker__day--today' : ''
+      ].filter(Boolean).join(' ');
+      // ISO local format yyyy-mm-dd para evitar shift de timezone
+      const iso = `${year}-${String(month + 1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+      html += `<button type="button" class="${classes}" data-iso="${iso}">${dayNum}</button>`;
+    }
+    html += '</div>';
+  }
+  return html;
+}
+
+function setDatepickerValue(field, iso, dateObj) {
+  field.dataset.selected = iso || '';
+  const valueEl = field.querySelector('.naowee-datepicker-field__value');
+  const hiddenInput = field.querySelector('input[type="hidden"][name]');
+  const clearBtn = field.querySelector('.naowee-datepicker-field__clear');
+  if (iso && dateObj) {
+    valueEl.textContent = formatDateLong(dateObj);
+    valueEl.classList.remove('is-placeholder');
+    if (hiddenInput) hiddenInput.value = iso;
+    if (clearBtn) clearBtn.hidden = false;
+  } else {
+    const placeholder = valueEl.dataset.placeholder || 'dd mmm aaaa';
+    valueEl.textContent = placeholder;
+    valueEl.classList.add('is-placeholder');
+    if (hiddenInput) hiddenInput.value = '';
+    if (clearBtn) clearBtn.hidden = true;
+  }
+  // Dispatch onChange — strings tipo "STATE.x=this.value"
+  const onChange = field.dataset.onChange || '';
+  if (onChange) {
+    try {
+      const literal = JSON.stringify(String(iso || ''));
+      const code = onChange.replace(/this\.value/g, literal);
+      new Function(code)();
+    } catch(err) {
+      // Silencioso — datepicker no rompe la pantalla por un onChange roto
+    }
+  }
+  if (hiddenInput) hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function renderCalendarPortal(popover, field, viewYear, viewMonth) {
+  const calendar = popover.querySelector('.naowee-datepicker__calendar');
+  const mode = calendar.dataset.mode || 'days';
+  const monthLabel = popover.querySelector('.naowee-datepicker__month');
+  const viewDays = popover.querySelector('.dp-view--days');
+  const viewMonths = popover.querySelector('.dp-view--months');
+  const viewYears = popover.querySelector('.dp-view--years');
+  const daysWrap = popover.querySelector('.naowee-datepicker__days');
+
+  viewDays.style.display = mode === 'days' ? '' : 'none';
+  viewMonths.style.display = mode === 'months' ? 'grid' : 'none';
+  viewYears.style.display = mode === 'years' ? 'grid' : 'none';
+  viewDays.hidden = mode !== 'days';
+  viewMonths.hidden = mode !== 'months';
+  viewYears.hidden = mode !== 'years';
+
+  const closePopover = () => {
+    popover.hidden = true;
+    popover.classList.remove('naowee-datepicker--open');
+    field.classList.remove('naowee-datepicker-field--active');
+    const inp = field.querySelector('.naowee-datepicker-field__input');
+    if (inp) {
+      inp.setAttribute('aria-expanded', 'false');
+      inp.style.removeProperty('border-color');
+      inp.style.removeProperty('box-shadow');
+    }
+  };
+
+  if (mode === 'days') {
+    monthLabel.textContent = `${MESES_ES[viewMonth]} ${viewYear}`;
+    daysWrap.innerHTML = buildDaysHTML(viewYear, viewMonth, field.dataset.selected || '');
+    daysWrap.querySelectorAll('.naowee-datepicker__day:not(.naowee-datepicker__day--disabled)').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const iso = btn.dataset.iso;
+        // Parse ISO as local date (evitar shift de timezone)
+        const [yy, mm, dd] = iso.split('-').map(Number);
+        const d = new Date(yy, mm - 1, dd);
+        setDatepickerValue(field, iso, d);
+        renderCalendarPortal(popover, field, d.getFullYear(), d.getMonth());
+        closePopover();
+      });
+    });
+  }
+
+  if (mode === 'months') {
+    monthLabel.textContent = String(viewYear);
+    const selectedMonth = field.dataset.selected ? new Date(field.dataset.selected).getMonth() : -1;
+    const selectedYear = field.dataset.selected ? new Date(field.dataset.selected).getFullYear() : -1;
+    viewMonths.innerHTML = MESES_ES_CORTO.map((m, i) => {
+      const isSelected = i === selectedMonth && viewYear === selectedYear;
+      return `<button type="button" class="dp-cell ${isSelected ? 'dp-cell--selected' : ''}" data-month="${i}">${m}</button>`;
+    }).join('');
+    viewMonths.querySelectorAll('[data-month]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const m = parseInt(btn.dataset.month);
+        calendar.dataset.mode = 'days';
+        renderCalendarPortal(popover, field, viewYear, m);
+      });
+    });
+  }
+
+  if (mode === 'years') {
+    const startYear = Math.floor(viewYear / 12) * 12;
+    const endYear = startYear + 11;
+    monthLabel.textContent = `${startYear} - ${endYear}`;
+    const selectedYear = field.dataset.selected ? new Date(field.dataset.selected).getFullYear() : -1;
+    let html = '';
+    for (let y = startYear; y <= endYear; y++) {
+      const isSelected = y === selectedYear;
+      html += `<button type="button" class="dp-cell ${isSelected ? 'dp-cell--selected' : ''}" data-year="${y}">${y}</button>`;
+    }
+    viewYears.innerHTML = html;
+    viewYears.querySelectorAll('[data-year]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const y = parseInt(btn.dataset.year);
+        calendar.dataset.mode = 'months';
+        renderCalendarPortal(popover, field, y, viewMonth);
+      });
+    });
+  }
+}
+
+function bindDatepickers(scope) {
+  if (!scope) return;
+  const popovers = [];
+  scope.querySelectorAll('.naowee-datepicker-field').forEach(field => {
+    // Si ya fue bound (post re-render), buscar el popover en body y re-bindear
+    if (field._dpBound) return;
+    field._dpBound = true;
+
+    let popover = field.querySelector('.naowee-datepicker--popover');
+    const inputContainer = field.querySelector('.naowee-datepicker-field__input');
+    const valueEl = field.querySelector('.naowee-datepicker-field__value');
+    const clearBtn = field.querySelector('.naowee-datepicker-field__clear');
+
+    // Portal: mover popover al body (escapa overflow del wizard)
+    if (popover && popover.parentElement !== document.body) {
+      document.body.appendChild(popover);
+    }
+    field._popover = popover;
+    popovers.push({ field, popover });
+
+    let viewDate = field.dataset.selected ? new Date(field.dataset.selected) : new Date();
+    if (isNaN(viewDate.getTime())) viewDate = new Date();
+
+    const positionPopover = () => {
+      const rect = inputContainer.getBoundingClientRect();
+      const popoverWidth = popover.offsetWidth || 320;
+      const popoverHeight = popover.offsetHeight || 320;
+      const margin = 16;
+
+      let left = rect.left;
+      if (left + popoverWidth > window.innerWidth - margin) {
+        left = Math.max(margin, rect.right - popoverWidth);
+      }
+
+      // Flip-up cuando no cabe debajo
+      const spaceBelow = window.innerHeight - rect.bottom - margin;
+      const spaceAbove = rect.top - margin;
+      let top;
+      if (spaceBelow >= popoverHeight + 6 || spaceBelow >= spaceAbove) {
+        top = rect.bottom + 6;
+        if (top + popoverHeight > window.innerHeight - margin) {
+          top = Math.max(margin, window.innerHeight - margin - popoverHeight);
+        }
+      } else {
+        top = rect.top - popoverHeight - 6;
+        if (top < margin) top = margin;
+      }
+
+      popover.style.top = top + 'px';
+      popover.style.left = left + 'px';
+    };
+
+    const open = () => {
+      popovers.forEach(({ field: f, popover: p }) => {
+        if (p !== popover) {
+          p.hidden = true;
+          p.classList.remove('naowee-datepicker--open');
+          f.classList.remove('naowee-datepicker-field--active');
+          const otherInput = f.querySelector('.naowee-datepicker-field__input');
+          otherInput?.setAttribute('aria-expanded', 'false');
+          if (otherInput) {
+            otherInput.style.removeProperty('border-color');
+            otherInput.style.removeProperty('box-shadow');
+          }
+        }
+      });
+      popover.hidden = false;
+      requestAnimationFrame(() => popover.classList.add('naowee-datepicker--open'));
+      field.classList.add('naowee-datepicker-field--active');
+      inputContainer.setAttribute('aria-expanded', 'true');
+      inputContainer.style.setProperty('border-color', '#d74009', 'important');
+      inputContainer.style.setProperty('box-shadow', '0 0 0 3px rgba(215,64,9,.15)', 'important');
+      const calendar = popover.querySelector('.naowee-datepicker__calendar');
+      calendar.dataset.mode = 'days';
+      renderCalendarPortal(popover, field, viewDate.getFullYear(), viewDate.getMonth());
+      positionPopover();
+      const monthSelector = popover.querySelector('.naowee-datepicker__month-selector');
+      monthSelector.onclick = (e) => {
+        e.stopPropagation();
+        const m = calendar.dataset.mode || 'days';
+        calendar.dataset.mode = m === 'days' ? 'months' : m === 'months' ? 'years' : 'days';
+        renderCalendarPortal(popover, field, viewDate.getFullYear(), viewDate.getMonth());
+      };
+      popover.querySelectorAll('.naowee-datepicker__nav').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const dir = parseInt(btn.dataset.nav);
+          const m = calendar.dataset.mode || 'days';
+          if (m === 'days') {
+            viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + dir, 1);
+          } else if (m === 'months') {
+            viewDate = new Date(viewDate.getFullYear() + dir, viewDate.getMonth(), 1);
+          } else {
+            viewDate = new Date(viewDate.getFullYear() + (dir * 12), viewDate.getMonth(), 1);
+          }
+          renderCalendarPortal(popover, field, viewDate.getFullYear(), viewDate.getMonth());
+        };
+      });
+    };
+
+    const close = () => {
+      popover.hidden = true;
+      popover.classList.remove('naowee-datepicker--open');
+      field.classList.remove('naowee-datepicker-field--active');
+      inputContainer.setAttribute('aria-expanded', 'false');
+      inputContainer.style.removeProperty('border-color');
+      inputContainer.style.removeProperty('box-shadow');
+    };
+
+    const reposition = () => { if (!popover.hidden) positionPopover(); };
+    // Scope scroll: el wizard scrolea en window (no en wz-body), pero
+    // si hay scrollers internos los cubrimos también.
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+
+    const toggle = (e) => {
+      e.stopPropagation();
+      if (popover.hidden) open();
+      else close();
+    };
+
+    inputContainer.addEventListener('click', (e) => {
+      if (e.target.closest('.naowee-datepicker-field__clear')) return;
+      toggle(e);
+    });
+
+    inputContainer.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle(e);
+      } else if (e.key === 'Escape' && !popover.hidden) {
+        close();
+      }
+    });
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setDatepickerValue(field, null, null);
+        viewDate = new Date();
+      });
+    }
+
+    popover.addEventListener('click', (e) => e.stopPropagation());
+  });
+
+  // Click fuera cierra todos los popovers (sólo se bindea una vez global)
+  if (!document._dpClickBound) {
+    document._dpClickBound = true;
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.naowee-datepicker-field')) return;
+      if (e.target.closest('.naowee-datepicker--popover')) return;
+      document.querySelectorAll('body > .naowee-datepicker--popover:not([hidden])').forEach(p => {
+        p.hidden = true;
+        p.classList.remove('naowee-datepicker--open');
+        // Buscar el field origen via data-name
+        const name = p.dataset.field || '';
+        // No siempre tenemos dataset.field; el match correcto es por referencia,
+        // pero al portar al body perdemos eso. Como fallback, limpiamos todos
+        // los fields activos en el scope visible.
+        document.querySelectorAll('.naowee-datepicker-field--active').forEach(f => {
+          f.classList.remove('naowee-datepicker-field--active');
+          const inp = f.querySelector('.naowee-datepicker-field__input');
+          if (inp) {
+            inp.setAttribute('aria-expanded', 'false');
+            inp.style.removeProperty('border-color');
+            inp.style.removeProperty('box-shadow');
+          }
+        });
+      });
+    });
+  }
+}
+
 // Radio canónico .naowee-radio
 function radio(opts) {
   const name = opts.name;
@@ -1015,7 +1503,6 @@ function renderStep0() {
   const tramiteSelected = tramitesDisponibles.find(t => t.id === STATE.tipoTramite);
 
   return `
-    <h2 class="wz-section">¿Qué tipo de organismo eres?</h2>
     <div style="margin-bottom:18px;">
       ${dd({
         id: 'tipoOrg',
@@ -1031,7 +1518,6 @@ function renderStep0() {
         </p>` : ''}
     </div>
 
-    <h2 class="wz-section">¿Qué trámite quieres realizar?</h2>
     ${STATE.tipoOrganismo
       ? `
         ${messageInfo('Demo enfocada en Otorgamiento', 'Los trámites de Renovación, Actualización, Impugnación, etc. están listados como <strong>Próximamente</strong> para mostrar la extensibilidad. En producción, los 18 trámites del catálogo IVC se mapean acá según el organismo seleccionado.')}
@@ -1121,9 +1607,9 @@ function renderStep2_F1() {
 
     <h2 class="wz-section">Estatutos vigentes</h2>
     <div class="wz-grid-2">
-      ${tf({ label:'Fecha de la última Reforma Estatutaria', required:true,
-              type:'date', value:f1.fecha_reforma,
-              onInput:'STATE.data.f1.fecha_reforma=this.value' })}
+      ${datepicker({ label:'Fecha de la última Reforma Estatutaria', name:'f1_fecha_reforma',
+              required:true, value:f1.fecha_reforma,
+              onChange:'STATE.data.f1.fecha_reforma=this.value' })}
       ${tf({ label:'Radicado de Estatutos vigentes en IVC', required:true,
               placeholder:'IVC-2024-000456', value:f1.radicado_estatutos,
               onInput:'STATE.data.f1.radicado_estatutos=this.value' })}
@@ -1151,8 +1637,8 @@ function renderStep2_F1() {
     })}
     ${f1.tiene_constancia === 'si' ? `
       <div style="margin-top:14px;">
-        ${tf({ label:'Fecha de la Constancia', required:true, type:'date',
-                value:f1.fecha_constancia, onInput:'STATE.data.f1.fecha_constancia=this.value' })}
+        ${datepicker({ label:'Fecha de la Constancia', name:'f1_fecha_constancia', required:true,
+                value:f1.fecha_constancia, onChange:'STATE.data.f1.fecha_constancia=this.value' })}
       </div>
     ` : ''}
 
@@ -1183,8 +1669,9 @@ function renderStep2_F2() {
 
     <h2 class="wz-section">Estatutos sociales</h2>
     <div class="wz-grid-2">
-      ${tf({ label:'Fecha de los Estatutos Sociales vigentes', required:true, type:'date',
-              value:f2.fecha_estatutos, onInput:'STATE.data.f2.fecha_estatutos=this.value' })}
+      ${datepicker({ label:'Fecha de los Estatutos Sociales vigentes', name:'f2_fecha_estatutos',
+              required:true, value:f2.fecha_estatutos,
+              onChange:'STATE.data.f2.fecha_estatutos=this.value' })}
       ${tf({ label:'Radicado Estatutos vigentes en IVC', required:true,
               placeholder:'IVC-2024-000456', value:f2.radicado_estatutos,
               onInput:'STATE.data.f2.radicado_estatutos=this.value' })}
@@ -1243,8 +1730,9 @@ function renderStep2_F3() {
 
     <h2 class="wz-section">Estatutos y períodos</h2>
     <div class="wz-grid-2">
-      ${tf({ label:'Fecha última Reforma Estatutaria', required:true, type:'date',
-              value:f3.fecha_reforma, onInput:'STATE.data.f3.fecha_reforma=this.value' })}
+      ${datepicker({ label:'Fecha última Reforma Estatutaria', name:'f3_fecha_reforma',
+              required:true, value:f3.fecha_reforma,
+              onChange:'STATE.data.f3.fecha_reforma=this.value' })}
       ${tf({ label:'Radicado de Estatutos en IVC', required:true,
               placeholder:'IVC-2024-000456', value:f3.radicado_estatutos,
               onInput:'STATE.data.f3.radicado_estatutos=this.value' })}
@@ -1267,10 +1755,12 @@ function renderStep2_F3() {
             ],
             onChange:'STATE.data.f3.tipo_convocatoria=this.value' })}
     <div class="wz-grid-2">
-      ${tf({ label:'Fecha de Convocatoria', required:true, type:'date',
-              value:f3.fecha_convocatoria, onInput:'STATE.data.f3.fecha_convocatoria=this.value' })}
-      ${tf({ label:'Fecha de Realización', required:true, type:'date',
-              value:f3.fecha_realizacion, onInput:'STATE.data.f3.fecha_realizacion=this.value' })}
+      ${datepicker({ label:'Fecha de Convocatoria', name:'f3_fecha_convocatoria',
+              required:true, value:f3.fecha_convocatoria,
+              onChange:'STATE.data.f3.fecha_convocatoria=this.value' })}
+      ${datepicker({ label:'Fecha de Realización', name:'f3_fecha_realizacion',
+              required:true, value:f3.fecha_realizacion,
+              onChange:'STATE.data.f3.fecha_realizacion=this.value' })}
     </div>
   `;
 }
@@ -1715,7 +2205,15 @@ function render() {
     case 5: inner = renderStep5(); break;
     case 6: inner = renderStep6(); break;
   }
+  // Cleanup popovers de datepicker huérfanos del render anterior (estaban portaled en body)
+  document.querySelectorAll('body > .naowee-datepicker--popover').forEach(p => p.remove());
+  // Cleanup menús de dropdown huérfanos del render anterior
+  document.querySelectorAll('body > .naowee-dropdown__menu').forEach(m => m.remove());
+
   body.innerHTML = `<div class="wz-step-panel is-active">${inner}</div>`;
+
+  // FIX #6: bind del datepicker canónico Naowee tras cada render (Doug 23/05/2026)
+  bindDatepickers(body);
 
   setupFooter();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1854,16 +2352,122 @@ document.getElementById('btnBack').addEventListener('click', prev);
 /* ============================================================
    Controlador del componente canónico .naowee-dropdown
    (event delegation — sobrevive re-renders)
+
+   FIX #2/#5 (Doug 23/05/2026): patrón portal — el __menu se mueve
+   al <body> en open() y se posiciona con coords fixed calculadas
+   desde el rect del trigger. Esto escapa cualquier overflow:hidden
+   de containers padres (wz-card, wz-body, ivc-repeatable, etc.).
+   Mismo patrón que usa el datepicker del Project v2.0.3.
    ============================================================ */
 (function setupNaoweeDropdownController(){
+  // Asegurar dd-id único para que el menú portaled pueda volver a su dropdown origen
+  function ensureDdId(wrap){
+    if (wrap.dataset.ddId) return wrap.dataset.ddId;
+    const id = 'dd-portal-' + Math.random().toString(36).slice(2,9);
+    wrap.dataset.ddId = id;
+    return id;
+  }
+
+  function getMenu(wrap){
+    const id = ensureDdId(wrap);
+    // Buscar primero como hijo del wrap, después en body (si ya fue portaled)
+    return wrap.querySelector(':scope > .naowee-dropdown__menu')
+        || document.querySelector(`body > .naowee-dropdown__menu[data-owned-by="${id}"]`);
+  }
+
+  function positionMenu(wrap, menu){
+    const trg = wrap.querySelector('.naowee-dropdown__trigger');
+    if (!trg) return;
+    const rect = trg.getBoundingClientRect();
+    const margin = 8;
+    const menuH = menu.offsetHeight || 240;
+    const menuW = rect.width;
+    const spaceBelow = window.innerHeight - rect.bottom - margin;
+    let top;
+    // Flip-up cuando no cabe debajo
+    if (spaceBelow >= menuH + 6 || spaceBelow >= rect.top - margin) {
+      top = rect.bottom + 6;
+      if (top + menuH > window.innerHeight - margin) {
+        top = Math.max(margin, window.innerHeight - margin - menuH);
+      }
+    } else {
+      top = rect.top - menuH - 6;
+      if (top < margin) top = margin;
+    }
+    menu.style.position = 'fixed';
+    menu.style.top = top + 'px';
+    menu.style.left = rect.left + 'px';
+    menu.style.width = rect.width + 'px';
+    menu.style.zIndex = '9999';
+  }
+
+  function portalToBody(wrap){
+    const id = ensureDdId(wrap);
+    let menu = wrap.querySelector(':scope > .naowee-dropdown__menu');
+    if (menu) {
+      menu.dataset.ownedBy = id;
+      document.body.appendChild(menu);
+    } else {
+      menu = document.querySelector(`body > .naowee-dropdown__menu[data-owned-by="${id}"]`);
+    }
+    return menu;
+  }
+
+  function openDropdown(wrap){
+    closeAll(wrap);
+    const menu = portalToBody(wrap);
+    if (!menu) return;
+    wrap.classList.add('naowee-dropdown--open');
+    // El __menu portaled necesita la clase del padre para que opacity/pointer-events
+    // del DS (.naowee-dropdown--open .naowee-dropdown__menu) se apliquen.
+    // Como ahora está en body sin padre .naowee-dropdown--open, replicamos los estilos
+    // necesarios inline. Doug 23/05/2026.
+    menu.style.opacity = '1';
+    menu.style.pointerEvents = 'auto';
+    menu.style.visibility = 'visible';
+    menu.style.transform = 'translateY(0)';
+    menu.style.maxHeight = '260px';
+    menu.style.overflowY = 'auto';
+    positionMenu(wrap, menu);
+    const trg = wrap.querySelector('.naowee-dropdown__trigger');
+    if (trg) trg.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeDropdown(wrap){
+    wrap.classList.remove('naowee-dropdown--open');
+    const id = wrap.dataset.ddId;
+    if (id) {
+      const menu = document.querySelector(`body > .naowee-dropdown__menu[data-owned-by="${id}"]`);
+      if (menu) {
+        menu.style.opacity = '0';
+        menu.style.pointerEvents = 'none';
+        menu.style.visibility = 'hidden';
+      }
+    }
+    const trg = wrap.querySelector('.naowee-dropdown__trigger');
+    if (trg) trg.setAttribute('aria-expanded', 'false');
+  }
+
   function closeAll(except){
     document.querySelectorAll('.naowee-dropdown.naowee-dropdown--open').forEach(d => {
       if (d === except) return;
-      d.classList.remove('naowee-dropdown--open');
-      const trg = d.querySelector('.naowee-dropdown__trigger');
-      if (trg) trg.setAttribute('aria-expanded', 'false');
+      closeDropdown(d);
     });
   }
+
+  // Re-posicionar todos los menús abiertos en scroll/resize (cierre suave: los
+  // menús flotantes en HTML5 selects también se cierran en scroll).
+  let scrollCloseScheduled = false;
+  function onScrollOrResize(){
+    if (scrollCloseScheduled) return;
+    scrollCloseScheduled = true;
+    requestAnimationFrame(() => {
+      scrollCloseScheduled = false;
+      closeAll(null);
+    });
+  }
+  window.addEventListener('scroll', onScrollOrResize, true);
+  window.addEventListener('resize', onScrollOrResize);
 
   function runOnChange(wrap, value, text){
     const onChange = wrap.getAttribute('data-on-change') || '';
@@ -1883,6 +2487,19 @@ document.getElementById('btnBack').addEventListener('click', prev);
     wrap.dispatchEvent(new CustomEvent('change', { detail:{ value, text }, bubbles:true }));
   }
 
+  // Resolver el wrap origen desde una opción (puede estar en el menú portaled en body)
+  function resolveWrap(option){
+    // Caso A: opción todavía dentro del .naowee-dropdown original
+    const direct = option.closest('.naowee-dropdown');
+    if (direct) return direct;
+    // Caso B: opción dentro de un .naowee-dropdown__menu portaled en body
+    const menu = option.closest('.naowee-dropdown__menu');
+    if (menu && menu.dataset.ownedBy) {
+      return document.querySelector(`.naowee-dropdown[data-dd-id="${menu.dataset.ownedBy}"]`);
+    }
+    return null;
+  }
+
   // Click delegado
   document.addEventListener('click', function(ev){
     const trigger = ev.target.closest('.naowee-dropdown__trigger');
@@ -1890,7 +2507,7 @@ document.getElementById('btnBack').addEventListener('click', prev);
 
     // Click en una opción
     if (option) {
-      const wrap = option.closest('.naowee-dropdown');
+      const wrap = resolveWrap(option);
       if (!wrap) return;
       // Si la opción está deshabilitada, no hacer nada (no cerrar, no disparar onChange)
       if (option.classList.contains('naowee-dropdown__option--disabled') || option.getAttribute('aria-disabled') === 'true') {
@@ -1899,8 +2516,10 @@ document.getElementById('btnBack').addEventListener('click', prev);
       }
       const value = option.getAttribute('data-value') || '';
       const text  = option.textContent.trim();
-      // marca seleccionada
-      wrap.querySelectorAll('.naowee-dropdown__option--selected')
+      // marca seleccionada — busca opciones tanto en el wrap original como en el menú portaled
+      const menu = option.closest('.naowee-dropdown__menu');
+      const scope = menu || wrap;
+      scope.querySelectorAll('.naowee-dropdown__option--selected')
           .forEach(o => o.classList.remove('naowee-dropdown__option--selected'));
       option.classList.add('naowee-dropdown__option--selected');
       // actualiza trigger
@@ -1914,9 +2533,8 @@ document.getElementById('btnBack').addEventListener('click', prev);
       wrap.classList.remove('naowee-dropdown--error');
       const helper = wrap.querySelector('.naowee-helper--negative');
       if (helper) helper.remove();
-      // cierra
-      wrap.classList.remove('naowee-dropdown--open');
-      trg.setAttribute('aria-expanded', 'false');
+      // cierra (cierra correctamente el menú portaled)
+      closeDropdown(wrap);
       // dispara onChange
       runOnChange(wrap, value, text);
       ev.stopPropagation();
@@ -1929,37 +2547,64 @@ document.getElementById('btnBack').addEventListener('click', prev);
       if (!wrap) return;
       if (wrap.classList.contains('naowee-dropdown--disabled')) return;
       const wasOpen = wrap.classList.contains('naowee-dropdown--open');
-      closeAll(wasOpen ? null : wrap);
-      wrap.classList.toggle('naowee-dropdown--open');
-      trigger.setAttribute('aria-expanded', wrap.classList.contains('naowee-dropdown--open') ? 'true' : 'false');
+      if (wasOpen) {
+        closeDropdown(wrap);
+      } else {
+        openDropdown(wrap);
+      }
       ev.stopPropagation();
       return;
     }
 
-    // Click fuera → cierra todos
+    // Click fuera → cierra todos (excepto si el click cayó dentro de un menú portaled)
+    if (ev.target.closest('.naowee-dropdown__menu')) return;
     closeAll(null);
   });
 
+  // Resolver el wrap activo desde el elemento enfocado (puede estar en menú portaled)
+  function resolveActiveWrap(){
+    const ae = document.activeElement;
+    if (!ae || !ae.closest) return null;
+    // a) Foco dentro del .naowee-dropdown original (trigger o legado)
+    const direct = ae.closest('.naowee-dropdown');
+    if (direct) return direct;
+    // b) Foco dentro de un menú portaled en body
+    const menu = ae.closest('.naowee-dropdown__menu');
+    if (menu && menu.dataset.ownedBy) {
+      return document.querySelector(`.naowee-dropdown[data-dd-id="${menu.dataset.ownedBy}"]`);
+    }
+    return null;
+  }
+
+  function getOptionsForWrap(wrap){
+    // Buscar opciones primero en el menú portaled, fallback al wrap original
+    const id = wrap.dataset.ddId;
+    if (id) {
+      const menu = document.querySelector(`body > .naowee-dropdown__menu[data-owned-by="${id}"]`);
+      if (menu) return Array.from(menu.querySelectorAll('.naowee-dropdown__option:not(.naowee-dropdown__option--disabled)'));
+    }
+    return Array.from(wrap.querySelectorAll('.naowee-dropdown__option:not(.naowee-dropdown__option--disabled)'));
+  }
+
   // Teclado
   document.addEventListener('keydown', function(ev){
-    const wrap = document.activeElement && document.activeElement.closest && document.activeElement.closest('.naowee-dropdown');
+    const wrap = resolveActiveWrap();
     if (!wrap) {
       if (ev.key === 'Escape') closeAll(null);
       return;
     }
     const isOpen = wrap.classList.contains('naowee-dropdown--open');
     const trg = wrap.querySelector('.naowee-dropdown__trigger');
-    const options = Array.from(wrap.querySelectorAll('.naowee-dropdown__option'));
+    const options = getOptionsForWrap(wrap);
 
     if (ev.key === 'Escape') {
-      wrap.classList.remove('naowee-dropdown--open');
-      if (trg) { trg.setAttribute('aria-expanded', 'false'); trg.focus(); }
+      closeDropdown(wrap);
+      if (trg) trg.focus();
       ev.preventDefault();
       return;
     }
     if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown') && !isOpen && document.activeElement === trg) {
-      wrap.classList.add('naowee-dropdown--open');
-      trg.setAttribute('aria-expanded', 'true');
+      openDropdown(wrap);
       if (options[0]) options[0].focus();
       ev.preventDefault();
       return;
