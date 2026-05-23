@@ -6,6 +6,35 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.3.1] — 2026-05-23
+
+> 🔁 **Iteración con feedback de Juan Manuel Armero (Tech Lead).** Tres ajustes para preparar la escalabilidad a múltiples organismos y a los 18 trámites del catálogo IVC, más limpieza del flujo público.
+
+### Changed — `prototype/usuario-externo/formulario-fase-1.html`
+- **Tipo de organismo: radios → dropdown canónico escalable.** Reemplazados los 3 `.naowee-radio` por un `.naowee-dropdown` poblado desde un array `ORGANISMOS` ordenado. Agregado bloque comentado con 5 organismos adicionales (Club, Club Profesional, Comité Paralímpico, Comisión Nacional, Ente Departamental) que se activan agregando su `renderStep2_*/renderStep3_*/renderStep4_*` correspondiente. Patrón visible para que Juanma valide la extensibilidad.
+- **Tipo de trámite: filtrado dinámicamente por organismo.** Nuevo `TRAMITES_POR_ORGANISMO` (mapping `organismoId → trámites[]`) con `enabled: true/false` por trámite. El dropdown solo se renderiza cuando hay organismo seleccionado y muestra las opciones "Próximamente" con la clase canónica `.naowee-dropdown__option--disabled` (línea 2499 del DS, no inventada). Demo actual incluye Otorgamiento (activo) + Renovación / Actualización / Impugnación (disabled placeholders) para mostrar el patrón hacia los 18 trámites.
+- **Reset automático al cambiar organismo:** `STATE.tipoTramite = ''` al cambiar `STATE.tipoOrganismo` para evitar combinaciones inválidas.
+
+### Removed
+- **Botón "Guardar borrador" + CSS `.wz-save-draft` + función `saveDraft()`.** Justificación: la demo es pública (sin autenticación) y no hay sesión a quién persistir el borrador. Patrón vuelve cuando se integre con SUID.
+
+### Helper `dd()` (extendido sin inventar clases)
+- Soporte para `option.disabled: true` → aplica `.naowee-dropdown__option--disabled` canónica + `aria-disabled="true"`.
+- Controlador `setupNaoweeDropdownController` ahora ignora clicks en opciones disabled (early return antes de disparar `onChange`).
+
+### Verificado intacto
+- Lógica F1/F2/F3: `renderStep2_F1/F2/F3` se siguen seleccionando por `STATE.tipoOrganismo` en pasos 2, 3 y 4 — al cambiar organismo, los 38/22/25 campos y las 7/1/4 tablas REPEATABLE varían correctamente.
+
+### Trazabilidad feedback Juanma
+| Punto | Feedback original | Resolución |
+|---|---|---|
+| 1 | "¿no es mejor un selector? Después escalamos a más organismos y a 18 trámites" | Radios → dropdown `ORGANISMOS` extensible |
+| 2 | "Los trámites deben cambiar de acuerdo al organismo seleccionado" | `TRAMITES_POR_ORGANISMO` con filtrado dinámico |
+| 3 | "Quitar Guardar borrador — como es público no hay sección a quien guardarle el borrador" | Eliminado botón + CSS + función |
+| 4 | "¿Los campos están cambiando según organización?" | Confirmado: 3 condicionales preservadas |
+
+---
+
 ## [ivc-v1.3.0] — 2026-05-22
 
 > 🧑‍💼 **Fase 1 demo navegable end-to-end (lado Usuario Externo / Organismo).** Formulario de Radicación de Reconocimiento Deportivo (Otorgamiento) con wizard de 7 pasos, 3 form variants por tipo de organismo (F1 Liga / F2 Asociación / F3 Federación), 12 tablas REPEATABLE, 5 grupos de campos condicionales y los 7 documentos del Decreto 1387/1970 Art 2.1.1.2. Toda la UI refactorizada para usar los componentes canónicos del Naowee Design System v1.8.0 cargado vía CDN — cero invención de clases `.naowee-*`.
