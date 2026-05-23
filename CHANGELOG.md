@@ -6,6 +6,37 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.4] — 2026-05-23
+
+> 🪶 **3 ajustes de jerarquía visual en bandeja.**
+
+### Fixed — `prototype/coordinador/bandeja.html`
+
+**1. Plazo como label semántico (no badge) — Estado como único badge en la fila**
+- Antes: `Plazo` y `Estado` competían visualmente (ambos eran badges con pill background).
+- Después: `Plazo` se convierte en texto plano con color semántico:
+  - `.row-plazo--positive` (verde, >5 días)
+  - `.row-plazo--caution` (naranja, 1-5 días)
+  - `.row-plazo--negative` (rojo, vencido)
+- `Estado` conserva el badge canónico `.naowee-badge` como ÚNICO peso visual de la fila.
+- Resultado: jerarquía clara — el ojo va primero al badge del estado, después al plazo, después al asignado.
+
+**2. Acciones a Ghost canónico real (`.naowee-btn--mute`, no `--quiet`)**
+- Doug corrigió: el "ghost" en el DS canónico es `.naowee-btn--mute`, no `.naowee-btn--quiet`.
+- DS L707-709: `Hierarchy: Mute (Ghost/Tertiary)` con `background: var(--naowee-color-interactive-fill-mute-idle)` = `transparent` en idle.
+- `.naowee-btn--quiet` tiene `background: orange-100` desde el idle (lo que dejaba esos círculos crema/naranja claro visibles permanentemente en las acciones).
+- Migrados los 3 botones (Asignar, Reasignar, Histórico) de `--quiet` → `--mute`:
+  - **Idle:** transparente (solo el ícono naranja visible, sin background)
+  - **Hover:** background naranja claro + tooltip canónico aparece
+- Tooltips ahora usan `.naowee-tooltip--bottom` para no chocar con la fila superior.
+
+**3. Eliminado doble divider en el header del card**
+- Antes: `<hr class="naowee-table-card__divider">` + `border-top: 1px solid var(--border)` del toolbar → 2 líneas seguidas.
+- Después: eliminado el `<hr>` explícito; el `border-top` del toolbar provee la separación.
+- Padding del toolbar ajustado a `8px 20px 14px` para acercar el searchbox al header (espacio total entre texto del header y searchbox: ~18px en lugar de ~32px).
+
+---
+
 ## [ivc-v1.4.3] — 2026-05-23
 
 > 🎚️ **5 ajustes finos UI en bandeja (toolbar + columnas + acciones).**

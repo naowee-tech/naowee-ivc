@@ -44,12 +44,14 @@
 
     /* Toolbar dentro del card de tabla — searchbox + filters + bulk button.
        Todo en un solo row horizontal (Doug 23/05/2026: sin wrap).
-       NO inventa clase global; vive en este page-scope. */
+       v1.4.4 (23/05/2026): reducido padding-top de 12px → 4px para acercar
+       al header (que ya tiene su propio padding-bottom). border-top reducido
+       a sutil; el divider canónico __divider fue eliminado para no duplicar. */
     .bandeja-toolbar {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 20px;
+      padding: 8px 20px 14px;
       border-top: 1px solid var(--border);
     }
     .bandeja-toolbar__search {
@@ -120,6 +122,18 @@
       font-family: ui-monospace, SFMono-Regular, monospace;
     }
     .row-tipo { color: var(--text-secondary); }
+    /* v1.4.4 (23/05/2026): Plazo como label con color semántico (no badge).
+       Doug feedback: Plazo y Estado competían visualmente porque ambos eran
+       badges con pill. Solución: Estado conserva badge canónico; Plazo se
+       convierte en texto con color + font-weight 600. */
+    .row-plazo {
+      font-size: 13px;
+      font-weight: 600;
+      font-feature-settings: 'tnum';
+    }
+    .row-plazo--positive { color: var(--green, #1f8923); }
+    .row-plazo--caution  { color: var(--accent, #d74009); }
+    .row-plazo--negative { color: #c0392b; }
     .row-date {
       color: var(--text-secondary);
       font-size: 13px;
@@ -313,9 +327,9 @@
             </button>
           </div>
         </div>
-        <hr class="naowee-table-card__divider" />
-
-        <!-- Toolbar: search + filters -->
+        <!-- Toolbar: search + filters
+             v1.4.4 (23/05/2026): quitado el <hr __divider> redundante; el
+             toolbar provee su propio border-top, evitando doble línea. -->
         <div class="bandeja-toolbar" id="toolbarRoot">
           <div class="bandeja-toolbar__search">
             <div class="naowee-searchbox naowee-searchbox--medium" id="searchboxRoot">
@@ -721,8 +735,9 @@
           ? '<span class="row-asignado--vacio">—</span>'
           : '<span class="row-asignado">' + t.profesionalNombre + '</span>';
 
-        /* v1.4.3 (23/05/2026): acciones a icon button ghost + tooltip canónico
-           del DS (.naowee-tooltip + .naowee-tooltip__content) */
+        /* v1.4.4 (23/05/2026): acciones con .naowee-btn--mute (Ghost canónico
+           del DS: transparente idle, naranja claro en hover) — patrón correcto
+           confirmado por Doug. El --quiet del DS tiene fill naranja desde idle. */
         var accionLabel = (t.estado === 'No asignada') ? 'Asignar trámite' : 'Reasignar a otro profesional';
         var accionIcon = (t.estado === 'No asignada')
           /* user-plus icon — asignar */
@@ -731,17 +746,17 @@
           : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>';
 
         var accionBtn =
-          '<span class="naowee-tooltip">' +
-            '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small" data-asignar="' + t.id + '" aria-label="' + accionLabel + '">' +
+          '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" data-asignar="' + t.id + '" aria-label="' + accionLabel + '">' +
               accionIcon +
             '</button>' +
             '<span class="naowee-tooltip__content">' + accionLabel + '</span>' +
           '</span>';
 
-        /* Botón histórico — icon button quiet con tooltip canónico */
+        /* Botón histórico — icon button ghost (mute) con tooltip canónico */
         var historicoBtn =
-          '<span class="naowee-tooltip">' +
-            '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small" data-historico="' + t.id + '" aria-label="Ver histórico del trámite">' +
+          '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" data-historico="' + t.id + '" aria-label="Ver histórico del trámite">' +
               '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
                 '<circle cx="12" cy="12" r="10"/>' +
                 '<polyline points="12 6 12 12 16 14"/>' +
@@ -790,16 +805,16 @@
       return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">' + estado + '</span>';
     }
 
-    /* GAP #12 — Badge SLA / plazo */
+    /* v1.4.4 (23/05/2026): Plazo como LABEL con color semántico (no badge),
+       para que NO compita visualmente con el badge del Estado. Doug feedback. */
     function badgeForPlazo(dias, estado) {
-      /* Si ya está en validación o asignada, el plazo es menos urgente — pero igual lo mostramos */
       if (dias <= 0) {
-        return '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">Vencido</span>';
+        return '<span class="row-plazo row-plazo--negative">Vencido</span>';
       }
       if (dias <= 5) {
-        return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">' + dias + ' días</span>';
+        return '<span class="row-plazo row-plazo--caution">' + dias + ' días</span>';
       }
-      return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">' + dias + ' días</span>';
+      return '<span class="row-plazo row-plazo--positive">' + dias + ' días</span>';
     }
 
     function formatDate(iso) {
