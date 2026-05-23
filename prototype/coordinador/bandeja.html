@@ -43,23 +43,60 @@
     @media (max-width: 900px) { .stat-grid { grid-template-columns: 1fr; } }
 
     /* Toolbar dentro del card de tabla — searchbox + filters + bulk button.
+       Todo en un solo row horizontal (Doug 23/05/2026: sin wrap).
        NO inventa clase global; vive en este page-scope. */
     .bandeja-toolbar {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 12px 20px;
-      flex-wrap: wrap;
       border-top: 1px solid var(--border);
     }
-    .bandeja-toolbar__search { flex: 1; min-width: 240px; }
+    .bandeja-toolbar__search {
+      flex: 1 1 auto;
+      min-width: 200px;
+    }
     .bandeja-toolbar__filters {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
+      flex-shrink: 0;
     }
-    .bandeja-toolbar__filters .naowee-dropdown { min-width: 160px; }
+    .bandeja-toolbar__filters .naowee-dropdown {
+      width: 180px;
+      flex-shrink: 0;
+    }
     .bandeja-toolbar__bulk { flex-shrink: 0; }
+
+    /* Responsive: en mobile, wrap permitido */
+    @media (max-width: 900px) {
+      .bandeja-toolbar { flex-wrap: wrap; }
+      .bandeja-toolbar__filters { flex-wrap: wrap; }
+      .bandeja-toolbar__filters .naowee-dropdown { width: auto; min-width: 160px; flex: 1 1 160px; }
+    }
+
+    /* Fix: las options del dropdown usan <button> en este page-scope
+       (no <div> como en Fase 1). UA-default le da bg gris/border que rompe
+       el look canónico. Reset al patrón del DS (background:transparent del
+       wrapper __menu hereda; el __option sin estilos UA). */
+    .naowee-dropdown__menu .naowee-dropdown__option {
+      background: transparent;
+      border: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: var(--naowee-color-text-primary, #282834);
+    }
+    .naowee-dropdown__menu .naowee-dropdown__option:focus { outline: none; }
+    .naowee-dropdown__menu .naowee-dropdown__option:hover {
+      background: var(--naowee-color-background-secondary, #F4F5F9);
+    }
+    .naowee-dropdown__menu .naowee-dropdown__option--selected {
+      background: var(--naowee-color-interactive-fill-quiet-idle, #fff3e6);
+      color: var(--naowee-color-text-accent, #d74009);
+      font-weight: var(--naowee-font-weight-semibold, 600);
+    }
 
     /* Row styles — column hierarchy */
     .row-radicado {
@@ -306,10 +343,10 @@
                 </span>
               </button>
               <div class="naowee-dropdown__menu" role="listbox">
-                <button type="button" class="naowee-dropdown__option" data-val="" tabindex="-1">Todos los estados</button>
-                <button type="button" class="naowee-dropdown__option" data-val="No asignada" tabindex="-1">En remisión</button>
-                <button type="button" class="naowee-dropdown__option" data-val="Asignada" tabindex="-1">Asignada</button>
-                <button type="button" class="naowee-dropdown__option" data-val="En validación" tabindex="-1">En validación</button>
+                <div class="naowee-dropdown__option" role="option" data-val="" tabindex="-1">Todos los estados</div>
+                <div class="naowee-dropdown__option" role="option" data-val="No asignada" tabindex="-1">En remisión</div>
+                <div class="naowee-dropdown__option" role="option" data-val="Asignada" tabindex="-1">Asignada</div>
+                <div class="naowee-dropdown__option" role="option" data-val="En validación" tabindex="-1">En validación</div>
               </div>
             </div>
             <!-- Filtro Tipo -->
@@ -323,10 +360,10 @@
                 </span>
               </button>
               <div class="naowee-dropdown__menu" role="listbox">
-                <button type="button" class="naowee-dropdown__option" data-val="" tabindex="-1">Todos los tipos</button>
-                <button type="button" class="naowee-dropdown__option" data-val="Otorgamiento" tabindex="-1">Otorgamiento</button>
-                <button type="button" class="naowee-dropdown__option" data-val="Renovación" tabindex="-1">Renovación</button>
-                <button type="button" class="naowee-dropdown__option" data-val="Actualización" tabindex="-1">Actualización</button>
+                <div class="naowee-dropdown__option" role="option" data-val="" tabindex="-1">Todos los tipos</div>
+                <div class="naowee-dropdown__option" role="option" data-val="Otorgamiento" tabindex="-1">Otorgamiento</div>
+                <div class="naowee-dropdown__option" role="option" data-val="Renovación" tabindex="-1">Renovación</div>
+                <div class="naowee-dropdown__option" role="option" data-val="Actualización" tabindex="-1">Actualización</div>
               </div>
             </div>
           </div>
@@ -419,10 +456,10 @@
               </span>
             </button>
             <div class="naowee-dropdown__menu" role="listbox">
-              <button type="button" class="naowee-dropdown__option naowee-dropdown__option--selected" data-val="cp-001" tabindex="-1">Carlos Pérez (12 activos)</button>
-              <button type="button" class="naowee-dropdown__option" data-val="mg-002" tabindex="-1">María García (8 activos)</button>
-              <button type="button" class="naowee-dropdown__option" data-val="al-003" tabindex="-1">Andrés López (15 activos)</button>
-              <button type="button" class="naowee-dropdown__option" data-val="lr-004" tabindex="-1">Lucía Ramírez (5 activos)</button>
+              <div class="naowee-dropdown__option naowee-dropdown__option--selected" role="option" data-val="cp-001" tabindex="-1">Carlos Pérez (12 activos)</div>
+              <div class="naowee-dropdown__option" role="option" data-val="mg-002" tabindex="-1">María García (8 activos)</div>
+              <div class="naowee-dropdown__option" role="option" data-val="al-003" tabindex="-1">Andrés López (15 activos)</div>
+              <div class="naowee-dropdown__option" role="option" data-val="lr-004" tabindex="-1">Lucía Ramírez (5 activos)</div>
             </div>
           </div>
         </div>
@@ -494,10 +531,10 @@
             </span>
           </button>
           <div class="naowee-dropdown__menu" role="listbox">
-            <button type="button" class="naowee-dropdown__option naowee-dropdown__option--selected" data-val="cp-001" tabindex="-1">Carlos Pérez (12 activos)</button>
-            <button type="button" class="naowee-dropdown__option" data-val="mg-002" tabindex="-1">María García (8 activos)</button>
-            <button type="button" class="naowee-dropdown__option" data-val="al-003" tabindex="-1">Andrés López (15 activos)</button>
-            <button type="button" class="naowee-dropdown__option" data-val="lr-004" tabindex="-1">Lucía Ramírez (5 activos)</button>
+            <div class="naowee-dropdown__option naowee-dropdown__option--selected" role="option" data-val="cp-001" tabindex="-1">Carlos Pérez (12 activos)</div>
+            <div class="naowee-dropdown__option" role="option" data-val="mg-002" tabindex="-1">María García (8 activos)</div>
+            <div class="naowee-dropdown__option" role="option" data-val="al-003" tabindex="-1">Andrés López (15 activos)</div>
+            <div class="naowee-dropdown__option" role="option" data-val="lr-004" tabindex="-1">Lucía Ramírez (5 activos)</div>
           </div>
         </div>
 

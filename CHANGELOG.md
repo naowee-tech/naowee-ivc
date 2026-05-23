@@ -6,6 +6,29 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.1] — 2026-05-23
+
+> 🔧 **Fix visual de filtros de bandeja (post-feedback Doug):** layout en single-row + estilos canónicos del menu portaled.
+
+### Fixed — `prototype/coordinador/bandeja.html`
+
+**Layout de toolbar (filtros + searchbox en un solo row horizontal):**
+- Removido `flex-wrap: wrap` del `.bandeja-toolbar` y `.bandeja-toolbar__filters` en desktop.
+- `.bandeja-toolbar__filters .naowee-dropdown` con `width: 180px` fijo + `flex-shrink: 0` para evitar que el searchbox los empuje.
+- `.bandeja-toolbar__search` con `flex: 1 1 auto` + `min-width: 200px` para que crezca y ceda espacio sin wrapear.
+- En mobile (`@media max-width: 900px`): se permite wrap y los dropdowns se hacen `flex: 1 1 160px` para adaptarse.
+
+**Estilos del menu del dropdown (options ya no se ven como cajitas grises sueltas):**
+- **Causa raíz:** las options del DS canónico están diseñadas asumiendo `<div>` (sin estilos UA-default). En bandeja se habían generado como `<button>`, que traen `background-color: buttonface`, `border` y `padding` de UA → rompía el look del menu canónico (las options aparecían como pills grises sueltas, sin el container blanco con sombra del menu).
+- **Solución:** migrados 16 elementos de `<button class="naowee-dropdown__option">` → `<div class="naowee-dropdown__option" role="option">` en los 4 dropdowns de la bandeja (Estado, Tipo de trámite, Asignar profesional individual, Asignar profesional masivo). Patrón consistente con el demo Fase 1.
+- **Defensa adicional:** CSS reset `appearance: none; background: transparent; border: 0; width: 100%; text-align: left;` aplicado a `.naowee-dropdown__menu .naowee-dropdown__option` (page-scoped) por si algún `<button>` se cuela en el futuro.
+- Reglas `:hover` y `--selected` re-declaradas con tokens del DS (`--naowee-color-background-secondary`, `--naowee-color-interactive-fill-quiet-idle`, `--naowee-color-text-accent`).
+
+### JS compatibility
+- El controlador `setupNaoweeDropdownController` no se tocó — los selectores usan `closest('.naowee-dropdown__option')` (por clase, no por tag) → funciona idéntico con `<div>` o `<button>`.
+
+---
+
 ## [ivc-v1.4.0] — 2026-05-23
 
 > 🗂️ **Fase 2 del flowchart BPMN: Remisión + Asignación.** Refactor de `coordinador/bandeja.html` al nivel del DS v1.3.3 + alineación con los estados oficiales del flowchart (`En remisión` → `Asignada`) + cobertura completa de HU-3 (trazabilidad, SLA, mensajes del Sistema). Gap report: de 66% alineada → 100%.
