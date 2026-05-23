@@ -6,6 +6,52 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.0] — 2026-05-23
+
+> 🗂️ **Fase 2 del flowchart BPMN: Remisión + Asignación.** Refactor de `coordinador/bandeja.html` al nivel del DS v1.3.3 + alineación con los estados oficiales del flowchart (`En remisión` → `Asignada`) + cobertura completa de HU-3 (trazabilidad, SLA, mensajes del Sistema). Gap report: de 66% alineada → 100%.
+
+### Changed — `prototype/coordinador/bandeja.html`
+
+**ALTO IMPACTO (5 fixes):**
+- **Portal pattern para dropdowns.** Portado `setupNaoweeDropdownController` IIFE del demo Fase 1: `.naowee-dropdown__menu` se mueve a `document.body` con `position:fixed` + `data-owned-by`. Coordenadas calculadas desde `getBoundingClientRect()` del trigger. Flip-up cuando no cabe abajo. Resuelve el bug de "menú enmascarado por modal overflow:hidden".
+- **Keyboard navigation.** Enter/Space/ArrowDown/Up/Escape con `resolveActiveWrap` para localizar el origen al hacer click en option portaled.
+- **Close-on-scroll/resize.** Patrón rAF debounced para cerrar dropdowns suavemente al hacer scroll del body o resize de la ventana.
+- **Icon button quiet canónico.** Los 3 botones de cierre de modales (masivo, individual, histórico) + el botón nuevo de "Ver histórico" por fila → migrados a `.naowee-btn .naowee-btn--quiet .naowee-btn--icon .naowee-btn--small` (líneas DS 689, 745, 644). Naranja automático.
+- **CSS hover state para futuros datepickers.** Preparado `cursor:pointer` + hover naranja en `.naowee-datepicker-field__input/__icon/__chevron` (aunque bandeja no tenía filtros de fecha, queda listo para v1.4.x).
+
+**MEDIO IMPACTO (3 fixes):**
+- **Helper canónico `.naowee-helper--negative`** con badge + texto en modal masivo (cuando no se elige profesional) y en toolbar (cuando intenta masiva con 0 trámites seleccionados).
+- **Shake utility `.naowee-shake`** real del DS aplicada con reflow trick + 500ms timeout. Triggers: toolbar, dropdown profesional, modal. Reemplaza animaciones ad-hoc anteriores.
+- **`.naowee-message--caution`** con umbral `ALTA_CARGA_UMBRAL=8`. Mapa `PROF_LOAD` mock que muestra carga por profesional; al elegir uno con >= 8 trámites activos, aparece warning antes de confirmar asignación.
+
+**BAJO IMPACTO — alineación con el flowchart Fase 2 (4 fixes):**
+- **Badge `En remisión`** (canónico `--caution --quiet --small` naranja) — estado oficial del flowchart entre `Radicado` y `Asignada`. Stat-card "Sin asignar" → "En remisión". Filtro dropdown actualizado. Valor interno de `data.js` conservado ('No asignada') para no requerir migración del mock data.
+- **Badge `Asignada`** (canónico `--informative --quiet`) — actualización del estado tras acción del Coordinador.
+- **Banner `Remisión automática del Sistema`** con `.naowee-message--informative` al inicio de la página, debajo del header. Aclara al Coordinador que los trámites entran auto-asignados a su área (Deporte Aficionado) sin acción suya.
+- **Histórico / trazabilidad HU-3.** Nueva columna y modal con `<ol class="ivc-timeline">` mostrando los 3-4 eventos del trámite (Radicado → En remisión → Asignada → Inicio validación). Cada evento con timestamp + actor (Sistema o usuario). `.ivc-timeline*` es scope custom (DS no tiene componente timeline).
+- **SLA / Plazo visible por trámite.** Nueva columna "Plazo" con badge escalonado por color: `--positive` (>5 días), `--caution` (1-5 días), `--negative` ("Vencido"). Mock con valores rotativos [15,12,3,0,18,5,-2,20,2,10,4,-5].
+
+### Lógica funcional preservada
+12 trámites mock, filtros estado/tipo/búsqueda, asignación individual (dropdown con conteo), asignación masiva (3 estrategias: mismo / equitativo / manual), stat cards, multi-row con header checkbox, snackbar de confirmación, integración `IVCData`/`IVCShell`/`IVCTour` intacta.
+
+### UX patterns notables
+- Botón "Asignación masiva" ahora NO usa `disabled` HTML — siempre clickeable. Si `selectedCount===0`, muestra helper + shake en toolbar (más educativo que disabled silencioso).
+- Cuando estrategia masiva es "distribuir"/"manual", se oculta el bloque profesional + el warning de carga (UX coherente).
+
+### Trazabilidad HU oficiales (XLSX MODULO IVC)
+| HU | Criterios cubiertos | Componente |
+|---|---|---|
+| **HU-3 Asignación** | individual + masiva + estados (`En remisión` / `Asignada` / `En validación`) + reasignar + trazabilidad (fecha, hora, usuario) + SLA visible | `coordinador/bandeja.html` (completo) |
+
+### Tamaño
+- Bandeja: 1,303 líneas / 60 KB (antes: 746 / 34.2 KB → +557 líneas / +26 KB por portal + datepicker css + timeline + SLA + warnings).
+
+### Pendiente (NO incluido — Sprint siguiente)
+- Refactor de `profesional/workspace.html` con el mismo patrón (Fase 3 del flowchart: Validación).
+- HU-5 Cumplimiento parcial (modal subsanación + vista organismo devuelto).
+
+---
+
 ## [ivc-v1.3.3] — 2026-05-23
 
 > 🎉 **7 fixes UI/UX adicionales + pantalla de éxito con confetti (portada del módulo Incentivos).** Continuación del feedback de Doug sobre v1.3.2. Refinamientos finales para pulir el demo a nivel Senior UX.
