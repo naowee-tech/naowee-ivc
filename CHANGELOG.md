@@ -6,6 +6,38 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.5] — 2026-05-23
+
+> 🧹 **4 ajustes finos: limpieza visual + consistencia + modal canónico.**
+
+### Fixed — `prototype/coordinador/bandeja.html`
+
+**1. Eliminado banner `Remisión automática del Sistema`**
+El Coordinador ya conoce el comportamiento del sistema — el banner explicativo era ruido visual. Eliminados los 9 líneas de markup `.naowee-message--informative`.
+
+**2. Header spacing simétrico**
+Antes: padding del toolbar asimétrico (8px top / 14px bottom) → divider visualmente más cerca del searchbox que del title. Después: `padding: 14px 20px` simétrico → divider centrado entre title/subtitle y searchbox.
+
+**3. Badge "En validación" a bajo contraste**
+Antes: `--informative` fuerte (azul saturado, alto contraste) competía con "Asignada" `--informative --quiet` y "En remisión" `--caution --quiet`. Después: `--informative --quiet` consistente. Todos los estados de la fila ahora son bajo contraste con el mismo peso visual.
+
+| Estado | Antes | Después |
+|---|---|---|
+| En remisión | `--caution --quiet --small` (bajo contraste) | sin cambio |
+| Asignada | `--informative --quiet --small` (bajo contraste) | sin cambio |
+| En validación | `--informative --small` (**alto contraste**) | `--informative --quiet --small` (bajo contraste) |
+
+**4. Modal histórico al patrón canónico**
+- Eliminado botón "Cerrar" del `__footer` (redundante con el X del `__header`)
+- Eliminado el `<div class="naowee-modal__footer">` completo
+- Removido `--scrollable` (el body solo tiene un timeline corto, no necesita scroll forzado)
+- `max-width: 560px` → `480px` (más compacto)
+- Botón X migrado de `--quiet` (naranja idle) → `--mute` (Ghost canónico transparent idle)
+- Eliminado el event listener del botón Cerrar redundante
+- Resultado: modal 30% más bajo, sin espacio desperdiciado, patrón consistente con el resto del DS
+
+---
+
 ## [ivc-v1.4.4] — 2026-05-23
 
 > 🪶 **3 ajustes de jerarquía visual en bandeja.**

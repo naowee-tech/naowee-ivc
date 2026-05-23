@@ -47,11 +47,14 @@
        v1.4.4 (23/05/2026): reducido padding-top de 12px → 4px para acercar
        al header (que ya tiene su propio padding-bottom). border-top reducido
        a sutil; el divider canónico __divider fue eliminado para no duplicar. */
+    /* v1.4.5 (23/05/2026): spacing simétrico entre divider y contenido arriba/abajo.
+       El __head canónico tiene padding-bottom 10px; el toolbar paga padding-top 14px
+       para visualmente quedar centrado el divider entre title y searchbox. */
     .bandeja-toolbar {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px 20px 14px;
+      padding: 14px 20px;
       border-top: 1px solid var(--border);
     }
     .bandeja-toolbar__search {
@@ -279,16 +282,9 @@
         <p class="page-subtitle">Asigna las solicitudes radicadas a los profesionales disponibles de tu área.</p>
       </header>
 
-      <!-- GAP #10 — Banner "Remisión automática del Sistema" -->
-      <div class="naowee-message naowee-message--informative" style="margin-bottom:20px">
-        <div class="naowee-message__icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        </div>
-        <div class="naowee-message__content">
-          <p class="naowee-message__title" style="margin:0 0 4px;font-weight:700;font-size:13.5px;">Remisión automática del Sistema</p>
-          <p class="naowee-message__text" style="margin:0">Los trámites entran automáticamente a tu bandeja desde el módulo de Recepción cuando el Sistema los remite a tu área (Deporte Aficionado). Tu rol es asignar cada trámite a un Profesional para iniciar la fase de validación.</p>
-        </div>
-      </div>
+      <!-- v1.4.5 (23/05/2026): Banner "Remisión automática" eliminado por
+           pedido de Doug — el Coordinador ya conoce el comportamiento del
+           sistema, redundante para la UI. -->
 
       <!-- Stat cards (3): En remisión / Asignadas / En validación -->
       <section class="stat-grid">
@@ -577,23 +573,22 @@
     </div>
   </div>
 
-  <!-- ═══ Modal: Histórico / Trazabilidad (GAP #11) ═══ -->
+  <!-- ═══ Modal: Histórico / Trazabilidad (GAP #11)
+       v1.4.5 (23/05/2026): compactado al patrón canónico — sin footer
+       redundante (solo X arriba), max-width 480px, body sin scroll forzado. -->
   <div class="naowee-modal-overlay" id="modalHistoricoOverlay" role="dialog" aria-modal="true" aria-labelledby="modalHistoricoTitle">
-    <div class="naowee-modal naowee-modal--scrollable" style="max-width: 560px;">
+    <div class="naowee-modal" style="max-width: 480px;">
       <div class="naowee-modal__header">
         <div class="naowee-modal__title-group">
           <h2 class="naowee-modal__title" id="modalHistoricoTitle">Histórico del trámite</h2>
           <p class="naowee-modal__subtitle" id="modalHistoricoSub">—</p>
         </div>
-        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small" id="modalHistoricoClose" aria-label="Cerrar modal">
+        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" id="modalHistoricoClose" aria-label="Cerrar modal">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="naowee-modal__body">
         <ol class="ivc-timeline" id="histTimeline"></ol>
-      </div>
-      <div class="naowee-modal__footer naowee-modal__footer--end">
-        <button type="button" class="naowee-btn naowee-btn--mute" id="modalHistoricoCerrar">Cerrar</button>
       </div>
     </div>
   </div>
@@ -800,7 +795,8 @@
         return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Asignada</span>';
       }
       if (estado === 'En validación') {
-        return '<span class="naowee-badge naowee-badge--informative naowee-badge--small">En validación</span>';
+        /* v1.4.5: bajo contraste (--quiet) para consistencia con En remisión / Asignada */
+        return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">En validación</span>';
       }
       return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">' + estado + '</span>';
     }
@@ -1233,7 +1229,6 @@
       /* Modal histórico (GAP #11) */
       var histOv = document.getElementById('modalHistoricoOverlay');
       document.getElementById('modalHistoricoClose').addEventListener('click', closeModalHistorico);
-      document.getElementById('modalHistoricoCerrar').addEventListener('click', closeModalHistorico);
       histOv.addEventListener('click', function (e) { if (e.target === histOv) closeModalHistorico(); });
     }
 
