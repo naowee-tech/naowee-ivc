@@ -6,6 +6,46 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.3.3] — 2026-05-23
+
+> 🎉 **7 fixes UI/UX adicionales + pantalla de éxito con confetti (portada del módulo Incentivos).** Continuación del feedback de Doug sobre v1.3.2. Refinamientos finales para pulir el demo a nivel Senior UX.
+
+### Fixed — `prototype/usuario-externo/formulario-fase-1.html`
+
+**1. Helper "Selecciona primero el tipo de organismo" rediseñado.** Eliminado el cuadro dashed gris. Reemplazado por el componente canónico `.naowee-message--informative` reusando el helper `messageInfo()` existente. Lenguaje visual consistente con los demás mensajes del demo.
+
+**2. Labels del wizard completos (no más abreviaciones).** Removido `max-width:110px` + `text-overflow:ellipsis` de `.naowee-stepper__label`. Font-size 11.5px en pasos no-activos y 13px en activo (en lugar de truncar). Los 7 labels completos ("Pre-selección", "Datos generales", "Personería", "Asamblea", "Estructura", "Documentos", "Confirmación") caben en el ancho del container con conectores `flex:1 1 auto; min-width:8px`.
+
+**3. Datepicker: cursor pointer + ícono naranja en hover.** Agregadas reglas CSS:
+   - `.naowee-datepicker-field__input { cursor: pointer; }`
+   - `.naowee-datepicker-field__input:hover .naowee-datepicker-field__icon { color: var(--accent); }`
+   - `.naowee-datepicker-field__input:hover .naowee-datepicker-field__chevron { color: var(--accent); }`
+   - Estado `--active` también naranja
+Patrón heredado del Project v2.0.3 (`modal-convocatoria.js` L414).
+
+**4. Radio buttons sin container (Sí/No).** Helper `radioYN()` reescrito. Eliminado wrapper con border/padding/background. Solo queda `.naowee-radio` canónico nativo + `.naowee-radio-group--horizontal` para el flex-row con gap. Aplica a todos los grupos Sí/No del demo.
+
+**5. Datepicker canónico en repeatables (paso 4 Asamblea).** Eliminados los últimos 2 `<input type="date">` HTML5 que quedaban en las celdas compactas del repeatable de Reuniones de Asamblea. Nuevo helper `datepickerInline()` que usa `.naowee-datepicker-field--small` canónico (línea 5414 del DS) para versión compacta. Grid template del repeatable ajustado de `1.3fr 1fr 1fr 1fr 90px 36px` → `1.2fr 1.1fr 1.1fr 0.8fr 80px 32px`. `bindDatepickers()` invocado tras cada `render()` (idempotente, cubre add/remove rows). **Cero `<input type="date">` en todo el demo.**
+
+**6. Iconos "borrar" (caneca) naranja con icon button ghost canónico.** Botones de eliminar fila migrados de gris a `.naowee-btn .naowee-btn--quiet .naowee-btn--icon .naowee-btn--small` (clases DS líneas 689, 745, 644). El `.naowee-btn--quiet svg` aporta `stroke: var(--naowee-color-icon-accent)` (naranja); hover background `var(--naowee-color-interactive-fill-quiet-hover)`. Eliminado el override CSS que volvía gris el ícono. Aplica a las 12 tablas REPEATABLE.
+
+**7. Pantalla de éxito con confetti — portada del módulo Incentivos.** Refactor completo del `renderSuccess()` reusando el patrón de `naowee-test-incentivos/incentivo-11-asignar-exito.html`:
+   - **Confetti animado:** 40 partículas con animación `fall` 2.4s linear (rotate 720deg + translateY 280px). Colores DS: `#FF7500`, `#d74009`, `#1f8923`, `#1f78d1`, `#ffbf75`, `#fff`. Función `spawnConfetti()` idempotente.
+   - **Success hero:** gradient blanco→gris claro, radial-gradient verde sutil de fondo, círculo de check verde 88px con `linear-gradient(135deg, #25a12a, #1f8923)` + box-shadow + animación `pop` cubic-bezier(.34,1.56,.64,1).
+   - **Stamp del radicado:** chip monospace con border full-radius mostrando `Radicado · IVC-2026-NNNNN`.
+   - **Status banner:** muestra transición de estado (vacío → Radicado) con badges canónicos.
+   - **Comprobante:** card con avatar gradient naranja, datos del organismo (Liga de Atletismo de Antioquia / NIT 800123456-7 / Liga Deportiva Departamental) y `kv-row`s con icon + label + value (Trámite, Fecha radicación, Plazo respuesta, Estado).
+   - **Actions:** "Descargar comprobante (PDF)" → `window.print()`, "Ver mis trámites" → reset.
+   - Animación `fadeInUp` 0.4s en todo el wrap.
+
+### Notas sobre clases custom (no DS) en success
+Las clases `.success-wrap`, `.success-hero`, `.success-check`, `.confetti`, `.receipt`, `.kv-row`, `.status-banner` NO son del DS — son el sistema visual de Incentivos, portado verbatim. Mantienen el mismo naming para consistencia cross-módulo (no se les agregó prefijo `.ivc-*` por decisión de Doug).
+
+### Tamaño
+- Demo: 2,962 líneas / 132 KB (antes: 2,632 / 116 KB → +330 líneas / +16 KB por confetti + receipt + datepickerInline).
+
+---
+
 ## [ivc-v1.3.2] — 2026-05-23
 
 > 🎨 **7 fixes UI/UX sobre Fase 1.** Demo refinada con criterio Senior UX: títulos duplicados eliminados, dropdowns con portal al body (escapa overflow:hidden), datepicker canónico Naowee con calendario popup (portado del Project v2.0.3), stepper distribuido equitativamente, container plano sin elevation, CTAs de repeatables alineados a la izquierda.

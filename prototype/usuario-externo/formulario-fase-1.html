@@ -163,16 +163,15 @@
     color: var(--text-secondary);
     transition: all .2s;
   }
-  /* FIX #4: labels no-activos compactos (11.5px) — el activo destaca a 13px (Doug 23/05/2026) */
+  /* FIX #2 (23/05/2026): labels completos en el stepper (sin abreviar/ellipsis).
+     11.5px en pasos no-activos, 13px en el activo, el wrap permite que entren los
+     7 nombres en desktop manteniendo el separador como flex:1. */
   .wz-stepper-wrap .naowee-stepper__label {
     font-size: 11.5px;
     font-weight: 500;
     color: var(--text-secondary);
     white-space: nowrap;
     transition: color .2s, font-size .2s;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 110px;
   }
   .wz-stepper-wrap .naowee-stepper__step--active .naowee-stepper__number {
     background: var(--accent);
@@ -195,7 +194,6 @@
     color: var(--text-primary);
     font-weight: 600;
     font-size: 13px;
-    max-width: none;
   }
   .wz-stepper-wrap .naowee-stepper__step--done .naowee-stepper__number {
     background: #15803d; color: #fff;
@@ -209,9 +207,9 @@
     flex: 1 1 auto;
     height: 2px;
     background: var(--border);
-    margin: 0 6px;
+    margin: 0 8px;
     border-radius: 1px;
-    min-width: 12px;
+    min-width: 8px;
   }
   .wz-stepper-wrap .naowee-stepper__connector--done { background: #15803d; }
 
@@ -389,6 +387,19 @@
   .naowee-datepicker-field__value.is-placeholder {
     color: var(--text-secondary);
   }
+  /* FIX #3 (23/05/2026): cursor pointer en el input del datepicker + ícono/chevron
+     en naranja al hover (mismo patrón que v2.0.3 shared/modal-convocatoria.js:414). */
+  .naowee-datepicker-field__input {
+    cursor: pointer;
+  }
+  .naowee-datepicker-field__input:hover .naowee-datepicker-field__icon,
+  .naowee-datepicker-field__input:hover .naowee-datepicker-field__chevron {
+    color: var(--naowee-color-text-accent, #d74009);
+  }
+  .naowee-datepicker-field--active .naowee-datepicker-field__icon,
+  .naowee-datepicker-field--active .naowee-datepicker-field__chevron {
+    color: var(--naowee-color-text-accent, #d74009);
+  }
 
   /* Tablas repeatable */
   .ivc-repeatable {
@@ -443,20 +454,42 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(215,64,9,.15);
   }
+  /* FIX #5 (23/05/2026): datepicker canónico en filas repeatable.
+     Usa la variante --small del DS (height 32-36px) ajustada para encajar en
+     la altura visual del ivc-mini-input (36px). */
+  .ivc-repeatable__row .naowee-datepicker-field { width: 100%; }
+  .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__input {
+    height: 36px;
+    padding: 0 8px;
+    border-radius: 6px;
+    border-color: var(--border-dark);
+  }
+  .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__icon,
+  .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__icon svg {
+    width: 16px; height: 16px;
+  }
+  .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__chevron,
+  .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__chevron svg {
+    width: 14px; height: 14px;
+  }
+  .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__clear,
+  .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__clear svg {
+    width: 14px; height: 14px;
+  }
+  .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__value {
+    font-size: 12px;
+  }
   .ivc-repeatable__row-display {
     font-size: 12.5px; font-weight: 600; color: var(--text-primary);
   }
-  .ivc-repeatable__remove {
-    background: transparent;
-    border: 0;
-    color: var(--text-secondary);
-    width: 30px; height: 30px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center;
-    transition: background .15s, color .15s;
+  /* FIX #6 (23/05/2026): el botón de borrar fila usa el componente canónico
+     .naowee-btn--quiet (stroke accent + naranja en hover) — esta clase solo
+     ajusta el width del icono dentro del grid del repeatable. */
+  .ivc-repeatable__row .ivc-repeatable__remove,
+  .ivc-repeatable__row .naowee-btn--icon.naowee-btn--small.ivc-repeatable__remove {
+    width: 32px;
+    justify-self: center;
   }
-  .ivc-repeatable__remove:hover { background: #fff0ee; color: #C00000; }
   .ivc-repeatable__remove[disabled] { opacity: .35; cursor: not-allowed; }
   .ivc-repeatable__add {
     padding: 12px 14px;
@@ -497,38 +530,184 @@
     .wz-review__row { grid-template-columns: 1fr; gap: 2px; }
   }
 
-  /* Success view (radicación completada) */
+  /* FIX #7 (23/05/2026): Pantalla de éxito con confetti + congrats portada del
+     módulo de Incentivos (naowee-test-incentivos/incentivo-11-asignar-exito.html
+     líneas 16-63 + 321-334). Clases custom no-DS (scoped a la pantalla de éxito):
+     .success-wrap, .success-hero, .success-check, .success-stamp, .confetti,
+     .status-banner, .receipt — mismo lenguaje visual que Incentivos. */
+  .success-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 0 28px;
+    animation: fadeInUp .4s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .success-hero {
+    background: linear-gradient(180deg, #fff 0%, #fafbfd 100%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 36px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .success-hero::before {
+    content: "";
+    position: absolute;
+    top: -40px; left: 50%; transform: translateX(-50%);
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(31,137,35,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .success-check {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #25a12a, #1f8923);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 28px rgba(31,137,35,.35);
+    animation: successPop .5s cubic-bezier(.34,1.56,.64,1);
+    position: relative; z-index: 1;
+  }
+  @keyframes successPop {
+    0%   { transform: scale(.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .success-hero h1 {
+    font-size: 28px; font-weight: 800; letter-spacing: -.02em;
+    margin: 0 0 8px;
+    position: relative; z-index: 1;
+    color: var(--text-primary);
+  }
+  .success-hero p {
+    font-size: 14px; color: var(--text-secondary);
+    line-height: 1.5;
+    max-width: 480px; margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+  .success-stamp {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 14px;
+    font-family: 'SF Mono', 'JetBrains Mono', 'Menlo', monospace;
+    font-size: 11.5px; font-weight: 700;
+    color: var(--text-secondary);
+    padding: 5px 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    position: relative; z-index: 1;
+  }
+  /* Confetti */
+  .confetti {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 0;
+  }
+  .confetti span {
+    position: absolute;
+    width: 8px; height: 12px;
+    animation: confettiFall 2.4s linear forwards;
+    opacity: 0;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(-30px) rotate(0); opacity: 0; }
+    15%  { opacity: 1; }
+    100% { transform: translateY(280px) rotate(720deg); opacity: 0; }
+  }
+  /* Banner de estado */
+  .status-banner {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--blue-bg, #cfe1f7);
+    background: var(--blue-bg, #eef5ff);
+    border-radius: 12px;
+    margin-bottom: 18px;
+  }
+  .status-banner__icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--blue-info, #1f78d1);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .status-banner__body { flex: 1; min-width: 0; }
+  .status-banner__title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; }
+  .status-banner__text { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.45; }
+  /* Comprobante / receipt */
+  .receipt {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #fff;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .receipt__head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: #fbfbfd;
+  }
+  .receipt__head h3 { margin: 0; font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -.01em; }
+  .receipt__id {
+    font-family: 'SF Mono', 'JetBrains Mono', 'Menlo', monospace;
+    font-size: 12px; font-weight: 700; color: var(--accent);
+    padding: 4px 10px;
+    background: var(--orange-bg, #fff3e6);
+    border: 1px solid var(--orange-border, #ffbf75);
+    border-radius: 9999px;
+  }
+  .receipt__body {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .receipt__ava {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FF7500, #d74009);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800;
+    flex-shrink: 0;
+    letter-spacing: -.01em;
+  }
+  .receipt__person { flex: 1; min-width: 0; }
+  .receipt__person-name { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+  .receipt__person-meta { font-size: 12.5px; color: var(--text-secondary); }
+  .receipt__details {
+    padding: 14px 18px;
+    display: grid; gap: 8px;
+  }
+  .kv-row {
+    display: grid; grid-template-columns: 180px 1fr;
+    gap: 12px;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .kv-row:last-child { border-bottom: 0; }
+  .kv-row__label { color: var(--text-secondary); font-weight: 500; }
+  .kv-row__value { color: var(--text-primary); font-weight: 600; word-break: break-word; }
+  @media (max-width: 640px) {
+    .kv-row { grid-template-columns: 1fr; gap: 2px; }
+  }
+  .success-actions {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    margin-top: 4px;
+  }
+
+  /* Success view legacy (mantener compat con renderSuccess antiguo si se usa en otro lado) */
   .wz-success {
     position: relative;
     text-align: center;
     padding: 56px 32px;
     overflow: hidden;
-  }
-  .wz-success__check {
-    width: 88px; height: 88px;
-    margin: 0 auto 22px;
-    border-radius: 50%;
-    background: #15803d; color: #fff;
-    display: inline-flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 0 8px rgba(21,128,61,.12);
-    animation: wzCheckPop .5s cubic-bezier(.16,1,.3,1) both;
-  }
-  @keyframes wzCheckPop {
-    from { transform: scale(.4); opacity: 0; }
-    to   { transform: scale(1); opacity: 1; }
-  }
-  .wz-success h2 { margin: 0 0 8px; font-size: 22px; font-weight: 700; color: var(--text-primary); }
-  .wz-success p { margin: 0 auto 14px; max-width: 480px; font-size: 14px; color: var(--text-secondary); }
-  .wz-success__radicado {
-    display: inline-block; margin: 4px 0 18px;
-    padding: 10px 18px;
-    background: var(--orange-bg);
-    border: 1px solid #ffbf75;
-    border-radius: 8px;
-    font-family: 'JetBrains Mono', 'Menlo', monospace;
-    font-size: 18px; font-weight: 700;
-    color: var(--accent);
-    letter-spacing: .5px;
   }
 
   /* Skip view (paso no aplica para asociaciones) */
@@ -998,6 +1177,79 @@ function datepicker(opts) {
   `;
 }
 
+// FIX #5 (23/05/2026): Datepicker compacto para filas repeatable.
+// Reutiliza el mismo flujo + bindDatepickers(), pero usa .naowee-datepicker-field--small
+// del DS para encajar en filas estrechas (~140-160px de ancho, h:36px).
+// Sin label visible (la columna del header del repeatable ya identifica el campo).
+function datepickerInline(opts) {
+  const name = opts.name;
+  const placeholder = opts.placeholder || 'dd/mm/aaaa';
+  const value = opts.value || '';
+  const max = opts.max || '';
+  const calendarIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
+  const clearIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+  const chevronIcon2 = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
+  let displayText = placeholder;
+  let isPlaceholder = true;
+  if (value) {
+    const d = new Date(value);
+    if (!isNaN(d.getTime())) {
+      // En filas estrechas, formato corto: "12 Ene 2026"
+      displayText = `${d.getDate()} ${MESES_ES_CORTO[d.getMonth()]} ${d.getFullYear()}`;
+      isPlaceholder = false;
+    }
+  }
+  return `
+    <div class="naowee-datepicker-field naowee-datepicker-field--small" data-name="${escAttr(name)}" data-selected="${escAttr(value)}" data-on-change="${escAttr(opts.onChange || '')}"${max ? ` data-max="${escAttr(max)}"` : ''}>
+      <div class="naowee-datepicker-field__input" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false">
+        <span class="naowee-datepicker-field__icon">${calendarIcon}</span>
+        <span class="naowee-datepicker-field__value${isPlaceholder ? ' is-placeholder' : ''}" data-placeholder="${escAttr(placeholder)}">${esc(displayText)}</span>
+        <div class="naowee-datepicker-field__controls">
+          <button type="button" class="naowee-datepicker-field__clear" aria-label="Limpiar fecha"${isPlaceholder ? ' hidden' : ''}>${clearIcon}</button>
+          <span class="naowee-datepicker-field__chevron">${chevronIcon2}</span>
+        </div>
+      </div>
+      <input type="hidden" name="${escAttr(name)}" value="${escAttr(value)}"/>
+      <div class="naowee-datepicker naowee-datepicker--popover naowee-datepicker--compact" hidden>
+        <div class="naowee-datepicker__calendar" data-mode="days">
+          <div class="naowee-datepicker__header">
+            <button type="button" class="naowee-datepicker__month-selector" aria-label="Cambiar vista">
+              <span class="naowee-datepicker__month"></span>
+              <span class="naowee-datepicker__month-chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M6 9l6 6 6-6"/></svg>
+              </span>
+            </button>
+            <div class="naowee-datepicker__controls">
+              <button type="button" class="naowee-datepicker__nav" data-nav="-1" aria-label="Anterior">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button type="button" class="naowee-datepicker__nav" data-nav="1" aria-label="Siguiente">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="naowee-datepicker__content">
+            <div class="dp-view dp-view--days">
+              <div class="naowee-datepicker__week">
+                <span class="naowee-datepicker__weekday">Lun</span>
+                <span class="naowee-datepicker__weekday">Mar</span>
+                <span class="naowee-datepicker__weekday">Mié</span>
+                <span class="naowee-datepicker__weekday">Jue</span>
+                <span class="naowee-datepicker__weekday">Vie</span>
+                <span class="naowee-datepicker__weekday">Sab</span>
+                <span class="naowee-datepicker__weekday">Dom</span>
+              </div>
+              <div class="naowee-datepicker__days"></div>
+            </div>
+            <div class="dp-view dp-view--months" hidden></div>
+            <div class="dp-view dp-view--years" hidden></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function formatDateLong(d) {
   return `${d.getDate()} de ${MESES_ES[d.getMonth()]} de ${d.getFullYear()}`;
 }
@@ -1360,9 +1612,9 @@ function radio(opts) {
   `;
 }
 
-// Radio inline (Sí/No)
+// Radio inline (Sí/No) — FIX #4 (23/05/2026): sin caja con border, solo el radio
+// nativo canónico .naowee-radio (estructura del DS líneas 3875+).
 function radioYN(opts) {
-  const name = opts.name;
   const value = opts.value;
   const onYes = opts.onYes || '';
   const onNo = opts.onNo || '';
@@ -1373,12 +1625,12 @@ function radioYN(opts) {
     ...extra
   ];
   return `
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <div class="naowee-radio-group naowee-radio-group--horizontal">
       ${items.map(it => {
         const selected = value === it.v;
         return `
-          <label class="naowee-radio${selected ? ' naowee-radio--selected' : ''}" style="cursor:pointer;padding:10px 16px;border:1.5px solid ${selected ? 'var(--accent)' : 'var(--border-dark)'};border-radius:8px;background:${selected ? 'var(--orange-bg)' : '#fff'};display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;" onclick="${it.onClick}">
-            <span class="naowee-radio__circle" style="flex-shrink:0;"></span>
+          <label class="naowee-radio${selected ? ' naowee-radio--selected' : ''}" onclick="${it.onClick}">
+            <span class="naowee-radio__circle"></span>
             <span class="naowee-radio__label">${esc(it.t)}</span>
           </label>
         `;
@@ -1536,11 +1788,7 @@ function renderStep0() {
             </p>` : ''}
         </div>
       `
-      : `
-        <p style="font-size:13px;color:var(--text-secondary);margin:0;padding:14px 16px;background:#fafbff;border:1px dashed var(--border-dark);border-radius:8px;">
-          Selecciona primero el tipo de organismo para ver los trámites disponibles.
-        </p>
-      `
+      : messageInfo('Selecciona el tipo de organismo', 'Después de elegirlo se habilitarán los trámites disponibles para ese tipo de organismo.')
     }
   `;
 }
@@ -1797,27 +2045,27 @@ function renderStep3_F1() {
     <h2 class="wz-section">Tipos de reunión realizados</h2>
     ${messageInfo('', '9 tipos según Decreto 1085/2015. Solo diligencia las filas donde la reunión efectivamente se realizó.')}
     <div class="ivc-repeatable">
-      <div class="ivc-repeatable__head" style="grid-template-columns: 1.3fr 1fr 1fr 1fr 90px 36px;">
+      <div class="ivc-repeatable__head" style="grid-template-columns: 1.2fr 1.1fr 1.1fr 0.8fr 80px 32px;">
         <div>Tipo / Clase</div>
         <div>Fecha Convocatoria</div>
         <div>Fecha Realización</div>
-        <div>Fecha Antelación</div>
+        <div>Antelación</div>
         <div>¿Cumple?</div>
         <div></div>
       </div>
       ${a.f1_reuniones.map((row, i) => `
-        <div class="ivc-repeatable__row" style="grid-template-columns: 1.3fr 1fr 1fr 1fr 90px 36px;">
+        <div class="ivc-repeatable__row" style="grid-template-columns: 1.2fr 1.1fr 1.1fr 0.8fr 80px 32px;">
           <input type="text" class="ivc-mini-input" value="${escAttr(row.tipo)}" placeholder="Tipo de reunión"
             oninput="STATE.data.asamblea.f1_reuniones[${i}].tipo=this.value" />
-          <input type="date" class="ivc-mini-input" value="${escAttr(row.fechaConv)}" max="${todayISO()}"
-            oninput="STATE.data.asamblea.f1_reuniones[${i}].fechaConv=this.value" />
-          <input type="date" class="ivc-mini-input" value="${escAttr(row.fechaReal)}" max="${todayISO()}"
-            oninput="STATE.data.asamblea.f1_reuniones[${i}].fechaReal=this.value" />
+          ${datepickerInline({ name:`f1_reuniones_${i}_fechaConv`, value:row.fechaConv, max:todayISO(),
+              onChange:`STATE.data.asamblea.f1_reuniones[${i}].fechaConv=this.value` })}
+          ${datepickerInline({ name:`f1_reuniones_${i}_fechaReal`, value:row.fechaReal, max:todayISO(),
+              onChange:`STATE.data.asamblea.f1_reuniones[${i}].fechaReal=this.value` })}
           <input type="text" class="ivc-mini-input" value="${escAttr(row.antelacion)}" placeholder="15 días"
             oninput="STATE.data.asamblea.f1_reuniones[${i}].antelacion=this.value" />
           ${ddInline({ value:row.cumple, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.asamblea.f1_reuniones[${i}].cumple=this.value` })}
-          <button type="button" class="ivc-repeatable__remove" onclick="STATE.data.asamblea.f1_reuniones.splice(${i},1);render();" aria-label="Eliminar fila">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small ivc-repeatable__remove" onclick="STATE.data.asamblea.f1_reuniones.splice(${i},1);render();" aria-label="Eliminar fila">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6"/></svg>
           </button>
         </div>
       `).join('')}
@@ -1878,8 +2126,8 @@ function repeatableDynamic(opts) {
       ${rows.map((row, i) => `
         <div class="ivc-repeatable__row" style="grid-template-columns: ${cols};">
           ${cellRenderer(row, i)}
-          <button type="button" class="ivc-repeatable__remove"${rows.length <= minRows ? ' disabled' : ` onclick="${onRemove(i)}"`} aria-label="Eliminar fila">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small ivc-repeatable__remove"${rows.length <= minRows ? ' disabled' : ` onclick="${onRemove(i)}"`} aria-label="Eliminar fila">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6"/></svg>
           </button>
         </div>
       `).join('')}
@@ -2165,21 +2413,98 @@ function renderStep6() {
   `;
 }
 
+// FIX #7 (23/05/2026): Pantalla de éxito con confetti + comprobante estilizado,
+// portada del módulo de Incentivos (naowee-test-incentivos/incentivo-11-asignar-exito.html).
 function renderSuccess() {
+  const d = STATE.data;
+  const orgLabel = ({
+    liga: 'Liga Deportiva Departamental',
+    asociacion: 'Asociación Deportiva',
+    federacion: 'Federación Deportiva Nacional'
+  })[STATE.tipoOrganismo] || 'Organismo deportivo';
+  const nombre = (d.nombre || 'Organismo deportivo').trim();
+  const nit = (d.nit || '—').trim();
+  const radicado = STATE.radicado || 'IVC-2026-00000';
+  // Iniciales del organismo (máx 2 letras) para el avatar
+  const initials = nombre.split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() || 'OD';
+  // Fecha de radicación legible
+  const now = new Date();
+  const fechaRad = `${now.getDate()} de ${MESES_ES[now.getMonth()]} de ${now.getFullYear()}`;
+  // Fecha límite respuesta (15 días hábiles aprox = 21 días corridos)
+  const limite = new Date(now); limite.setDate(limite.getDate() + 21);
+  const fechaLimite = `${limite.getDate()} de ${MESES_ES[limite.getMonth()]} de ${limite.getFullYear()}`;
+
   return `
-    <div class="wz-success">
-      <div class="wz-success__check">
-        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <div class="success-wrap">
+      <div class="success-hero">
+        <div class="confetti" id="confettiIvc"></div>
+        <div class="success-check">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h1>¡Trámite radicado con éxito!</h1>
+        <p>Tu solicitud de Otorgamiento de Reconocimiento Deportivo fue recibida por el Ministerio del Deporte. Recibirás notificaciones de cada cambio de estado en el correo registrado.</p>
+        <div class="success-stamp">Radicado · ${esc(radicado)}</div>
       </div>
-      <h2>Trámite radicado con éxito</h2>
-      <p>Tu solicitud fue recibida por el Ministerio del Deporte. Te notificaremos por correo cuando el Profesional de IVC inicie la revisión.</p>
-      <div class="wz-success__radicado">${esc(STATE.radicado)}</div>
-      <p style="font-size:12.5px;">Plazo de revisión: hasta <strong>15 días hábiles</strong>.</p>
-      <div style="margin-top:24px;">
-        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--large" onclick="window.print()">Imprimir comprobante</button>
+
+      <div class="status-banner">
+        <div class="status-banner__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="status-banner__body">
+          <p class="status-banner__title">Estado actual: Radicado</p>
+          <p class="status-banner__text">Tu trámite entró en cola de revisión. Un Profesional del IVC lo evaluará en un plazo máximo de <strong>15 días hábiles</strong> (estimado: ${esc(fechaLimite)}).</p>
+        </div>
+      </div>
+
+      <div class="receipt">
+        <div class="receipt__head">
+          <h3>Comprobante de radicación</h3>
+          <span class="receipt__id">#${esc(radicado)}</span>
+        </div>
+        <div class="receipt__body">
+          <div class="receipt__ava">${esc(initials)}</div>
+          <div class="receipt__person">
+            <div class="receipt__person-name">${esc(nombre)}</div>
+            <div class="receipt__person-meta">NIT ${esc(nit)} · ${esc(orgLabel)}</div>
+          </div>
+        </div>
+        <div class="receipt__details">
+          <div class="kv-row"><div class="kv-row__label">Trámite</div><div class="kv-row__value">Otorgamiento de Reconocimiento Deportivo</div></div>
+          <div class="kv-row"><div class="kv-row__label">Organismo</div><div class="kv-row__value">${esc(orgLabel)}</div></div>
+          <div class="kv-row"><div class="kv-row__label">NIT</div><div class="kv-row__value">${esc(nit)}</div></div>
+          <div class="kv-row"><div class="kv-row__label">Fecha de radicación</div><div class="kv-row__value">${esc(fechaRad)}</div></div>
+          <div class="kv-row"><div class="kv-row__label">Plazo de respuesta</div><div class="kv-row__value">15 días hábiles</div></div>
+          <div class="kv-row"><div class="kv-row__label">Estado actual</div><div class="kv-row__value" style="color:var(--blue-info, #1f78d1);">Radicado</div></div>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="window.print()">Descargar comprobante (PDF)</button>
+        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--large" onclick="STATE.step=0;STATE.radicado='';render();">Ver mis trámites</button>
       </div>
     </div>
   `;
+}
+
+// FIX #7 (23/05/2026): genera el confetti dinámicamente en el div #confettiIvc
+// tras renderizar el success step. Idempotente: solo se ejecuta si el div existe
+// y está vacío.
+function spawnConfetti() {
+  const wrap = document.getElementById('confettiIvc');
+  if (!wrap || wrap.children.length > 0) return;
+  const colors = ['#FF7500', '#d74009', '#1f8923', '#1f78d1', '#ffbf75', '#fff'];
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('span');
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.background = colors[Math.floor(Math.random() * colors.length)];
+    s.style.animationDelay = (Math.random() * 0.6) + 's';
+    s.style.animationDuration = (1.8 + Math.random() * 1.4) + 's';
+    s.style.top = '0';
+    s.style.borderRadius = Math.random() > 0.5 ? '2px' : '50%';
+    wrap.appendChild(s);
+  }
 }
 
 /* ============================================================
@@ -2214,6 +2539,11 @@ function render() {
 
   // FIX #6: bind del datepicker canónico Naowee tras cada render (Doug 23/05/2026)
   bindDatepickers(body);
+
+  // FIX #7 (23/05/2026): si renderizamos el success state, dispara el confetti.
+  if (STATE.radicado && STATE.step === 6) {
+    spawnConfetti();
+  }
 
   setupFooter();
   window.scrollTo({ top: 0, behavior: 'smooth' });
