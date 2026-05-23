@@ -137,6 +137,25 @@
     .row-plazo--positive { color: var(--green, #1f8923); }
     .row-plazo--caution  { color: var(--accent, #d74009); }
     .row-plazo--negative { color: #c0392b; }
+
+    /* v1.4.6 (23/05/2026): tooltip portal pattern — el tooltip se recortaba
+       por el overflow del .naowee-table-card. Solución: position:fixed con
+       JS que calcula coords desde el bounding rect del trigger al hover. */
+    .naowee-tooltip__content.is-portaled {
+      position: fixed !important;
+      bottom: auto !important;
+      top: auto !important;
+      left: auto !important;
+      right: auto !important;
+      transform: none !important;
+      z-index: 99999 !important;
+      pointer-events: none;
+    }
+
+    /* v1.4.6: reducir espacio entre el CTA del header y el divider del toolbar.
+       El __head canónico (components.css L613) tiene padding 12px 20px 10px;
+       en este page-scope reducimos el padding-bottom para acercar al divider. */
+    .naowee-table-card > .naowee-table-card__head { padding-bottom: 4px; }
     .row-date {
       color: var(--text-secondary);
       font-size: 13px;
@@ -649,6 +668,7 @@
       wireSelection();
       wireModales();
       setupNaoweeDropdownController();
+      setupTooltipPortal();
 
       window.IVCTour.mount({ pageId: 'coordinador/bandeja.html' });
 
@@ -835,6 +855,85 @@
         sb.classList.remove('naowee-searchbox--has-value');
         renderTabla();
       });
+    }
+
+    /* ═════════════════════════════════════════════════════════════════════
+       v1.4.6 (23/05/2026): Tooltip portal pattern
+       El .naowee-tooltip__content del DS canónico usa position:absolute y
+       se recorta cuando el padre (.naowee-table-card o td) tiene overflow.
+       Solución: al hover, mover el __content al body con position:fixed
+       y calcular coords desde el bounding rect del trigger.
+       ═════════════════════════════════════════════════════════════════════ */
+    function setupTooltipPortal(){
+      var portalWrap = null;
+
+      function position(triggerEl, contentEl, prefBottom) {
+        var rect = triggerEl.getBoundingClientRect();
+        var cw = contentEl.offsetWidth;
+        var ch = contentEl.offsetHeight;
+        var margin = 8;
+        var left = rect.left + (rect.width / 2) - (cw / 2);
+        /* clamp horizontal al viewport */
+        if (left + cw > window.innerWidth - margin) left = window.innerWidth - cw - margin;
+        if (left < margin) left = margin;
+        var top = prefBottom
+          ? rect.bottom + 6
+          : rect.top - ch - 6;
+        /* si arriba no cabe, ir abajo */
+        if (!prefBottom && top < margin) top = rect.bottom + 6;
+        contentEl.style.left = left + 'px';
+        contentEl.style.top = top + 'px';
+      }
+
+      document.addEventListener('mouseover', function(ev){
+        var trigger = ev.target.closest('.naowee-tooltip');
+        if (!trigger) return;
+        var content = trigger.querySelector(':scope > .naowee-tooltip__content');
+        if (!content || content.classList.contains('is-portaled')) return;
+
+        /* Cache original placement (--bottom or default top) */
+        var prefBottom = trigger.classList.contains('naowee-tooltip--bottom');
+
+        /* Mover al body con position:fixed */
+        content.classList.add('is-portaled');
+        content.dataset.parentTooltipId = trigger.dataset.tipId || (trigger.dataset.tipId = 'tip-' + Math.random().toString(36).slice(2,9));
+        document.body.appendChild(content);
+        /* Forzar opacity 1 (el hover del DS canónico no aplica porque content ya no es hijo del trigger) */
+        content.style.opacity = '1';
+        position(trigger, content, prefBottom);
+      });
+
+      document.addEventListener('mouseout', function(ev){
+        var trigger = ev.target.closest('.naowee-tooltip');
+        if (!trigger) return;
+        /* Si el mouseout no salió del trigger (sino hacia un hijo), ignorar */
+        if (trigger.contains(ev.relatedTarget)) return;
+        var tipId = trigger.dataset.tipId;
+        if (!tipId) return;
+        var content = document.body.querySelector(':scope > .naowee-tooltip__content[data-parent-tooltip-id="' + tipId + '"]');
+        if (!content) return;
+        content.style.opacity = '0';
+        /* Devolver al trigger original */
+        content.classList.remove('is-portaled');
+        content.style.removeProperty('left');
+        content.style.removeProperty('top');
+        trigger.appendChild(content);
+      });
+
+      /* Cerrar tooltip al scroll del page para evitar tooltips huérfanos */
+      window.addEventListener('scroll', function(){
+        document.querySelectorAll('body > .naowee-tooltip__content.is-portaled').forEach(function(c){
+          c.style.opacity = '0';
+          var tipId = c.dataset.parentTooltipId;
+          var trigger = tipId && document.querySelector('.naowee-tooltip[data-tip-id="' + tipId + '"]');
+          if (trigger) {
+            c.classList.remove('is-portaled');
+            c.style.removeProperty('left');
+            c.style.removeProperty('top');
+            trigger.appendChild(c);
+          }
+        });
+      }, true);
     }
 
     /* ═════════════════════════════════════════════════════════════════════

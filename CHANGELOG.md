@@ -6,6 +6,31 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.6] — 2026-05-23
+
+> 🎈 **Tooltip portal + reducción de espacio en header.**
+
+### Fixed — `prototype/coordinador/bandeja.html`
+
+**1. Tooltips de las acciones cortados por overflow del container**
+- **Causa raíz:** el `.naowee-tooltip__content` del DS canónico usa `position: absolute`, que se recorta cuando algún padre (en este caso `.naowee-table-card` por su `overflow`) actúa como clip.
+- **Solución:** patrón portal al body — al hacer hover sobre `.naowee-tooltip`, el `.naowee-tooltip__content` se mueve a `document.body` con `position: fixed` y coordenadas calculadas desde `getBoundingClientRect()` del trigger. Al `mouseout` vuelve al trigger original (transparente).
+- **Edge cases manejados:**
+  - Clamp horizontal al viewport (cuando el tooltip se va más allá del borde derecho)
+  - Flip-down automático si arriba no cabe
+  - `mouseout` hacia hijos del trigger no dispara cierre (`trigger.contains(ev.relatedTarget)`)
+  - Scroll del page → cierra tooltips huérfanos y los devuelve al trigger
+  - `data-tip-id` / `data-parent-tooltip-id` para resolver el origen del tooltip portaled
+
+**2. Espacio sobra entre el CTA "Asignación masiva" y el divider**
+- El `.naowee-table-card__head` canónico (de `shared/components.css` L613) tiene `padding-bottom: 10px`. Combinado con `padding-top: 14px` del toolbar = 24px de espacio entre el CTA y el divider.
+- Solución: override page-scoped con selector específico `.naowee-table-card > .naowee-table-card__head { padding-bottom: 4px; }` → ahora 18px en lugar de 24px. Más compacto sin pegar el CTA al divider.
+
+### Patrón cross-componente
+El portal pattern ahora se usa en 3 lugares: `.naowee-dropdown__menu`, `.naowee-datepicker--popover`, y `.naowee-tooltip__content`. Todos comparten la misma estrategia: mover al body con `position: fixed` + coordenadas dinámicas desde el trigger.
+
+---
+
 ## [ivc-v1.4.5] — 2026-05-23
 
 > 🧹 **4 ajustes finos: limpieza visual + consistencia + modal canónico.**
