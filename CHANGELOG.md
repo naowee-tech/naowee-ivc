@@ -6,6 +6,48 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.2] — 2026-05-23
+
+> ✨ **Refinamiento UX/UI Pro Max de la pantalla de éxito en Fase 1.** Migración del banner de estado a componente canónico + refactor del comprobante de radicación con jerarquía visual + íconos + eliminación de redundancias.
+
+### Fixed — `prototype/usuario-externo/formulario-fase-1.html`
+
+**1. Banner de estado: `.status-banner` custom → `.naowee-message--informative` canónico**
+- Eliminadas las 6 reglas CSS custom (`.status-banner`, `__icon`, `__body`, `__title`, `__text`) que duplicaban funcionalidad del DS.
+- Reemplazado el markup por estructura canónica del DS: `.naowee-message__header` + `__icon` + `__title` + `__text`.
+- El componente ahora hereda automáticamente los colores semánticos azules del DS sin overrides locales.
+
+**2. Comprobante de radicación rediseñado (UX/UI Pro Max)**
+
+**Antes:** 6 rows planos con border-bottom dashed igualitos, sin íconos, sin jerarquía visual + 3 redundancias.
+
+**Después:** 5 rows con grid `[40px icon] [content] [aside]`:
+
+| Row | Tratamiento | Justificación |
+|---|---|---|
+| Trámite | Icono documento gris + label uppercase letterspaced + value bold 14px | Identifica QUÉ trámite — info más importante después del organismo |
+| Fecha de radicación | Icono calendario gris + mismo formato | Timestamp del evento |
+| **Plazo de respuesta** | `.kv-row--highlight` icono naranja + value naranja 15px + **hint con fecha de vencimiento exacta** | Dato MÁS accionable para el organismo — destacado intencionalmente |
+| Estado actual | Icono check gris + label uppercase + **badge `.naowee-badge--informative --quiet --small` en aside** | Estado como componente canónico, no texto plano azul |
+| Notificaciones | Icono email gris + value "Recibirás email en cada cambio de estado" | Información útil reposicionada del párrafo introductorio |
+
+**3. Redundancias eliminadas (3)**
+- ❌ Row "Organismo" → ya está en `.receipt__person-meta` del header del comprobante
+- ❌ Row "NIT" → ya está en `.receipt__person-meta`
+- ❌ Row "Estado actual: Radicado" (texto plano azul) → ya está en el `.naowee-message--informative` arriba + ahora se muestra como badge en el row consolidado
+
+**4. Detalles de tipografía y spacing**
+- Labels en `text-transform: uppercase` + `letter-spacing: .4px` + 12px → patrón Senior UI para diferenciarlos de los valores
+- Padding del row aumentado a `14px 0` (antes 6px) → mejor respiración entre rows
+- `border-bottom` cambiado de `dashed` → `solid 1px` → más limpio y profesional
+- Iconos en wrapper 40x40 con `border-radius: 10px` + `background: #f5f6fa` → mismo patrón del módulo Incentivos
+- Variante `--highlight` con `background: var(--orange-bg)` en icono + value naranja 15px
+
+### Patrón cross-módulo
+El comprobante ahora usa el mismo lenguaje visual que el módulo Incentivos (`incentivo-11-asignar-exito.html`) — `.kv-row` con icon + label + value es ECC-canónico del ecosistema Naowee.
+
+---
+
 ## [ivc-v1.4.1] — 2026-05-23
 
 > 🔧 **Fix visual de filtros de bandeja (post-feedback Doug):** layout en single-row + estilos canónicos del menu portaled.
