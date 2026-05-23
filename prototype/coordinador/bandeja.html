@@ -53,9 +53,11 @@
       border-top: 1px solid var(--border);
     }
     .bandeja-toolbar__search {
-      flex: 1 1 auto;
-      min-width: 200px;
+      flex: 0 1 320px;
+      min-width: 240px;
+      max-width: 360px;
     }
+    .bandeja-toolbar__spacer { flex: 1 1 auto; }
     .bandeja-toolbar__filters {
       display: flex;
       gap: 8px;
@@ -331,9 +333,10 @@
               </div>
             </div>
           </div>
+          <div class="bandeja-toolbar__spacer"></div>
           <div class="bandeja-toolbar__filters">
             <!-- Filtro Estado -->
-            <div class="naowee-dropdown" data-filter="estado" id="ddEstado">
+            <div class="naowee-dropdown naowee-dropdown--medium" data-filter="estado" id="ddEstado">
               <button type="button" class="naowee-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">
                 <span class="naowee-dropdown__value" data-value-label>Estado</span>
                 <span class="naowee-dropdown__controls">
@@ -350,7 +353,7 @@
               </div>
             </div>
             <!-- Filtro Tipo -->
-            <div class="naowee-dropdown" data-filter="tipo" id="ddTipo">
+            <div class="naowee-dropdown naowee-dropdown--medium" data-filter="tipo" id="ddTipo">
               <button type="button" class="naowee-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">
                 <span class="naowee-dropdown__value" data-value-label>Tipo de trámite</span>
                 <span class="naowee-dropdown__controls">
@@ -383,10 +386,10 @@
               <th>Radicado</th>
               <th>Tipo</th>
               <th>Organismo</th>
-              <th>Fecha radicación</th>
+              <th>Radicado en</th>
               <th>Plazo</th>
-              <th>Estado asignación</th>
-              <th>Profesional asignado</th>
+              <th>Estado</th>
+              <th>Asignado</th>
               <th style="text-align:right">Acciones</th>
             </tr>
           </thead>
@@ -718,19 +721,34 @@
           ? '<span class="row-asignado--vacio">—</span>'
           : '<span class="row-asignado">' + t.profesionalNombre + '</span>';
 
-        /* Botón principal Asignar / Reasignar */
-        var accionBtn = (t.estado === 'No asignada')
-          ? '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" data-asignar="' + t.id + '">Asignar</button>'
-          : '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-asignar="' + t.id + '">Reasignar</button>';
+        /* v1.4.3 (23/05/2026): acciones a icon button ghost + tooltip canónico
+           del DS (.naowee-tooltip + .naowee-tooltip__content) */
+        var accionLabel = (t.estado === 'No asignada') ? 'Asignar trámite' : 'Reasignar a otro profesional';
+        var accionIcon = (t.estado === 'No asignada')
+          /* user-plus icon — asignar */
+          ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>'
+          /* refresh icon — reasignar */
+          : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>';
 
-        /* GAP #11 — Botón histórico (icon button quiet) */
+        var accionBtn =
+          '<span class="naowee-tooltip">' +
+            '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small" data-asignar="' + t.id + '" aria-label="' + accionLabel + '">' +
+              accionIcon +
+            '</button>' +
+            '<span class="naowee-tooltip__content">' + accionLabel + '</span>' +
+          '</span>';
+
+        /* Botón histórico — icon button quiet con tooltip canónico */
         var historicoBtn =
-          '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small" data-historico="' + t.id + '" aria-label="Ver histórico del trámite">' +
-            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
-              '<circle cx="12" cy="12" r="10"/>' +
-              '<polyline points="12 6 12 12 16 14"/>' +
-            '</svg>' +
-          '</button>';
+          '<span class="naowee-tooltip">' +
+            '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small" data-historico="' + t.id + '" aria-label="Ver histórico del trámite">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+                '<circle cx="12" cy="12" r="10"/>' +
+                '<polyline points="12 6 12 12 16 14"/>' +
+              '</svg>' +
+            '</button>' +
+            '<span class="naowee-tooltip__content">Ver histórico</span>' +
+          '</span>';
 
         return '<tr data-tramite-id="' + t.id + '">' +
           '<td class="row-checkbox-cell">' +

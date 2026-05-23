@@ -6,6 +6,35 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.3] — 2026-05-23
+
+> 🎚️ **5 ajustes finos UI en bandeja (toolbar + columnas + acciones).**
+
+### Fixed — `prototype/coordinador/bandeja.html`
+
+**1. Searchbox menos ancho.** Cambiado de `flex: 1 1 auto; min-width: 200px;` → `flex: 0 1 320px; min-width: 240px; max-width: 360px;`. Ya no crece infinito.
+
+**2. Spacer flexible entre search y filtros.** Nuevo `<div class="bandeja-toolbar__spacer">` con `flex: 1 1 auto` para empujar los filtros a la derecha (patrón Senior UX para toolbars con grupos lógicos separados).
+
+**3. Dropdowns altura uniforme con searchbox.** Agregada la clase canónica `.naowee-dropdown--medium` (DS L2435) a los 2 filtros (Estado, Tipo de trámite). Ahora ambos dropdowns y el searchbox comparten altura de 40px (`--naowee-size-height-inputs-medium`).
+
+**4. Renombre de columnas (más conciso, criterio Senior UX):**
+- "Fecha radicación" → **"Radicado en"** (más corto y semánticamente claro como verbo conjugado)
+- "Estado asignación" → **"Estado"** (el contexto de la columna ya implica que es de asignación; redundante)
+- "Profesional asignado" → **"Asignado"** (el contexto ya implica que es un profesional)
+
+**5. Acciones a icon button ghost + tooltip canónico.**
+- "Asignar" (texto) → icono `user-plus` con tooltip "Asignar trámite"
+- "Reasignar" (texto) → icono `refresh` (dos flechas circulares) con tooltip "Reasignar a otro profesional"
+- Histórico (ya era icon) → ahora con tooltip "Ver histórico"
+- Estructura canónica: `<span class="naowee-tooltip"><button class="naowee-btn--quiet --icon --small">...</button><span class="naowee-tooltip__content">...</span></span>` (DS L4347-4376)
+- Acciones más compactas → más trámites visibles sin scroll horizontal en pantallas chicas
+
+### Consistencia
+Las 3 acciones (Histórico, Asignar/Reasignar, futuras) ahora siguen el mismo patrón ghost-with-tooltip. Patrón escalable: agregar una nueva acción es replicar la estructura, sin reordenar nada.
+
+---
+
 ## [ivc-v1.4.2] — 2026-05-23
 
 > ✨ **Refinamiento UX/UI Pro Max de la pantalla de éxito en Fase 1.** Migración del banner de estado a componente canónico + refactor del comprobante de radicación con jerarquía visual + íconos + eliminación de redundancias.
