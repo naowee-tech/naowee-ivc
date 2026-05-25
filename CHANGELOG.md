@@ -28,6 +28,27 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.1] — 2026-05-25
+
+> 🎛️ **2 modos demo + fix botón asignación masiva.**
+
+### Added — Selector de modo demo (patrón Project v2.0.3)
+- Segmented control `.ivc-mode-switch` en el header del card de bandeja con 2 botones:
+  - **"Con datos"** → seed de 12 trámites mock + 4 profesionales (modo default).
+  - **"Virgen"** → bandeja vacía; los profesionales sí quedan disponibles para asignar trámites creados desde el formulario.
+- API store: `IVCStore.getMode()`, `IVCStore.setMode('demo' | 'blank')`. Persiste en `state.mode` dentro del localStorage.
+- `reset()` ahora preserva el modo activo en lugar de volver siempre a `demo`.
+- Snackbar de confirmación al cambiar modo: "Modo demo: 12 trámites cargados" / "Modo virgen: bandeja vacía".
+- Subtitle del card dinámico: "12 trámites — Deporte Aficionado" / "Sin trámites — Deporte Aficionado".
+
+### Fixed — Botón Asignación masiva
+- **Disabled si `selectedCount < 2`**: la asignación masiva solo tiene sentido con 2+ trámites; con 1 hay flujo individual. Antes se habilitaba con 1.
+- Tooltip dinámico: "Selecciona al menos 2 trámites para asignación masiva" cuando disabled / "Asignar N trámites a un profesional" cuando habilitado.
+- **Color del `(0)` corregido**: el span `.bulk-hint` heredaba `var(--text-muted)` (gris) en lugar del color del botón padre. Cambiado a `color: inherit` + `opacity: 0.85` para que se vea blanco dentro del botón naranja (loud).
+- Estilos `:disabled`/`[disabled]` page-scoped: `cursor: not-allowed; opacity: 0.5` (paridad con el patrón loud:disabled del DS).
+
+---
+
 ## [ivc-v1.5.0] — 2026-05-25
 
 > 🔗 **Arquitectura end-to-end: store compartido + bandeja conectada al formulario.**

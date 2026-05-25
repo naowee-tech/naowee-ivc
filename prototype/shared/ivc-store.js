@@ -117,17 +117,42 @@
       var s = read();
       if (!s) {
         s = JSON.parse(JSON.stringify(SEED));   /* deep clone */
+        s.mode = 'demo';                         /* modo por default */
         write(s);
       }
+      if (!s.mode) { s.mode = 'demo'; write(s); }  /* migration */
+      return s;
+    },
+
+    /* v1.5.1: 2 modos de demo (patrón Project v2.0.3)
+       'demo'  — 12 trámites mock seed + 4 profesionales
+       'blank' — sin trámites (vacío para que el usuario cree desde formulario) */
+    getMode: function () { return this.init().mode || 'demo'; },
+
+    setMode: function (mode) {
+      if (mode !== 'demo' && mode !== 'blank') return;
+      var s;
+      if (mode === 'blank') {
+        s = {
+          seedVersion: SEED_VERSION,
+          ultimoRadicado: 0,
+          profesionales: JSON.parse(JSON.stringify(SEED.profesionales)),  /* profesionales sí, los necesita el Coordinador */
+          tramites: [],
+          mode: 'blank'
+        };
+      } else {
+        s = JSON.parse(JSON.stringify(SEED));
+        s.mode = 'demo';
+      }
+      write(s);
+      emit('store:mode-changed', mode);
+      emit('store:reset', null);
       return s;
     },
 
     reset: function () {
-      localStorage.removeItem(KEY);
-      var s = JSON.parse(JSON.stringify(SEED));
-      write(s);
-      emit('store:reset', null);
-      return s;
+      var currentMode = this.getMode();
+      return this.setMode(currentMode);   /* reset preserva el modo actual */
     },
 
     getProfesionales: function (area) {
