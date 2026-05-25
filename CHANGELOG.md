@@ -28,6 +28,36 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.2] — 2026-05-25
+
+> 🎯 **Modo demo movido al panel del demo-switcher (patrón exacto de Project v2.0.3).**
+
+### Changed — Selector de modo demo: ubicación + naming
+- **Movido del header del card de bandeja al panel del `demo-role-switcher`** (donde está "Cambiar perfil"). Patrón consistente con Project v2.0.3: el control de modos vive junto al control de perfiles, dentro de un único panel "sandbox".
+- **Renaming a paridad con Project:**
+  - "Con datos" → **"Libre · con datos"** (12 trámites seed)
+  - "Virgen" → **"Guiado · vacío"** (bandeja vacía; el flujo arranca cuando creas un trámite desde el formulario)
+- Label "MODO DEMO" en uppercase letterspaced encima del segmented (mismo tipo que "CAMBIAR DE PERFIL (SIMULADO)").
+- Snackbar con texto contextual al cambiar modo.
+
+### Added — Estilos canónicos en `shared/shell.css`
+- `.demo-role-switcher__mode-section` — divisor sutil + padding.
+- `.demo-role-switcher__mode-label` — label uppercase 10px letterspaced.
+- `.demo-role-switcher__mode-switch` — segmented pill (mismo lenguaje que `.ivc-mode-switch` previo).
+- `.demo-role-switcher__mode-btn[aria-pressed="true"]` — fondo blanco + accent + box-shadow + ring naranja.
+
+### Added — Listener cross-component
+- En `bandeja.html`: `IVCStore.on('store:mode-changed', ...)` → cuando el demo-switcher cambia el modo, la bandeja refresca state + render automáticamente.
+
+### Removed
+- `.ivc-mode-switch` (CSS) y su markup en el header del card de bandeja (reemplazado por el del demo-switcher).
+- `wireModoSwitch()` function en bandeja.html (lógica migrada a `shell.js`).
+
+### Beneficio cross-rol
+Cuando se agreguen futuras pantallas (workspace Profesional, cola Coord IVC, etc.) que carguen `shell.js`, **TODAS heredarán automáticamente el control de modo demo** — no hay que replicarlo por pantalla. Patrón exacto de Project v2.0.3.
+
+---
+
 ## [ivc-v1.5.1] — 2026-05-25
 
 > 🎛️ **2 modos demo + fix botón asignación masiva.**

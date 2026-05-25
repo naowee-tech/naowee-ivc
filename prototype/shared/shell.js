@@ -237,8 +237,18 @@
         '<span class="demo-role-switcher__chev">' + ICONS.chevron + '</span>' +
       '</button>' +
       '<div class="demo-role-switcher__panel" id="demoSwitcherPanel" role="menu">' +
-        '<div class="demo-role-switcher__panel-label">' + perfiles.length + ' perfiles del demo</div>' +
+        '<div class="demo-role-switcher__panel-label">CAMBIAR DE PERFIL (SIMULADO)</div>' +
         '<div class="demo-role-switcher__list">' + itemsHtml + '</div>' +
+        /* v1.5.2 (25/05/2026): Sección MODO DEMO — patrón Project v2.0.3.
+           "Guiado · vacío" (sin datos, arranca cuando creas un trámite) vs
+           "Libre · con datos" (seed de 12 trámites). */
+        '<div class="demo-role-switcher__mode-section">' +
+          '<div class="demo-role-switcher__mode-label">MODO DEMO</div>' +
+          '<div class="demo-role-switcher__mode-switch" role="group" aria-label="Modo demo">' +
+            '<button type="button" class="demo-role-switcher__mode-btn" data-mode="blank" title="Bandeja vacía — el flujo arranca cuando creas un trámite desde el formulario">Guiado · vacío</button>' +
+            '<button type="button" class="demo-role-switcher__mode-btn" data-mode="demo"  title="12 trámites mock cargados para explorar la bandeja">Libre · con datos</button>' +
+          '</div>' +
+        '</div>' +
         '<div class="demo-role-switcher__panel-footer">' +
           '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" id="demoRestartTourBtn">' +
             ICONS.refresh +
@@ -371,6 +381,37 @@
         }
       });
     }
+
+    /* v1.5.2 (25/05/2026): Modo demo (Guiado·vacío / Libre·con datos)
+       Patrón Project v2.0.3. Mutual exclusive segmented control. */
+    var modeButtons = document.querySelectorAll('.demo-role-switcher__mode-btn');
+    function syncModeButtons() {
+      if (!window.IVCStore) return;
+      var current = window.IVCStore.getMode();
+      modeButtons.forEach(function (b) {
+        b.setAttribute('aria-pressed', b.dataset.mode === current ? 'true' : 'false');
+      });
+    }
+    syncModeButtons();
+    modeButtons.forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!window.IVCStore) return;
+        var mode = b.dataset.mode;
+        if (mode === window.IVCStore.getMode()) return;
+        window.IVCStore.setMode(mode);
+        syncModeButtons();
+        /* Snackbar de confirmación */
+        if (window.IVCShell && window.IVCShell.showSnackbar) {
+          window.IVCShell.showSnackbar(
+            mode === 'demo'
+              ? 'Modo libre: 12 trámites cargados'
+              : 'Modo guiado: bandeja vacía. Crea un trámite desde el formulario.',
+            'success'
+          );
+        }
+      });
+    });
 
     /* Logout */
     document.querySelectorAll('[data-action="logout"]').forEach(function (link) {
