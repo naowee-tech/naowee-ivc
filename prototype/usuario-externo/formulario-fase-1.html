@@ -3064,6 +3064,49 @@ document.getElementById('btnBack').addEventListener('click', prev);
 })();
 
 render();
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v1.4.8 (2026-05-23): Pill de versionamiento (inline porque este demo
+   es standalone, no usa shared/). Patrón canónico: clase .ivc-version-pill
+   compartida con bandeja.html via shared/version-pill.css.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function mountIvcVersionPill(){
+  var IVC_VERSION = 'v1.4.8';
+  var RELEASE_URL = 'https://github.com/naowee-tech/naowee-ivc/releases/tag/ivc-' + IVC_VERSION;
+  if (document.getElementById('ivcVersionPill')) return;
+  /* Inyectar el CSS del pill inline (este demo no carga shared/version-pill.css) */
+  var style = document.createElement('style');
+  style.textContent =
+    '.ivc-version-pill{position:fixed;right:18px;bottom:18px;z-index:998;' +
+    'font-family:"Inter",sans-serif;font-feature-settings:"tnum";pointer-events:none}' +
+    '.ivc-version-pill__btn{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;' +
+    'padding:6px 12px;background:#fff;border:1px solid #e7e9f3;border-radius:9999px;' +
+    'text-decoration:none;color:#646587;font-size:11.5px;font-weight:500;' +
+    'box-shadow:0 2px 8px rgba(20,20,40,.06),0 1px 2px rgba(20,20,40,.04);' +
+    'transition:border-color .15s,color .15s,box-shadow .15s,transform .12s;cursor:pointer}' +
+    '.ivc-version-pill__btn:hover,.ivc-version-pill__btn:focus-visible{border-color:#ffbf75;' +
+    'color:#d74009;box-shadow:0 4px 12px rgba(215,64,9,.15),0 1px 3px rgba(215,64,9,.08);' +
+    'outline:none;transform:translateY(-1px)}' +
+    '.ivc-version-pill__brand{letter-spacing:.3px;font-weight:600;color:inherit}' +
+    '.ivc-version-pill__num{font-weight:700;color:#d74009;font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:11px}' +
+    '.ivc-version-pill__btn:hover .ivc-version-pill__num{color:#b8350a}' +
+    '@media(max-width:640px){.ivc-version-pill{right:12px;bottom:12px}' +
+    '.ivc-version-pill__btn{padding:5px 10px;font-size:10.5px}.ivc-version-pill__num{font-size:10.5px}}' +
+    '@media print{.ivc-version-pill{display:none}}';
+  document.head.appendChild(style);
+  var wrap = document.createElement('div');
+  wrap.id = 'ivcVersionPill';
+  wrap.className = 'ivc-version-pill';
+  wrap.dataset.version = IVC_VERSION;
+  wrap.innerHTML =
+    '<a class="ivc-version-pill__btn" href="' + RELEASE_URL + '" target="_blank" rel="noopener" ' +
+       'title="Naowee IVC — Ver release notes en GitHub" ' +
+       'aria-label="Versión del prototipo: ' + IVC_VERSION + '">' +
+      '<span class="ivc-version-pill__brand">IVC</span>' +
+      '<strong class="ivc-version-pill__num">' + IVC_VERSION + '</strong>' +
+    '</a>';
+  document.body.appendChild(wrap);
+})();
 </script>
 
 </body>

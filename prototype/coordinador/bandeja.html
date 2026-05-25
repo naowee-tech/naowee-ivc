@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="../shared/tokens.css">
   <link rel="stylesheet" href="../shared/components.css">
   <link rel="stylesheet" href="../shared/shell.css">
+  <link rel="stylesheet" href="../shared/version-pill.css">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -138,9 +139,12 @@
     .row-plazo--caution  { color: var(--accent, #d74009); }
     .row-plazo--negative { color: #c0392b; }
 
-    /* v1.4.6 (23/05/2026): tooltip portal pattern — el tooltip se recortaba
-       por el overflow del .naowee-table-card. Solución: position:fixed con
-       JS que calcula coords desde el bounding rect del trigger al hover. */
+    /* v1.4.6+v1.4.8 (23/05/2026): tooltip portal pattern — el tooltip se
+       recortaba por el overflow del .naowee-table-card. Solución: position:fixed
+       con JS que calcula coords desde el bounding rect del trigger al hover.
+       v1.4.8: forzar opacity y display porque el DS canónico mantiene opacity:0
+       en estado idle y como el __content ya no es hijo del trigger en el body,
+       el selector `.naowee-tooltip:hover .__content` no aplica. */
     .naowee-tooltip__content.is-portaled {
       position: fixed !important;
       bottom: auto !important;
@@ -149,7 +153,10 @@
       right: auto !important;
       transform: none !important;
       z-index: 99999 !important;
-      pointer-events: none;
+      opacity: 1 !important;
+      pointer-events: none !important;
+      display: inline-block !important;
+      visibility: visible !important;
     }
 
     /* v1.4.6: reducir espacio entre el CTA del header y el divider del toolbar.
@@ -616,6 +623,7 @@
   <script src="../shared/data.js"></script>
   <script src="../shared/shell.js"></script>
   <script src="../shared/demo-tour.js"></script>
+  <script src="../shared/version-pill.js" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {

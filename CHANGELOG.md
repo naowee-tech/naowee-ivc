@@ -6,6 +6,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.8] — 2026-05-23
+
+> 🏷️ **Pill de versionamiento + fix tooltips bandeja + limpieza paso 1 Fase 1.**
+
+### Added — Pill de versionamiento (patrón Project v2.0.3)
+- `prototype/shared/version-pill.css` y `prototype/shared/version-pill.js` (componente compartido). Pill flotante esquina inferior derecha con `IVC v1.4.8` → link a release notes en GitHub.
+- Patrón inspirado en `naowee-test-digitacion/project/v2.0.3/shared/shell.js` L556+ (version switcher con dropdown). Simplificado para IVC: solo muestra versión + link, sin dropdown de historial (puede sumarse en v1.5+).
+- Aplicado a `prototype/coordinador/bandeja.html` (vía `<link>` + `<script>` shared) y a `prototype/usuario-externo/formulario-fase-1.html` (inline porque es standalone).
+- Scope `.ivc-*` custom — no override del DS.
+- `z-index: 998`, `pointer-events: auto` solo en el botón.
+
+### Fixed — Tooltips de acciones no se mostraban (`coordinador/bandeja.html`)
+- Causa: el DS canónico aplica `opacity: 0; pointer-events: none` a `.naowee-tooltip__content` en estado idle, y la regla `:hover` del DS no aplica cuando el `__content` ya está portaled fuera del trigger (en el `<body>`).
+- Solución: clase `.is-portaled` ahora fuerza con `!important`: `opacity: 1; pointer-events: none; display: inline-block; visibility: visible`. El JS de `setupTooltipPortal` ya posicionaba correctamente, solo faltaba forzar la visibilidad del CSS canónico.
+
+### Fixed — 2 info messages redundantes eliminados (`usuario-externo/formulario-fase-1.html`)
+- Removido `messageInfo('Demo enfocada en Otorgamiento', ...)` (estado post-selección de organismo).
+- Removido `messageInfo('Selecciona el tipo de organismo', ...)` (estado vacío del paso 1).
+- Razón: el placeholder del dropdown y el sufijo "Próximamente" en las opciones ya cumplen ambas funciones.
+
+---
+
 ## [ivc-v1.4.7] — 2026-05-23
 
 > 🎯 **Stepper Fase 1: pulse no se corta + connectors no pisan labels.**
