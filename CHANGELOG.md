@@ -6,6 +6,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.5] — 2026-05-25
+
+> 🪪 **Nombre y NIT del organismo se autopopulan con un ejemplo realista del tipo elegido (Liga / Asociación / Federación).**
+
+### Fixed — Bug crítico de demo: el paso 2 mostraba siempre "Liga de Atletismo de Antioquia"
+
+El seed de `STATE.data.nombre` tenía hardcoded `'Liga de Atletismo de Antioquia'`, así que aunque el usuario eligiera Federación o Asociación en el paso 0, el paso 1 (Identificación) precargaba siempre el nombre de una liga. Lo mismo con el NIT (`'800123456-7'`).
+
+### Changed — `formulario-fase-1.html` (radicación pública)
+
+- **Nuevo catálogo `EJEMPLOS_POR_ORGANISMO`** con nombre + NIT realistas para cada tipo:
+  - **Liga** → "Liga de Atletismo de Antioquia" + NIT `800123456-7`
+  - **Asociación** → "Asociación de Tenis de Cundinamarca" + sin NIT
+  - **Federación** → "Federación Colombiana de Fútbol" + sin NIT
+- **Seed inicial vacío** (`nombre: ''`, `nit: ''`) — el ejemplo se aplica solo cuando el usuario elige el tipo en el paso 0.
+- **Helper `aplicarEjemploOrganismo(orgId)`**: aplica el ejemplo cuando el usuario cambia el tipo, pero **solo pisa el valor previo si está vacío o si coincide con otro ejemplo canónico**. Si el usuario ya tipeó algo a mano, no se lo borra.
+- **Placeholder dinámico** del campo "Nombre del organismo" en el paso 1: cambia según el tipo elegido.
+
+Aplicado en las dos copias del formulario (`prototype/usuario-externo/formulario-fase-1.html` del repo + `IVC/demo-fase-1-formulario.html` standalone).
+
+---
+
 ## [ivc-v1.5.4] — 2026-05-25
 
 > 🪪 **NIT condicional: solo se muestra/valida cuando el organismo es Liga (feedback Juanma).**

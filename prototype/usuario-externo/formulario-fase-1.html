@@ -858,13 +858,52 @@ const MUNICIPIOS = [
   { v:'manizales', t:'Manizales' }
 ];
 
+/* v1.5.5 (25/05/2026): Ejemplos por tipo de organismo (feedback Doug). El paso 2
+   debe presentar un ejemplo realista del tipo elegido, no siempre "Liga de
+   Atletismo de Antioquia". Se autopopula al seleccionar el organismo en el
+   paso 0, y solo se pisa el valor previo si está vacío o si coincide con otro
+   de estos ejemplos canónicos (no se borra lo que el usuario tipeó a mano). */
+const EJEMPLOS_POR_ORGANISMO = {
+  liga: {
+    nombre: 'Liga de Atletismo de Antioquia',
+    nit:    '800123456-7' // las ligas departamentales sí manejan NIT como persona jurídica
+  },
+  asociacion: {
+    nombre: 'Asociación de Tenis de Cundinamarca',
+    nit:    '' // las asociaciones no manejan NIT en este trámite
+  },
+  federacion: {
+    nombre: 'Federación Colombiana de Fútbol',
+    nit:    '' // las federaciones no manejan NIT en este trámite
+  }
+};
+
+function aplicarEjemploOrganismo(orgId) {
+  const ejemplo = EJEMPLOS_POR_ORGANISMO[orgId];
+  if (!ejemplo) return;
+  // Solo pisamos el valor si está vacío o si coincide con OTRO ejemplo canónico.
+  // Esto evita borrar lo que el usuario ya tipeó manualmente.
+  const ejemplosNombre = Object.values(EJEMPLOS_POR_ORGANISMO).map(e => e.nombre);
+  const nombreActual = (STATE.data.nombre || '').trim();
+  if (!nombreActual || ejemplosNombre.includes(nombreActual)) {
+    STATE.data.nombre = ejemplo.nombre;
+  }
+  // NIT: igual lógica. Si pasamos a Asociación/Federación, queda en '' y el
+  // campo ni siquiera se renderiza (ver renderStep1 / validateStep1).
+  const ejemplosNit = Object.values(EJEMPLOS_POR_ORGANISMO).map(e => e.nit).filter(Boolean);
+  const nitActual = (STATE.data.nit || '').trim();
+  if (!nitActual || ejemplosNit.includes(nitActual)) {
+    STATE.data.nit = ejemplo.nit;
+  }
+}
+
 const STATE = {
   step: 0,
   tipoOrganismo: '',
   tipoTramite: '',
   data: {
-    nombre: 'Liga de Atletismo de Antioquia',
-    nit: '800123456-7',
+    nombre: '', // v1.5.5: se llena dinámicamente via aplicarEjemploOrganismo()
+    nit:    '', // v1.5.5: se llena solo si organismo === 'liga'
     direccion: '',
     municipio: '',
     telefono: '',
@@ -1783,8 +1822,9 @@ function renderStep0() {
   ];
   const orgSelected = ORGANISMOS.find(o => o.id === STATE.tipoOrganismo);
 
-  // Si cambia el organismo, se debe limpiar tipoTramite (la lista depende del organismo)
-  const orgOnChange = "STATE.tipoOrganismo=this.value;STATE.tipoTramite='';render();";
+  // Si cambia el organismo, se debe limpiar tipoTramite (la lista depende del organismo).
+  // v1.5.5: además se aplica el ejemplo correspondiente al tipo elegido (paso 2).
+  const orgOnChange = "STATE.tipoOrganismo=this.value;STATE.tipoTramite='';aplicarEjemploOrganismo(STATE.tipoOrganismo);render();";
 
   // Dropdown de trámite — sólo aparece cuando ya hay organismo seleccionado.
   // Catálogo escalable (ver TRAMITES_POR_ORGANISMO arriba).
@@ -1846,11 +1886,17 @@ function renderStep1() {
   // v1.5.4 (25/05/2026): NIT solo aplica a Liga (feedback Juanma). Asociación y
   // Federación no tienen NIT — el teléfono se renderiza full-width en ese caso.
   const esLiga = STATE.tipoOrganismo === 'liga';
+  // v1.5.5 (25/05/2026): placeholder del nombre cambia según el tipo de organismo.
+  const placeholderNombre = ({
+    liga:       'Ej: Liga de Atletismo de Antioquia',
+    asociacion: 'Ej: Asociación de Tenis de Cundinamarca',
+    federacion: 'Ej: Federación Colombiana de Fútbol'
+  })[STATE.tipoOrganismo] || 'Ej: nombre del organismo';
   return `
     ${messageInfo('', `Estás radicando como <strong>${esc(orgLabel)}</strong>. Si te equivocaste, <a href="#" onclick="STATE.step=0;render();return false;">vuelve al paso anterior</a>.`)}
     <h2 class="wz-section">Identificación del organismo</h2>
     ${tf({ id:'f-nombre', label:'Nombre del organismo', required:true,
-            placeholder:'Ej: Liga de Atletismo de Antioquia',
+            placeholder:placeholderNombre,
             value:d.nombre, onInput:'STATE.data.nombre=this.value' })}
     ${esLiga
       ? `<div class="wz-grid-2">
@@ -3115,7 +3161,7 @@ render();
    Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md
    ═══════════════════════════════════════════════════════════════════════ */
 (function mountNaoweeFooter(){
-  var IVC_VERSION = 'v1.5.4';
+  var IVC_VERSION = 'v1.5.5';
   var REPO = 'naowee-tech/naowee-ivc';
   var MODULE_NAME = 'IVC';
   if (document.querySelector('.naowee-floating-footer')) return;
