@@ -6,6 +6,30 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.4.7] — 2026-05-23
+
+> 🎯 **Stepper Fase 1: pulse no se corta + connectors no pisan labels.**
+
+### Fixed — `prototype/usuario-externo/formulario-fase-1.html`
+
+**1. Pulse del paso activo cortado en su tamaño máximo**
+- Causa: `.wz-stepper-wrap` y `.naowee-stepper` con `overflow-x: auto` recortaban el `box-shadow: 0 0 0 8px ...` del keyframe `wzStepperPulse` cuando llegaba a su máximo.
+- Solución: `overflow: visible` en ambos contenedores + `padding-top: 24px` en el wrap (antes 18px) para dar respiración al pulse hacia arriba.
+
+**2. Líneas de progreso encima de los labels**
+- Causa: layout horizontal del step (`[número] gap [label]` con `align-items: center`) hacía que el `__connector` quedara verticalmente alineado con el label, atravesándolo en su trayecto desde el final de un step al inicio del siguiente.
+- Solución: layout vertical estándar de stepper:
+  - `.naowee-stepper__step { flex-direction: column; align-items: center; gap: 6px; }` → número arriba, label debajo, centrados.
+  - `.naowee-stepper__connector { align-self: flex-start; margin-top: 12px; }` → alineado a la altura del centro del círculo (26px / 2 - 2px/2 ≈ 12px), por arriba del label.
+  - `.naowee-stepper { align-items: flex-start; }` → preserva la alineación top del nuevo layout vertical.
+
+### Resultado
+- Pulse se ve completo en su anillo de 8px sin recortes.
+- Connector va de número a número (a la altura del centro), nunca toca el texto del label.
+- Patrón canónico de stepper visual (Material/HIG/Fluent) — número arriba, label debajo.
+
+---
+
 ## [ivc-v1.4.6] — 2026-05-23
 
 > 🎈 **Tooltip portal + reducción de espacio en header.**

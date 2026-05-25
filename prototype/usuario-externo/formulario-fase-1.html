@@ -123,31 +123,37 @@
     overflow: hidden;
   }
 
-  /* Stepper wrapper (usa .naowee-stepper canónico) */
+  /* Stepper wrapper (usa .naowee-stepper canónico)
+     v1.4.7 (23/05/2026): layout vertical (número arriba / label abajo) +
+     connector alineado a la altura del número (no del label). Resuelve:
+     1) pulse del paso activo no se corta (overflow visible + padding-top)
+     2) líneas de progreso ya no pisan los labels (van a la altura del círculo) */
   .wz-stepper-wrap {
-    padding: 18px 28px 16px;
+    padding: 24px 28px 16px;
     border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: center;
     background: #fff;
+    overflow: visible;
   }
   .wz-stepper-wrap .naowee-stepper {
     width: 100%;
     max-width: 100%;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 0;
     padding: 0;
     background: transparent;
     border-bottom: 0;
-    overflow-x: auto;
+    overflow: visible;
   }
   .wz-stepper-wrap .naowee-stepper__step {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 4px 6px;
+    gap: 6px;
+    padding: 0 4px;
     flex-shrink: 0;
     cursor: default;
     min-width: 0;
@@ -207,9 +213,10 @@
     flex: 1 1 auto;
     height: 2px;
     background: var(--border);
-    margin: 0 8px;
+    margin: 12px 8px 0;   /* margin-top alinea con el centro del número 26px */
     border-radius: 1px;
     min-width: 8px;
+    align-self: flex-start;
   }
   .wz-stepper-wrap .naowee-stepper__connector--done { background: #15803d; }
 
