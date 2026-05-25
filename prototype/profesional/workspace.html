@@ -430,6 +430,66 @@
       font-weight: 700;
     }
 
+    /* v1.5.9 (25/05/2026): bloques de detalle del trámite (tab Datos completo). */
+    .ivc-detail-block {
+      margin: 0 0 32px;
+    }
+    .ivc-detail-block + .ivc-detail-block { margin-top: 32px; }
+    .ivc-detail-block__title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ivc-detail-subblock {
+      margin: 18px 0 0;
+    }
+    .ivc-detail-subblock__title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin: 0 0 10px;
+    }
+    .ivc-detail-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md, 8px);
+      overflow: hidden;
+      margin: 0 0 6px;
+    }
+    .ivc-detail-table th {
+      background: var(--bg-soft);
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .ivc-detail-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+      vertical-align: top;
+    }
+    .ivc-detail-table tr:last-child td { border-bottom: 0; }
+    .ivc-detail-empty {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin: 4px 0;
+    }
+
     /* ──────────────── TAB: Historial — Timeline canónico .ivc-* ──────────────── */
     .ivc-timeline { list-style: none; margin: 0; padding: 0 0 4px 0; position: relative; }
     .ivc-timeline::before {
@@ -1152,37 +1212,312 @@
     }
 
     /* ───────── Render: Datos panel ───────── */
-    function renderDatosPanel() {
-      var t = state.tramite;
+    /* v1.5.9 (25/05/2026): tab Datos ahora muestra TODOS los datos diligenciados
+       en el formulario (no solo metadatos del trámite). Feedback Juanma:
+       el profesional necesita ver toda la información recolectada del formulario. */
+
+    /* Helpers de bloques */
+    function _dtCell(label, value, mono) {
+      var v = (value === undefined || value === null || value === '') ? '—' : String(value);
+      var safe = String(v).replace(/[&<>"']/g, function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});
+      var valCls = 'ivc-data-grid__value' + (mono ? ' ivc-data-grid__value--mono' : '');
+      return '<div class="ivc-data-grid__cell">' +
+        '<span class="ivc-data-grid__label">' + label + '</span>' +
+        '<span class="' + valCls + '">' + safe + '</span>' +
+      '</div>';
+    }
+    function _dtBlock(title, cellsHtml) {
+      if (!cellsHtml) return '';
+      return '<section class="ivc-detail-block">' +
+        '<h3 class="ivc-detail-block__title">' + title + '</h3>' +
+        '<div class="ivc-data-grid">' + cellsHtml + '</div>' +
+      '</section>';
+    }
+    function _dtSubBlock(title, content) {
+      return '<div class="ivc-detail-subblock"><h4 class="ivc-detail-subblock__title">' + title + '</h4>' + content + '</div>';
+    }
+    function _dtTable(headers, rows) {
+      // rows = array de arrays (celdas)
+      if (!rows || rows.length === 0) return '<p class="ivc-detail-empty">—</p>';
+      var nonEmpty = rows.filter(function(r){ return r.some(function(c){ return c && String(c).trim() !== ''; }); });
+      if (nonEmpty.length === 0) return '<p class="ivc-detail-empty">No se diligenció ninguna fila.</p>';
+      var safe = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); };
+      var html = '<table class="ivc-detail-table"><thead><tr>';
+      headers.forEach(function(h){ html += '<th>' + safe(h) + '</th>'; });
+      html += '</tr></thead><tbody>';
+      nonEmpty.forEach(function(row){
+        html += '<tr>';
+        row.forEach(function(c){ html += '<td>' + safe(c || '—') + '</td>'; });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    /* Catálogos para traducir IDs a labels legibles */
+    var _DT_TIPOS_REUNION = {
+      ORDINARIA:'Ordinaria', EXTRAORDINARIA:'Extraordinaria', EXT_CARACTER_ORD:'Extraordinaria con carácter de Ordinaria',
+      SEGUNDA_CONVOCATORIA:'Segunda convocatoria', NO_PRESENCIAL:'No presencial', DERECHO_PROPIO:'De pleno derecho',
+      CONSTITUTIVA:'Constitutiva', UNIVERSAL:'Universal', DEL_OA:'Del Órgano de Administración'
+    };
+    var _DT_TIPOS_CONVOCANTE = {
+      OA:'Órgano de Administración', PRESIDENTE:'Presidente del Organismo',
+      OC:'Órgano de Control', COMITE_PROVISIONAL:'Comité Provisional'
+    };
+    var _DT_SUB_ASOCIACION = { JUVENIL:'Asociación Juvenil', RECREATIVA:'Asociación Recreativa' };
+    var _DT_RADIO = { si:'Sí', no:'No', no_aplica:'No aplica' };
+    var _DT_ORG = {
+      liga:'Ligas o asociaciones deportivas',
+      asociacion:'Asociaciones juveniles o recreativas',
+      federacion:'Federaciones deportivas'
+    };
+    function _dtRadio(v){ return _DT_RADIO[v] || v || '—'; }
+    function _dtArchivo(file) {
+      if (!file) return '—';
+      if (typeof file === 'object' && file.name) return file.name + (file.size ? ' · ' + file.size : '');
+      return 'Archivo adjunto';
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       HELPER PRINCIPAL: renderTramiteDatosCompletos(t)
+       Renderiza TODOS los datos del trámite por secciones según el tipo
+       de organismo. Reutilizable en workspace y en modal del coordinador. */
+    function renderTramiteDatosCompletos(t) {
+      if (!t) return '<p class="ivc-detail-empty">Trámite no encontrado.</p>';
+      var d = t.datos || {};
       var coordActor = (t.historico || []).find(function (h) {
         return /asignad/i.test(h.accion || '') && (h.actor || '').toLowerCase().indexOf('coordinador') >= 0;
       });
-      var coord = coordActor ? coordActor.actor : 'Carolina Méndez (Coordinador)';
-      var orgLabel = t.tipoOrganismo === 'liga' ? 'Liga' : t.tipoOrganismo === 'asociacion' ? 'Asociación' : t.tipoOrganismo === 'federacion' ? 'Federación' : (t.tipoOrganismo || '—');
+      var coord = coordActor ? coordActor.actor : '—';
+      var orgLabel = _DT_ORG[t.tipoOrganismo] || t.tipoOrganismo || '—';
       var area = t.area === 'aficionado' ? 'Deporte Aficionado' : t.area === 'profesional' ? 'Deporte Profesional' : (t.area || '—');
       var plazo = (typeof t.plazoDias === 'number') ? t.plazoDias : 15;
       var plazoTxt = plazo <= 0 ? 'Vencido' : plazo + ' días hábiles';
 
-      return '<div class="ivc-data-grid">' +
-        cell('Organismo', t.organismo || '—') +
-        cell('NIT', t.nit || '—', true) +
-        cell('Tipo de organismo', orgLabel) +
-        cell('Tipo de trámite', t.tipoTramite || '—') +
-        cell('Área', area) +
-        cell('Fecha de radicación', formatDate(t.fechaRadicacion)) +
-        cell('Plazo restante', plazoTxt) +
-        cell('Estado actual', t.estado || '—') +
-        cell('Coordinador asignador', coord) +
-        cell('Profesional asignado', t.profesionalNombre || '—') +
-      '</div>';
+      var html = '';
 
-      function cell(label, value, mono) {
-        var valCls = 'ivc-data-grid__value' + (mono ? ' ivc-data-grid__value--mono' : '');
-        return '<div class="ivc-data-grid__cell">' +
-          '<span class="ivc-data-grid__label">' + label + '</span>' +
-          '<span class="' + valCls + '">' + value + '</span>' +
-        '</div>';
+      // 0. Identificación / Metadatos del trámite
+      html += _dtBlock('Identificación del trámite',
+        _dtCell('Número de radicado', t.id || '—', true) +
+        _dtCell('Tipo de organismo', orgLabel) +
+        _dtCell('Tipo de trámite', t.tipoTramite || '—') +
+        _dtCell('Área', area) +
+        _dtCell('Fecha de radicación', t.fechaRadicacion ? formatDate(t.fechaRadicacion) : '—') +
+        _dtCell('Plazo restante', plazoTxt) +
+        _dtCell('Estado actual', t.estado || '—') +
+        _dtCell('Coordinador asignador', coord) +
+        _dtCell('Profesional asignado', t.profesionalNombre || '—')
+      );
+
+      // 1. Datos generales del organismo
+      var generales = _dtCell('Nombre del organismo', d.nombre);
+      if (t.tipoOrganismo === 'liga') generales += _dtCell('NIT', d.nit, true);
+      generales += _dtCell('Dirección', d.direccion);
+      if (t.tipoOrganismo !== 'asociacion') generales += _dtCell('Municipio', d.municipio);
+      generales += _dtCell('Teléfono', d.telefono, true) + _dtCell('Correo electrónico', d.correo);
+      html += _dtBlock('Datos generales del organismo', generales);
+
+      // 2. F1 / F2 / F3 (Personería, Estatutos, Constitución)
+      if (t.tipoOrganismo === 'liga' && d.f1) {
+        var f1 = d.f1;
+        var c = _dtCell('N° Resolución Personería Jurídica', f1.no_res_personeria) +
+                _dtCell('Radicado Personería en IVC', f1.radicado_personeria, true) +
+                _dtCell('Fecha última Reforma Estatutaria', f1.fecha_reforma ? formatDate(f1.fecha_reforma) : '—') +
+                _dtCell('Radicado Estatutos en IVC', f1.radicado_estatutos, true) +
+                _dtCell('N° Resolución Inscripción Estatutos', f1.no_res_estatutos) +
+                _dtCell('Período Estatutario Inicial', f1.periodo_inicial) +
+                _dtCell('Período Estatutario Vigente', f1.periodo_vigente) +
+                _dtCell('N° Resolución RD anterior', f1.no_res_rd_anterior) +
+                _dtCell('Fecha Notificación RD anterior', f1.fecha_notif_rd ? formatDate(f1.fecha_notif_rd) : '—') +
+                _dtCell('Fecha Firmeza RD anterior', f1.fecha_firmeza_rd ? formatDate(f1.fecha_firmeza_rd) : '—') +
+                _dtCell('N° Resolución/Acta Inscripción Miembros', f1.f1_no_acta_miembros) +
+                _dtCell('¿Constancia Personería vigente?', _dtRadio(f1.tiene_constancia)) +
+                _dtCell('Fecha Constancia', f1.fecha_constancia ? formatDate(f1.fecha_constancia) : '—') +
+                _dtCell('N° Resolución de Mínimos', f1.no_res_minimos) +
+                _dtCell('N° de Mínimos', f1.n_minimos);
+        html += _dtBlock('Personería, Estatutos y Constitución (F1)', c);
       }
+      if (t.tipoOrganismo === 'asociacion' && d.f2) {
+        var f2 = d.f2;
+        var c = _dtCell('Sub-tipo de Asociación', _DT_SUB_ASOCIACION[f2.sub_tipo] || f2.sub_tipo) +
+                _dtCell('N° y fecha doc. Personería Jurídica', f2.no_personeria) +
+                _dtCell('Radicado Personería en IVC', f2.radicado_personeria, true) +
+                _dtCell('Fecha Estatutos Sociales vigentes', f2.fecha_estatutos ? formatDate(f2.fecha_estatutos) : '—') +
+                _dtCell('Radicado Estatutos en IVC', f2.radicado_estatutos, true) +
+                _dtCell('N° Acta designación de sede', f2.no_acta_sede) +
+                _dtCell('Radicado Acta sede en IVC', f2.radicado_acta_sede, true) +
+                _dtCell('N° Acta Constitución/elección OA', f2.no_acta_constitucion) +
+                _dtCell('Radicado Acta constitución en IVC', f2.radicado_acta_constitucion, true) +
+                _dtCell('N° Resolución Inscripción Miembros', f2.no_inscripcion_miembros) +
+                _dtCell('Radicado Resolución Miembros en IVC', f2.radicado_inscripcion_miembros, true) +
+                _dtCell('¿Cuenta con inventario de bienes?', _dtRadio(f2.tiene_inventario)) +
+                _dtCell('Archivo inventario', _dtArchivo(f2.archivo_inventario)) +
+                _dtCell('¿Documentos de afiliación internacional?', _dtRadio(f2.tiene_afiliacion)) +
+                _dtCell('Archivo afiliación', _dtArchivo(f2.archivo_afiliacion));
+        html += _dtBlock('Personería, Estatutos y Estructura (F2)', c);
+      }
+      if (t.tipoOrganismo === 'federacion' && d.f3) {
+        var f3 = d.f3;
+        var c = _dtCell('N° Resolución Personería Jurídica', f3.no_res_personeria) +
+                _dtCell('Radicado Personería en IVC', f3.radicado_personeria, true) +
+                _dtCell('Período Estatutario Inicial', f3.f3_periodo_estatutario_inicial) +
+                _dtCell('N° Resolución de Mínimos', f3.f3_no_res_minimos) +
+                _dtCell('N° de Mínimos', f3.f3_n_minimos);
+        html += _dtBlock('Personería y Constitución (F3)', c);
+      }
+
+      // 3. Asamblea (F1 + F3)
+      if (d.asamblea && (t.tipoOrganismo === 'liga' || t.tipoOrganismo === 'federacion')) {
+        var a = d.asamblea;
+        if (t.tipoOrganismo === 'liga') {
+          // Tema + tabla de tipos + observaciones
+          var subTema = _dtBlock('Asamblea — Tema', _dtCell('Tema u objeto de la reunión', a.f1_tema));
+          var rowsAsamblea = (a.f1_reuniones || []).map(function(r){
+            return [
+              _DT_TIPOS_REUNION[r.tipo] || r.tipo || '—',
+              r.fechaConv ? formatDate(r.fechaConv) : '—',
+              r.fechaReal ? formatDate(r.fechaReal) : '—',
+              r.antelacion ? formatDate(r.antelacion) : '—',
+              _dtRadio(r.cumple)
+            ];
+          });
+          var tablaTipos = '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Asamblea — Tipos de reunión realizados</h3>' +
+            _dtTable(['Tipo / Clase', 'Fecha Convocatoria', 'Fecha Realización', 'Antelación', '¿Cumple?'], rowsAsamblea) +
+            '</section>';
+          var obs = a.f1_obs_asamblea ? _dtBlock('Asamblea — Observaciones', _dtCell('Observaciones sobre la asamblea', a.f1_obs_asamblea)) : '';
+          // Convocante
+          var conv = _dtBlock('Convocante',
+            _dtCell('Tipo de convocante', _DT_TIPOS_CONVOCANTE[a.f1_tipo_convocante] || a.f1_tipo_convocante) +
+            _dtCell('¿Convocante elegido en período vigente?', _dtRadio(a.f1_convocante_vigente)) +
+            _dtCell('N° Res. Inscripción del convocante', a.f1_no_res_convocante) +
+            _dtCell('N° Acta OA que designa Presidente', a.f1_no_acta_designa_presidente) +
+            _dtCell('N° Res. nombramiento Comité Provisional', a.f1_no_res_comite_provisional) +
+            _dtCell('Vigencia Comité Provisional', a.f1_vigencia_comite_provisional) +
+            _dtCell('¿Comité designado por OA?', _dtRadio(a.f1_comite_designado_por_oa)) +
+            _dtCell('Ente Deportivo', a.f1_ente_deportivo)
+          );
+          // Asistentes
+          var asis = _dtBlock('Asistentes y quórum',
+            _dtCell('N° total de afiliados', a.f1_num_afiliados, true) +
+            _dtCell('N° afiliados asistentes', a.f1_num_asistentes, true) +
+            _dtCell('¿Se cumplió el quórum?', _dtRadio(a.f1_cumplio_quorum)) +
+            _dtCell('¿Cert. RF a la fecha de reunión?', _dtRadio(a.f1_adjunta_cert_rf_fecha)) +
+            _dtCell('Archivo cert. RF fecha', _dtArchivo(a.f1_archivo_cert_rf_fecha)) +
+            _dtCell('¿Cert. RF en la actualidad?', _dtRadio(a.f1_adjunta_cert_rf_actual)) +
+            _dtCell('Archivo cert. RF actualidad', _dtArchivo(a.f1_archivo_cert_rf_actual)) +
+            _dtCell('Observaciones sobre asistencia', a.f1_obs_asistencia)
+          );
+          html += subTema + tablaTipos + obs + conv + asis;
+        } else {
+          // F3 — Asamblea de Constitución + Asistentes
+          html += _dtBlock('Asamblea de Constitución (F3)',
+            _dtCell('Tipo de convocatoria', a.f3_tipo_convocatoria === 'COMITE_PROVISIONAL' ? 'Comité Provisional' : a.f3_tipo_convocatoria === 'INICIATIVA_PROPIA' ? 'Iniciativa Propia' : '—') +
+            _dtCell('Fecha de Convocatoria', a.f3_fecha_convocatoria ? formatDate(a.f3_fecha_convocatoria) : '—') +
+            _dtCell('Fecha de Realización', a.f3_fecha_realizacion ? formatDate(a.f3_fecha_realizacion) : '—')
+          );
+          html += _dtBlock('Asistentes y Quórum (F3)',
+            _dtCell('N° total de afiliados', a.f3_num_afiliados, true) +
+            _dtCell('N° afiliados asistentes', a.f3_num_asistentes, true) +
+            _dtCell('¿Se cumplió el quórum?', _dtRadio(a.f3_cumplio_quorum)) +
+            _dtCell('¿Cert. RF sobre afiliados?', _dtRadio(a.f3_adjunta_cert_rf)) +
+            _dtCell('Archivo cert. RF', _dtArchivo(a.f3_archivo_cert))
+          );
+        }
+      }
+
+      // 4. Estructura del organismo
+      if (d.estructura) {
+        var e = d.estructura;
+        if (t.tipoOrganismo === 'liga') {
+          var fund = (e.f1_fundadores || []).map(function(r){ return [r.nombre, r.no_res_reconocimiento]; });
+          var oa = (e.f1_miembros_oa || []).map(function(r){ return [r.nombre, r.identificacion, r.cargo, _dtRadio(r.capacitacion), r.nombrado_por, r.no_periodos]; });
+          var rf = (e.f1_revisor_fiscal || []).map(function(r){ return [r.display, r.nombre, r.identificacion]; });
+          var cd = (e.f1_comision_disciplinaria || []).map(function(r){ return [r.display, r.nombre]; });
+          var ct = (e.f1_comision_tecnica || []).map(function(r){ return [r.display, r.nombre]; });
+          var cj = (e.f1_comision_juzgamiento || []).map(function(r){ return [r.display, r.nombre]; });
+          var cp = (e.f1_comision_paradeporte || []).map(function(r){ return [r.display, r.nombre]; });
+
+          html += '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Estructura del organismo (F1)</h3>' +
+            _dtSubBlock('A. Fundadores / Afiliados asistentes', _dtTable(['Nombre','N° Res. Reconocimiento Deportivo'], fund)) +
+            _dtSubBlock('B. Miembros del Órgano de Administración', _dtTable(['Nombre','Identificación','Cargo','¿Capacitación?','Nombrado por','N° Períodos'], oa)) +
+            _dtSubBlock('B. Datos extra OA', '<div class="ivc-data-grid">' +
+              _dtCell('¿Presidente tiene antecedentes disciplinarios?', _dtRadio(e.f1_presidente_antecedentes)) +
+              _dtCell('Persona con discapacidad / grupo poblacional', e.f1_persona_discapacidad) +
+            '</div>') +
+            _dtSubBlock('C. Revisor Fiscal', _dtTable(['Cargo','Nombre','Identificación'], rf)) +
+            _dtSubBlock('D. Comisión Disciplinaria', _dtTable(['Órgano electivo','Nombre'], cd)) +
+            _dtSubBlock('E. Comisión Técnica', _dtTable(['Integrante','Nombre'], ct)) +
+            _dtSubBlock('F. Comisión de Juzgamiento', _dtTable(['Integrante','Nombre'], cj)) +
+            (e.f1_aplica_paradeporte === 'si'
+              ? _dtSubBlock('G. Comisión Especializada / Paradeporte', _dtTable(['Integrante','Nombre'], cp) +
+                  '<div class="ivc-data-grid">' + _dtCell('Fecha asamblea elección Comisión Paradeporte', e.f1_paradeporte_fecha_asamblea ? formatDate(e.f1_paradeporte_fecha_asamblea) : '—') + '</div>')
+              : _dtSubBlock('G. Comisión Especializada / Paradeporte', '<p class="ivc-detail-empty">No aplica.</p>')
+            ) +
+          '</section>';
+        } else if (t.tipoOrganismo === 'asociacion') {
+          var sec = (e.f2_seccionales || []).map(function(r){ return [r.nombre_seccional, r.nombre_directivo]; });
+          html += '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Entidades seccionales (F2)</h3>' +
+            _dtTable(['Nombre seccional','Nombre directivo'], sec) +
+          '</section>';
+        } else if (t.tipoOrganismo === 'federacion') {
+          var afi = (e.f3_afiliados || []).map(function(r){ return [r.nombre, r.no_res_reconocimiento]; });
+          var oa = (e.f3_miembros_oa || []).map(function(r){ return [r.nombre, r.cargo, r.identificacion, _dtRadio(r.tiene_capacitacion), r.nombrado_por, _dtRadio(r.acepta_cargo)]; });
+          var rf = (e.f3_revisor_fiscal || []).map(function(r){ return [r.display, r.nombre, r.identificacion, r.no_tarjeta_profesional, _dtRadio(r.acepta_cargo), _dtRadio(r.antecedentes_disciplinarios), _dtRadio(r.firma_revisoria)]; });
+          var cd = (e.f3_comision_disciplinaria || []).map(function(r){ return [r.display, r.nombre, r.identificacion, _dtRadio(r.acepta)]; });
+
+          html += '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Estructura del organismo (F3)</h3>' +
+            _dtSubBlock('A. Afiliados constituyentes', _dtTable(['Nombre','N° Res. Reconocimiento Deportivo'], afi)) +
+            _dtSubBlock('B. Miembros del Órgano de Administración', _dtTable(['Nombre','Cargo','Identificación','¿Capacitación?','Nombrado por','¿Acepta cargo?'], oa)) +
+            _dtSubBlock('B. Datos extra OA', '<div class="ivc-data-grid">' +
+              _dtCell('Persona con discapacidad / grupo poblacional', e.f3_persona_discapacidad) +
+              _dtCell('Fecha reunión electiva del OA', e.f3_fecha_reunion_electiva_oa ? formatDate(e.f3_fecha_reunion_electiva_oa) : '—') +
+              _dtCell('Fecha reunión asignación de cargos', e.f3_fecha_reunion_asignacion ? formatDate(e.f3_fecha_reunion_asignacion) : '—') +
+              _dtCell('¿Acredita Cert. Residencia OA?', _dtRadio(e.f3_acredita_cert_residencia_oa)) +
+              _dtCell('Nombres cert. residencia OA', e.f3_nombres_cert_residencia_oa) +
+              _dtCell('Archivo cert. residencia OA', _dtArchivo(e.f3_archivo_cert_residencia_oa)) +
+            '</div>') +
+            _dtSubBlock('C. Órgano de Control (Revisor Fiscal)', _dtTable(['Cargo','Nombre','Identificación','N° Tarjeta','¿Acepta?','¿Antecedentes?','¿Firma revisoría?'], rf)) +
+            _dtSubBlock('C. Datos extra OC', '<div class="ivc-data-grid">' +
+              _dtCell('¿Acredita Cert. Residencia OC?', _dtRadio(e.f3_acredita_cert_residencia_oc)) +
+              _dtCell('Nombres cert. residencia OC', e.f3_nombres_cert_residencia_oc) +
+              _dtCell('Archivo cert. residencia OC', _dtArchivo(e.f3_archivo_cert_residencia_oc)) +
+            '</div>') +
+            _dtSubBlock('D. Comisión Disciplinaria', _dtTable(['Órgano electivo','Nombre','Identificación','¿Acepta?'], cd)) +
+            '<div class="ivc-data-grid">' +
+              _dtCell('Fecha reunión OA elección Miembro 3 CD', e.f3_fecha_reunion_oa_cd ? formatDate(e.f3_fecha_reunion_oa_cd) : '—') +
+            '</div>' +
+          '</section>';
+        }
+      }
+
+      // 5. Información Adicional y Cierre
+      if (d.cierre) {
+        var c2 = d.cierre;
+        var cierre = '';
+        if (t.tipoOrganismo === 'liga') {
+          cierre += _dtCell('¿Certificación conjunta estructura funcional?', _dtRadio(c2.f1_adjunta_cert_conjunta)) +
+                    _dtCell('Archivo cert. conjunta', _dtArchivo(c2.f1_archivo_cert_conjunta));
+        }
+        if (t.tipoOrganismo === 'federacion') {
+          cierre += _dtCell('¿Certificación del COC?', _dtRadio(c2.f3_adjunta_cert_coc)) +
+                    _dtCell('Archivo cert. COC', _dtArchivo(c2.f3_archivo_cert_coc)) +
+                    _dtCell('¿Aval del Comité Paralímpico Colombiano?', _dtRadio(c2.f3_adjunta_aval_paralimpico)) +
+                    _dtCell('Archivo Aval CPC', _dtArchivo(c2.f3_archivo_aval_paralimpico)) +
+                    _dtCell('¿Cert. conjunta no investigación disciplinaria/penal?', _dtRadio(c2.f3_adjunta_cert_conjunta_no_inv)) +
+                    _dtCell('Archivo cert. no investigación', _dtArchivo(c2.f3_archivo_cert_conjunta_no_inv));
+        }
+        cierre += _dtCell('N° radicado de la documentación adjunta', c2.no_radicado_doc, true) +
+                  _dtCell('Observaciones y documentación pendiente', c2.observaciones) +
+                  _dtCell('Archivos adjuntos al trámite', _dtArchivo(c2.archivos_adjuntos));
+        html += _dtBlock('Información adicional y cierre', cierre);
+      }
+
+      return html;
+    }
+
+    function renderDatosPanel() {
+      var t = state.tramite;
+      return renderTramiteDatosCompletos(t);
     }
 
     /* ───────── Render: Historial panel ───────── */

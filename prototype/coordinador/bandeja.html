@@ -515,18 +515,138 @@
     /* v1.5.8 (25/05/2026): Modal Histórico — alto fijo + scroll interno
        (feedback Doug). Antes el modal crecía sin límite y ocupaba toda la
        pantalla cuando había muchos eventos. */
-    #modalHistoricoOverlay .naowee-modal {
+    #modalHistoricoOverlay .naowee-modal,
+    #modalDetalleOverlay .naowee-modal {
       display: flex;
       flex-direction: column;
-      max-height: 70vh;
+      max-height: 85vh;
     }
-    #modalHistoricoOverlay .naowee-modal__header {
+    #modalHistoricoOverlay .naowee-modal__header,
+    #modalDetalleOverlay .naowee-modal__header {
       flex-shrink: 0;
     }
-    #modalHistoricoOverlay .naowee-modal__body {
+    #modalHistoricoOverlay .naowee-modal__body,
+    #modalDetalleOverlay .naowee-modal__body {
       flex: 1 1 auto;
       overflow-y: auto;
       min-height: 0;  /* permite shrink dentro del flex */
+    }
+
+    /* v1.5.9 (25/05/2026): bloques de detalle del trámite (modal Coordinador).
+       v1.5.9 rev2: títulos sin color accent (los tabs ya organizan visualmente).
+       Solo divisores neutros entre secciones para no competir con los tabs. */
+    .ivc-detail-block { margin: 0 0 28px; }
+    .ivc-detail-block:last-child { margin-bottom: 0; }
+    .ivc-detail-block__title {
+      font-size: 13px; font-weight: 700; letter-spacing: .4px;
+      text-transform: uppercase; color: var(--text-primary);
+      margin: 0 0 14px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* v1.5.9 rev3 (25/05/2026): Tabs del modal Detalle — matchea EXACTO el
+       patrón canónico de workspace.html (.ivc-tabs-card). El DS v1.8.0 le
+       pone a .naowee-tab un background-color del fill-mute-idle que se ve
+       como una pill gris en idle/hover. Aquí lo reseteamos para que la
+       jerarquía visual sea: solo el indicator naranja marca el tab activo. */
+    .ivc-detalle-tabs-wrap {
+      position: relative;
+      padding: 6px 24px 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .ivc-detalle-tabs-wrap > .naowee-tabs {
+      background: transparent !important;
+      border-bottom: 0 !important;
+      position: relative;
+      z-index: 1;
+      gap: 0;
+      padding: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .ivc-detalle-tabs-wrap > .naowee-tabs::-webkit-scrollbar { display: none; }
+    /* Reset agresivo del .naowee-tab idle del DS v1.8.0 (mute-idle pill bg). */
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab {
+      padding: 12px 18px;
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      color: var(--text-secondary);
+      font-weight: 600;
+      white-space: nowrap;
+      transition: color .15s var(--ease-in-out, ease);
+    }
+    /* Hover: solo cambio de color, sin background pill. */
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab:hover {
+      background: transparent !important;
+      background-color: transparent !important;
+      color: var(--text-primary);
+    }
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab--selected,
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab--selected:hover {
+      background: transparent !important;
+      background-color: transparent !important;
+      color: var(--accent, #d74009);
+    }
+    /* El indicator absorbe el border-bottom del wrap (no queda hueco). */
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tabs__indicator {
+      background: var(--accent, #d74009);
+      z-index: 2;
+      bottom: -1px;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+    }
+    .ivc-detail-subblock { margin: 18px 0 0; }
+    .ivc-detail-subblock__title {
+      font-size: 12px; font-weight: 700; letter-spacing: .3px;
+      text-transform: uppercase; color: var(--text-secondary);
+      margin: 0 0 10px;
+    }
+    /* v1.5.9 rev3: 3 columnas (era 2) — el modal ahora cabe 1200px y hay
+       mucha info; agrupar de a 3 reduce el largo del scroll en cada tab. */
+    .ivc-data-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px 24px;
+    }
+    @media (max-width: 1100px) { .ivc-data-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 700px)  { .ivc-data-grid { grid-template-columns: 1fr; } }
+    .ivc-data-grid__cell { display: flex; flex-direction: column; gap: 4px; }
+    .ivc-data-grid__label {
+      font-size: 11px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; color: var(--text-secondary);
+    }
+    .ivc-data-grid__value {
+      font-size: 13.5px; color: var(--text-primary); font-weight: 500;
+      word-break: break-word;
+    }
+    .ivc-data-grid__value--mono {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-weight: 700;
+    }
+    .ivc-detail-table {
+      width: 100%; border-collapse: collapse; font-size: 12.5px;
+      border: 1px solid var(--border); border-radius: 8px;
+      overflow: hidden; margin: 0 0 6px;
+    }
+    .ivc-detail-table th {
+      background: var(--bg-soft); text-align: left;
+      padding: 10px 12px; font-size: 11px; font-weight: 700;
+      letter-spacing: .3px; text-transform: uppercase;
+      color: var(--text-secondary); border-bottom: 1px solid var(--border);
+    }
+    .ivc-detail-table td {
+      padding: 10px 12px; border-bottom: 1px solid var(--border);
+      color: var(--text-primary); vertical-align: top;
+    }
+    .ivc-detail-table tr:last-child td { border-bottom: 0; }
+    .ivc-detail-empty {
+      font-size: 12.5px; color: var(--text-secondary);
+      font-style: italic; margin: 4px 0;
     }
 
     /* Datepicker hover state alineado con demo Fase 1 (futuro-proof si se
@@ -630,6 +750,9 @@
                 <div class="naowee-dropdown__option" role="option" data-val="No asignada" tabindex="-1">En remisión</div>
                 <div class="naowee-dropdown__option" role="option" data-val="Asignada" tabindex="-1">Asignada</div>
                 <div class="naowee-dropdown__option" role="option" data-val="En validación" tabindex="-1">En validación</div>
+                <div class="naowee-dropdown__option" role="option" data-val="No cumple" tabindex="-1">No cumple</div>
+                <div class="naowee-dropdown__option" role="option" data-val="Cumple" tabindex="-1">Cumple</div>
+                <div class="naowee-dropdown__option" role="option" data-val="Cumplimiento parcial" tabindex="-1">Cumplimiento parcial</div>
               </div>
             </div>
             <!-- Filtro Tipo -->
@@ -900,6 +1023,31 @@
     </div>
   </div>
 
+  <!-- v1.5.9 (25/05/2026) rev3: Modal "Ver detalle del trámite" con TABS canónicos DS.
+       Reemplaza los títulos naranjas por una navegación tab-based para mejor UX.
+       Tabs adaptativos según tipo de organismo (Liga/Federación tienen Asamblea,
+       Asociación no). Width 1200px + grid de 3 columnas. Feedback Doug: UX pro max. -->
+  <div class="naowee-modal-overlay" id="modalDetalleOverlay" role="dialog" aria-modal="true" aria-labelledby="modalDetalleTitle">
+    <div class="naowee-modal" style="max-width: 1200px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title" id="modalDetalleTitle">Detalle del trámite</h2>
+          <p class="naowee-modal__subtitle" id="modalDetalleSub">—</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="modalDetalleClose" aria-label="Cerrar modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <!-- Tabs canónicos DS (mismo patrón que workspace.html) -->
+      <div class="ivc-detalle-tabs-wrap">
+        <div class="naowee-tabs naowee-tabs--animated" role="tablist" id="modalDetalleTabs">
+          <!-- tabs populados dinámicamente por openModalDetalle según tipo organismo -->
+        </div>
+      </div>
+      <div class="naowee-modal__body" id="modalDetalleBody"></div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="../shared/data.js"></script>
   <script src="../shared/shell.js"></script>
@@ -1098,6 +1246,19 @@
             '<span class="naowee-tooltip__content">Ver histórico</span>' +
           '</span>';
 
+        /* v1.5.9 (25/05/2026): nuevo botón "Ver detalle" — abre modal con TODOS
+           los datos diligenciados en el formulario. Feedback Juanma. */
+        var detalleBtn =
+          '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" data-detalle="' + t.id + '" aria-label="Ver detalle del trámite">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>' +
+                '<circle cx="12" cy="12" r="3"/>' +
+              '</svg>' +
+            '</button>' +
+            '<span class="naowee-tooltip__content">Ver detalle</span>' +
+          '</span>';
+
         return '<tr data-tramite-id="' + t.id + '">' +
           '<td class="row-checkbox-cell">' +
             '<label class="naowee-checkbox ' + (isSelected ? 'naowee-checkbox--checked' : '') + '" data-row-check="' + t.id + '">' +
@@ -1113,7 +1274,7 @@
           '<td>' + badgePlazo + '</td>' +
           '<td>' + badgeEstado + '</td>' +
           '<td>' + asignado + '</td>' +
-          '<td><div class="row-actions">' + historicoBtn + accionBtn + '</div></td>' +
+          '<td><div class="row-actions">' + detalleBtn + historicoBtn + accionBtn + '</div></td>' +
         '</tr>';
       }).join('');
 
@@ -1126,15 +1287,23 @@
     /* GAP #9 — Badge canónico "En remisión" (naranja) / Asignada (azul info) / En validación (azul) */
     function badgeForEstadoAsignacion(estado) {
       if (estado === 'No asignada') {
-        /* "En remisión" — badge caution quiet (naranja) */
         return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">En remisión</span>';
       }
       if (estado === 'Asignada') {
         return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Asignada</span>';
       }
       if (estado === 'En validación') {
-        /* v1.4.5: bajo contraste (--quiet) para consistencia con En remisión / Asignada */
         return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">En validación</span>';
+      }
+      /* v1.5.9: badges para estados finales con variant semántico. */
+      if (estado === 'No cumple' || estado === 'NoCumple') {
+        return '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">No cumple</span>';
+      }
+      if (estado === 'Cumple') {
+        return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Cumple</span>';
+      }
+      if (estado === 'Cumplimiento parcial' || estado === 'CumplimientoParcial') {
+        return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Cumplimiento parcial</span>';
       }
       return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">' + estado + '</span>';
     }
@@ -1570,6 +1739,11 @@
           updateBulkButton();
           return;
         }
+        var detalle = ev.target.closest('[data-detalle]');
+        if (detalle) {
+          openModalDetalle(detalle.getAttribute('data-detalle'));
+          return;
+        }
         var hist = ev.target.closest('[data-historico]');
         if (hist) {
           openModalHistorico(hist.getAttribute('data-historico'));
@@ -1679,6 +1853,11 @@
       var histOv = document.getElementById('modalHistoricoOverlay');
       document.getElementById('modalHistoricoClose').addEventListener('click', closeModalHistorico);
       histOv.addEventListener('click', function (e) { if (e.target === histOv) closeModalHistorico(); });
+
+      /* v1.5.9: Modal Detalle del trámite */
+      var detOv = document.getElementById('modalDetalleOverlay');
+      document.getElementById('modalDetalleClose').addEventListener('click', closeModalDetalle);
+      detOv.addEventListener('click', function (e) { if (e.target === detOv) closeModalDetalle(); });
     }
 
     function openModalMasivo() {
@@ -2044,6 +2223,384 @@
       return { titulo: titulo, meta: meta, actor: actor };
     }
 
+    /* v1.5.9 rev2 (25/05/2026): Modal "Ver detalle" con TABS canónicos DS.
+       UX pro max: navegación tab-based en lugar de scroll con títulos naranjas.
+       Tabs adaptativos por organismo (Liga/Federación tienen Asamblea, Asociación no). */
+    var __detalleTramiteActual = null;
+
+    function getTabsDetalleParaOrganismo(tipoOrganismo) {
+      var tabs = [
+        { id:'general',    label:'General' },
+        { id:'personeria', label:'Personería' }
+      ];
+      if (tipoOrganismo === 'liga' || tipoOrganismo === 'federacion') {
+        tabs.push({ id:'asamblea', label:'Asamblea' });
+      }
+      tabs.push({ id:'estructura', label:'Estructura' });
+      tabs.push({ id:'cierre',     label:'Cierre' });
+      return tabs;
+    }
+
+    function openModalDetalle(tramiteId) {
+      var t = state.tramites.find(function (x) { return x.id === tramiteId; });
+      if (!t) return;
+      __detalleTramiteActual = t;
+      document.getElementById('modalDetalleSub').textContent = t.id + ' · ' + t.organismo;
+      // Renderizar tabs según organismo
+      var tabs = getTabsDetalleParaOrganismo(t.tipoOrganismo);
+      var tabsHtml = tabs.map(function(tab, i){
+        return '<button class="naowee-tab' + (i === 0 ? ' naowee-tab--selected' : '') +
+               '" data-detalle-tab="' + tab.id + '" role="tab" type="button">' + tab.label + '</button>';
+      }).join('') + '<span class="naowee-tabs__indicator"></span>';
+      document.getElementById('modalDetalleTabs').innerHTML = tabsHtml;
+      // Renderizar contenido del primer tab
+      document.getElementById('modalDetalleBody').innerHTML = renderDetalleTabContent(t, tabs[0].id);
+      document.getElementById('modalDetalleOverlay').classList.add('open');
+      wireTabsDetalle();
+    }
+    function closeModalDetalle() {
+      document.getElementById('modalDetalleOverlay').classList.remove('open');
+      __detalleTramiteActual = null;
+    }
+    function wireTabsDetalle() {
+      var tabsEl = document.getElementById('modalDetalleTabs');
+      if (!tabsEl) return;
+      var indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+      function positionIndicator(tab) {
+        if (!indicator || !tab) return;
+        var r = tab.getBoundingClientRect();
+        var parent = tabsEl.getBoundingClientRect();
+        indicator.style.width = r.width + 'px';
+        indicator.style.transform = 'translateX(' + (r.left - parent.left + tabsEl.scrollLeft) + 'px)';
+      }
+      var initial = tabsEl.querySelector('.naowee-tab--selected');
+      if (initial) requestAnimationFrame(function(){ positionIndicator(initial); });
+      tabsEl.querySelectorAll('.naowee-tab').forEach(function(tab){
+        tab.addEventListener('click', function(){
+          var key = tab.dataset.detalleTab;
+          tabsEl.querySelectorAll('.naowee-tab').forEach(function(t){
+            t.classList.toggle('naowee-tab--selected', t === tab);
+          });
+          document.getElementById('modalDetalleBody').innerHTML = renderDetalleTabContent(__detalleTramiteActual, key);
+          positionIndicator(tab);
+          // Scroll body al top al cambiar de tab
+          document.getElementById('modalDetalleBody').scrollTop = 0;
+        });
+      });
+    }
+
+    /* Helper compartido con workspace.html — muestra TODOS los datos del trámite. */
+    function _dtCell(label, value, mono) {
+      var v = (value === undefined || value === null || value === '') ? '—' : String(value);
+      var valCls = 'ivc-data-grid__value' + (mono ? ' ivc-data-grid__value--mono' : '');
+      return '<div class="ivc-data-grid__cell">' +
+        '<span class="ivc-data-grid__label">' + label + '</span>' +
+        '<span class="' + valCls + '">' + escHtml(v) + '</span>' +
+      '</div>';
+    }
+    function _dtBlock(title, cellsHtml) {
+      if (!cellsHtml) return '';
+      return '<section class="ivc-detail-block">' +
+        '<h3 class="ivc-detail-block__title">' + title + '</h3>' +
+        '<div class="ivc-data-grid">' + cellsHtml + '</div>' +
+      '</section>';
+    }
+    function _dtSubBlock(title, content) {
+      return '<div class="ivc-detail-subblock"><h4 class="ivc-detail-subblock__title">' + title + '</h4>' + content + '</div>';
+    }
+    function _dtTable(headers, rows) {
+      if (!rows || rows.length === 0) return '<p class="ivc-detail-empty">—</p>';
+      var nonEmpty = rows.filter(function(r){ return r.some(function(c){ return c && String(c).trim() !== ''; }); });
+      if (nonEmpty.length === 0) return '<p class="ivc-detail-empty">No se diligenció ninguna fila.</p>';
+      var html = '<table class="ivc-detail-table"><thead><tr>';
+      headers.forEach(function(h){ html += '<th>' + escHtml(h) + '</th>'; });
+      html += '</tr></thead><tbody>';
+      nonEmpty.forEach(function(row){
+        html += '<tr>';
+        row.forEach(function(c){ html += '<td>' + escHtml(c || '—') + '</td>'; });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+    var _DT_TIPOS_REUNION = {
+      ORDINARIA:'Ordinaria', EXTRAORDINARIA:'Extraordinaria', EXT_CARACTER_ORD:'Extraordinaria con carácter de Ordinaria',
+      SEGUNDA_CONVOCATORIA:'Segunda convocatoria', NO_PRESENCIAL:'No presencial', DERECHO_PROPIO:'De pleno derecho',
+      CONSTITUTIVA:'Constitutiva', UNIVERSAL:'Universal', DEL_OA:'Del Órgano de Administración'
+    };
+    var _DT_TIPOS_CONVOCANTE = {
+      OA:'Órgano de Administración', PRESIDENTE:'Presidente del Organismo',
+      OC:'Órgano de Control', COMITE_PROVISIONAL:'Comité Provisional'
+    };
+    var _DT_SUB_ASOCIACION = { JUVENIL:'Asociación Juvenil', RECREATIVA:'Asociación Recreativa' };
+    var _DT_RADIO = { si:'Sí', no:'No', no_aplica:'No aplica' };
+    var _DT_ORG = {
+      liga:'Ligas o asociaciones deportivas',
+      asociacion:'Asociaciones juveniles o recreativas',
+      federacion:'Federaciones deportivas'
+    };
+    function _dtRadio(v){ return _DT_RADIO[v] || v || '—'; }
+    function _dtArchivo(file) {
+      if (!file) return '—';
+      if (typeof file === 'object' && file.name) return file.name + (file.size ? ' · ' + file.size : '');
+      return 'Archivo adjunto';
+    }
+    function _dtDate(s) {
+      if (!s) return '—';
+      try { return formatDate(s); } catch (e) { return s; }
+    }
+
+    /* v1.5.9 rev3 (25/05/2026): dispatcher de tabs — cada tab devuelve solo su
+       sección. Antes _renderTabGeneral concentraba todo el contenido y los
+       otros 4 (_renderTabPersoneria/Asamblea/Estructura/Cierre) no existían,
+       por eso clickear cualquier tab distinto de General mostraba undefined. */
+    function renderDetalleTabContent(t, tabId) {
+      if (!t) return '<p class="ivc-detail-empty">Trámite no encontrado.</p>';
+      var d = t.datos || {};
+      if (tabId === 'general')    return _renderTabGeneral(t, d);
+      if (tabId === 'personeria') return _renderTabPersoneria(t, d);
+      if (tabId === 'asamblea')   return _renderTabAsamblea(t, d);
+      if (tabId === 'estructura') return _renderTabEstructura(t, d);
+      if (tabId === 'cierre')     return _renderTabCierre(t, d);
+      return '';
+    }
+
+    /* v1.5.9 rev3 (25/05/2026): refactor en 5 funciones, una por tab.
+       Antes _renderTabGeneral contenía TODO (personería+asamblea+estructura+cierre);
+       eso rompía la navegación por tabs porque clickear "Personería" caía en
+       _renderTabPersoneria que no existía → undefined.                          */
+
+    /* ── TAB 1 · General: identificación del trámite + datos generales ── */
+    function _renderTabGeneral(t, d) {
+      var coordActor = (t.historico || []).find(function (h) {
+        return /asignad/i.test(h.accion || '') && (h.actor || '').toLowerCase().indexOf('coordinador') >= 0;
+      });
+      var coord = coordActor ? coordActor.actor : '—';
+      var orgLabel = _DT_ORG[t.tipoOrganismo] || t.tipoOrganismo || '—';
+      var area = t.area === 'aficionado' ? 'Deporte Aficionado' : t.area === 'profesional' ? 'Deporte Profesional' : (t.area || '—');
+      var plazo = (typeof t.plazoDias === 'number') ? t.plazoDias : 15;
+      var plazoTxt = plazo <= 0 ? 'Vencido' : plazo + ' días hábiles';
+
+      var html = _dtBlock('Identificación del trámite',
+        _dtCell('Número de radicado', t.id || '—', true) +
+        _dtCell('Tipo de organismo', orgLabel) +
+        _dtCell('Tipo de trámite', t.tipoTramite || '—') +
+        _dtCell('Área', area) +
+        _dtCell('Fecha de radicación', t.fechaRadicacion ? _dtDate(t.fechaRadicacion) : '—') +
+        _dtCell('Plazo restante', plazoTxt) +
+        _dtCell('Estado actual', t.estado || '—') +
+        _dtCell('Coordinador asignador', coord) +
+        _dtCell('Profesional asignado', t.profesionalNombre || '—')
+      );
+
+      var generales = _dtCell('Nombre del organismo', d.nombre);
+      if (t.tipoOrganismo === 'liga') generales += _dtCell('NIT', d.nit, true);
+      generales += _dtCell('Dirección', d.direccion);
+      if (t.tipoOrganismo !== 'asociacion') generales += _dtCell('Municipio', d.municipio);
+      generales += _dtCell('Teléfono', d.telefono, true) + _dtCell('Correo electrónico', d.correo);
+      html += _dtBlock('Datos generales del organismo', generales);
+
+      return html;
+    }
+
+    /* ── TAB 2 · Personería: F1 / F2 / F3 según organismo ── */
+    function _renderTabPersoneria(t, d) {
+      if (t.tipoOrganismo === 'liga' && d.f1) {
+        var f1 = d.f1;
+        return _dtBlock('Personería, Estatutos y Constitución (F1)',
+          _dtCell('N° Resolución Personería Jurídica', f1.no_res_personeria) +
+          _dtCell('Radicado Personería en IVC', f1.radicado_personeria, true) +
+          _dtCell('Fecha última Reforma Estatutaria', _dtDate(f1.fecha_reforma)) +
+          _dtCell('Radicado Estatutos en IVC', f1.radicado_estatutos, true) +
+          _dtCell('N° Resolución Inscripción Estatutos', f1.no_res_estatutos) +
+          _dtCell('Período Estatutario Inicial', f1.periodo_inicial) +
+          _dtCell('Período Estatutario Vigente', f1.periodo_vigente) +
+          _dtCell('N° Resolución RD anterior', f1.no_res_rd_anterior) +
+          _dtCell('Fecha Notificación RD anterior', _dtDate(f1.fecha_notif_rd)) +
+          _dtCell('Fecha Firmeza RD anterior', _dtDate(f1.fecha_firmeza_rd)) +
+          _dtCell('N° Res/Acta Inscripción Miembros', f1.f1_no_acta_miembros) +
+          _dtCell('¿Constancia Personería vigente?', _dtRadio(f1.tiene_constancia)) +
+          _dtCell('Fecha Constancia', _dtDate(f1.fecha_constancia)) +
+          _dtCell('N° Resolución de Mínimos', f1.no_res_minimos) +
+          _dtCell('N° de Mínimos', f1.n_minimos)
+        );
+      }
+      if (t.tipoOrganismo === 'asociacion' && d.f2) {
+        var f2 = d.f2;
+        return _dtBlock('Personería, Estatutos y Estructura (F2)',
+          _dtCell('Sub-tipo de Asociación', _DT_SUB_ASOCIACION[f2.sub_tipo] || f2.sub_tipo) +
+          _dtCell('N° y fecha doc. Personería Jurídica', f2.no_personeria) +
+          _dtCell('Radicado Personería en IVC', f2.radicado_personeria, true) +
+          _dtCell('Fecha Estatutos Sociales vigentes', _dtDate(f2.fecha_estatutos)) +
+          _dtCell('Radicado Estatutos en IVC', f2.radicado_estatutos, true) +
+          _dtCell('N° Acta designación de sede', f2.no_acta_sede) +
+          _dtCell('Radicado Acta sede en IVC', f2.radicado_acta_sede, true) +
+          _dtCell('N° Acta Constitución/elección OA', f2.no_acta_constitucion) +
+          _dtCell('Radicado Acta constitución en IVC', f2.radicado_acta_constitucion, true) +
+          _dtCell('N° Resolución Inscripción Miembros', f2.no_inscripcion_miembros) +
+          _dtCell('Radicado Resolución Miembros en IVC', f2.radicado_inscripcion_miembros, true) +
+          _dtCell('¿Cuenta con inventario de bienes?', _dtRadio(f2.tiene_inventario)) +
+          _dtCell('Archivo inventario', _dtArchivo(f2.archivo_inventario)) +
+          _dtCell('¿Documentos de afiliación internacional?', _dtRadio(f2.tiene_afiliacion)) +
+          _dtCell('Archivo afiliación', _dtArchivo(f2.archivo_afiliacion))
+        );
+      }
+      if (t.tipoOrganismo === 'federacion' && d.f3) {
+        var f3 = d.f3;
+        return _dtBlock('Personería y Constitución (F3)',
+          _dtCell('N° Resolución Personería Jurídica', f3.no_res_personeria) +
+          _dtCell('Radicado Personería en IVC', f3.radicado_personeria, true) +
+          _dtCell('Período Estatutario Inicial', f3.f3_periodo_estatutario_inicial) +
+          _dtCell('N° Resolución de Mínimos', f3.f3_no_res_minimos) +
+          _dtCell('N° de Mínimos', f3.f3_n_minimos)
+        );
+      }
+      return '<p class="ivc-detail-empty">Sin datos de personería diligenciados.</p>';
+    }
+
+    /* ── TAB 3 · Asamblea: solo Liga (F1) y Federación (F3) ── */
+    function _renderTabAsamblea(t, d) {
+      if (!d.asamblea || (t.tipoOrganismo !== 'liga' && t.tipoOrganismo !== 'federacion')) {
+        return '<p class="ivc-detail-empty">Este organismo no requiere sección de asamblea.</p>';
+      }
+      var a = d.asamblea;
+      var html = '';
+      if (t.tipoOrganismo === 'liga') {
+        html += _dtBlock('Asamblea — Tema', _dtCell('Tema u objeto de la reunión', a.f1_tema));
+        var rowsAsamblea = (a.f1_reuniones || []).map(function(r){
+          return [_DT_TIPOS_REUNION[r.tipo] || r.tipo || '—', _dtDate(r.fechaConv), _dtDate(r.fechaReal), _dtDate(r.antelacion), _dtRadio(r.cumple)];
+        });
+        html += '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Asamblea — Tipos de reunión realizados</h3>' +
+          _dtTable(['Tipo / Clase','Fecha Convocatoria','Fecha Realización','Antelación','¿Cumple?'], rowsAsamblea) + '</section>';
+        if (a.f1_obs_asamblea) {
+          html += _dtBlock('Asamblea — Observaciones', _dtCell('Observaciones sobre la asamblea', a.f1_obs_asamblea));
+        }
+        html += _dtBlock('Convocante',
+          _dtCell('Tipo de convocante', _DT_TIPOS_CONVOCANTE[a.f1_tipo_convocante] || a.f1_tipo_convocante) +
+          _dtCell('¿Convocante elegido en período vigente?', _dtRadio(a.f1_convocante_vigente)) +
+          _dtCell('N° Res. Inscripción del convocante', a.f1_no_res_convocante) +
+          _dtCell('N° Acta OA que designa Presidente', a.f1_no_acta_designa_presidente) +
+          _dtCell('N° Res. nombramiento Comité Provisional', a.f1_no_res_comite_provisional) +
+          _dtCell('Vigencia Comité Provisional', a.f1_vigencia_comite_provisional) +
+          _dtCell('¿Comité designado por OA?', _dtRadio(a.f1_comite_designado_por_oa)) +
+          _dtCell('Ente Deportivo', a.f1_ente_deportivo)
+        );
+        html += _dtBlock('Asistentes y quórum',
+          _dtCell('N° total de afiliados', a.f1_num_afiliados, true) +
+          _dtCell('N° afiliados asistentes', a.f1_num_asistentes, true) +
+          _dtCell('¿Se cumplió el quórum?', _dtRadio(a.f1_cumplio_quorum)) +
+          _dtCell('¿Cert. RF a la fecha de reunión?', _dtRadio(a.f1_adjunta_cert_rf_fecha)) +
+          _dtCell('Archivo cert. RF fecha', _dtArchivo(a.f1_archivo_cert_rf_fecha)) +
+          _dtCell('¿Cert. RF en la actualidad?', _dtRadio(a.f1_adjunta_cert_rf_actual)) +
+          _dtCell('Archivo cert. RF actualidad', _dtArchivo(a.f1_archivo_cert_rf_actual)) +
+          _dtCell('Observaciones sobre asistencia', a.f1_obs_asistencia)
+        );
+      } else {
+        html += _dtBlock('Asamblea de Constitución (F3)',
+          _dtCell('Tipo de convocatoria', a.f3_tipo_convocatoria === 'COMITE_PROVISIONAL' ? 'Comité Provisional' : a.f3_tipo_convocatoria === 'INICIATIVA_PROPIA' ? 'Iniciativa Propia' : '—') +
+          _dtCell('Fecha de Convocatoria', _dtDate(a.f3_fecha_convocatoria)) +
+          _dtCell('Fecha de Realización', _dtDate(a.f3_fecha_realizacion))
+        );
+        html += _dtBlock('Asistentes y Quórum (F3)',
+          _dtCell('N° total de afiliados', a.f3_num_afiliados, true) +
+          _dtCell('N° afiliados asistentes', a.f3_num_asistentes, true) +
+          _dtCell('¿Se cumplió el quórum?', _dtRadio(a.f3_cumplio_quorum)) +
+          _dtCell('¿Cert. RF sobre afiliados?', _dtRadio(a.f3_adjunta_cert_rf)) +
+          _dtCell('Archivo cert. RF', _dtArchivo(a.f3_archivo_cert))
+        );
+      }
+      return html;
+    }
+
+    /* ── TAB 4 · Estructura: F1 (7 sub-bloques A-G) / F2 (seccionales) / F3 (completa) ── */
+    function _renderTabEstructura(t, d) {
+      if (!d.estructura) return '<p class="ivc-detail-empty">Sin datos de estructura diligenciados.</p>';
+      var e = d.estructura;
+
+      if (t.tipoOrganismo === 'liga') {
+        var fund = (e.f1_fundadores || []).map(function(r){ return [r.nombre, r.no_res_reconocimiento]; });
+        var oa = (e.f1_miembros_oa || []).map(function(r){ return [r.nombre, r.identificacion, r.cargo, _dtRadio(r.capacitacion), r.nombrado_por, r.no_periodos]; });
+        var rf = (e.f1_revisor_fiscal || []).map(function(r){ return [r.display, r.nombre, r.identificacion]; });
+        var cd = (e.f1_comision_disciplinaria || []).map(function(r){ return [r.display, r.nombre]; });
+        var ct = (e.f1_comision_tecnica || []).map(function(r){ return [r.display, r.nombre]; });
+        var cj = (e.f1_comision_juzgamiento || []).map(function(r){ return [r.display, r.nombre]; });
+        var cp = (e.f1_comision_paradeporte || []).map(function(r){ return [r.display, r.nombre]; });
+        return '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Estructura del organismo (F1)</h3>' +
+          _dtSubBlock('A. Fundadores / Afiliados asistentes', _dtTable(['Nombre','N° Res. Reconocimiento Deportivo'], fund)) +
+          _dtSubBlock('B. Miembros del Órgano de Administración', _dtTable(['Nombre','Identificación','Cargo','¿Capacitación?','Nombrado por','N° Períodos'], oa)) +
+          _dtSubBlock('B. Datos extra OA', '<div class="ivc-data-grid">' +
+            _dtCell('¿Presidente con antecedentes disciplinarios?', _dtRadio(e.f1_presidente_antecedentes)) +
+            _dtCell('Persona con discapacidad / grupo poblacional', e.f1_persona_discapacidad) +
+          '</div>') +
+          _dtSubBlock('C. Revisor Fiscal', _dtTable(['Cargo','Nombre','Identificación'], rf)) +
+          _dtSubBlock('D. Comisión Disciplinaria', _dtTable(['Órgano electivo','Nombre'], cd)) +
+          _dtSubBlock('E. Comisión Técnica', _dtTable(['Integrante','Nombre'], ct)) +
+          _dtSubBlock('F. Comisión de Juzgamiento', _dtTable(['Integrante','Nombre'], cj)) +
+          (e.f1_aplica_paradeporte === 'si'
+            ? _dtSubBlock('G. Comisión Especializada / Paradeporte', _dtTable(['Integrante','Nombre'], cp) +
+                '<div class="ivc-data-grid">' + _dtCell('Fecha asamblea elección Comisión Paradeporte', _dtDate(e.f1_paradeporte_fecha_asamblea)) + '</div>')
+            : _dtSubBlock('G. Comisión Especializada / Paradeporte', '<p class="ivc-detail-empty">No aplica.</p>')
+          ) +
+        '</section>';
+      }
+      if (t.tipoOrganismo === 'asociacion') {
+        var sec = (e.f2_seccionales || []).map(function(r){ return [r.nombre_seccional, r.nombre_directivo]; });
+        return '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Entidades seccionales (F2)</h3>' +
+          _dtTable(['Nombre seccional','Nombre directivo'], sec) + '</section>';
+      }
+      if (t.tipoOrganismo === 'federacion') {
+        var afi = (e.f3_afiliados || []).map(function(r){ return [r.nombre, r.no_res_reconocimiento]; });
+        var oa3 = (e.f3_miembros_oa || []).map(function(r){ return [r.nombre, r.cargo, r.identificacion, _dtRadio(r.tiene_capacitacion), r.nombrado_por, _dtRadio(r.acepta_cargo)]; });
+        var rf3 = (e.f3_revisor_fiscal || []).map(function(r){ return [r.display, r.nombre, r.identificacion, r.no_tarjeta_profesional, _dtRadio(r.acepta_cargo), _dtRadio(r.antecedentes_disciplinarios), _dtRadio(r.firma_revisoria)]; });
+        var cd3 = (e.f3_comision_disciplinaria || []).map(function(r){ return [r.display, r.nombre, r.identificacion, _dtRadio(r.acepta)]; });
+        return '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Estructura del organismo (F3)</h3>' +
+          _dtSubBlock('A. Afiliados constituyentes', _dtTable(['Nombre','N° Res. Reconocimiento Deportivo'], afi)) +
+          _dtSubBlock('B. Miembros del Órgano de Administración', _dtTable(['Nombre','Cargo','Identificación','¿Capacitación?','Nombrado por','¿Acepta cargo?'], oa3)) +
+          _dtSubBlock('B. Datos extra OA', '<div class="ivc-data-grid">' +
+            _dtCell('Persona con discapacidad / grupo poblacional', e.f3_persona_discapacidad) +
+            _dtCell('Fecha reunión electiva del OA', _dtDate(e.f3_fecha_reunion_electiva_oa)) +
+            _dtCell('Fecha reunión asignación de cargos', _dtDate(e.f3_fecha_reunion_asignacion)) +
+            _dtCell('¿Acredita Cert. Residencia OA?', _dtRadio(e.f3_acredita_cert_residencia_oa)) +
+            _dtCell('Nombres cert. residencia OA', e.f3_nombres_cert_residencia_oa) +
+            _dtCell('Archivo cert. residencia OA', _dtArchivo(e.f3_archivo_cert_residencia_oa)) +
+          '</div>') +
+          _dtSubBlock('C. Órgano de Control (Revisor Fiscal)', _dtTable(['Cargo','Nombre','Identificación','N° Tarjeta','¿Acepta?','¿Antecedentes?','¿Firma revisoría?'], rf3)) +
+          _dtSubBlock('C. Datos extra OC', '<div class="ivc-data-grid">' +
+            _dtCell('¿Acredita Cert. Residencia OC?', _dtRadio(e.f3_acredita_cert_residencia_oc)) +
+            _dtCell('Nombres cert. residencia OC', e.f3_nombres_cert_residencia_oc) +
+            _dtCell('Archivo cert. residencia OC', _dtArchivo(e.f3_archivo_cert_residencia_oc)) +
+          '</div>') +
+          _dtSubBlock('D. Comisión Disciplinaria', _dtTable(['Órgano electivo','Nombre','Identificación','¿Acepta?'], cd3)) +
+          '<div class="ivc-data-grid">' + _dtCell('Fecha reunión OA elección Miembro 3 CD', _dtDate(e.f3_fecha_reunion_oa_cd)) + '</div>' +
+        '</section>';
+      }
+      return '<p class="ivc-detail-empty">Sin datos de estructura diligenciados.</p>';
+    }
+
+    /* ── TAB 5 · Cierre: F1 (cert. conjunta) / F3 (3 certs) + cierre común ── */
+    function _renderTabCierre(t, d) {
+      if (!d.cierre) return '<p class="ivc-detail-empty">Sin información de cierre diligenciada.</p>';
+      var c2 = d.cierre;
+      var cierre = '';
+      if (t.tipoOrganismo === 'liga') {
+        cierre += _dtCell('¿Certificación conjunta estructura funcional?', _dtRadio(c2.f1_adjunta_cert_conjunta)) +
+                  _dtCell('Archivo cert. conjunta', _dtArchivo(c2.f1_archivo_cert_conjunta));
+      }
+      if (t.tipoOrganismo === 'federacion') {
+        cierre += _dtCell('¿Certificación del COC?', _dtRadio(c2.f3_adjunta_cert_coc)) +
+                  _dtCell('Archivo cert. COC', _dtArchivo(c2.f3_archivo_cert_coc)) +
+                  _dtCell('¿Aval del Comité Paralímpico?', _dtRadio(c2.f3_adjunta_aval_paralimpico)) +
+                  _dtCell('Archivo Aval CPC', _dtArchivo(c2.f3_archivo_aval_paralimpico)) +
+                  _dtCell('¿Cert. conjunta no investigación disciplinaria/penal?', _dtRadio(c2.f3_adjunta_cert_conjunta_no_inv)) +
+                  _dtCell('Archivo cert. no investigación', _dtArchivo(c2.f3_archivo_cert_conjunta_no_inv));
+      }
+      cierre += _dtCell('N° radicado de la documentación adjunta', c2.no_radicado_doc, true) +
+                _dtCell('Observaciones y documentación pendiente', c2.observaciones) +
+                _dtCell('Archivos adjuntos al trámite', _dtArchivo(c2.archivos_adjuntos));
+      return _dtBlock('Información adicional y cierre', cierre);
+    }
+
+    /* GAP #11 — Modal histórico */
     function openModalHistorico(tramiteId) {
       var t = state.tramites.find(function (x) { return x.id === tramiteId; });
       if (!t) return;

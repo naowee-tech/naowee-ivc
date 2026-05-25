@@ -6,6 +6,39 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.9] — 2026-05-25
+
+> 🎛️ **Modal "Ver detalle del trámite" en bandeja del Coordinador: tabs canónicos del DS, grid de 3 columnas, modal a 1200px y refactor del render por tab. Tab Datos del workspace del Profesional enriquecida con toda la información diligenciada.**
+
+### Coordinador · Bandeja (`coordinador/bandeja.html`)
+
+#### Changed
+- **Modal "Ver detalle del trámite" — Tabs canónicos DS**. Antes los tabs traían el `background-color: --naowee-color-interactive-fill-mute-idle` del DS v1.8.0 y se veían como pills grises sobre los tabs no seleccionados. Reset agresivo (`background`, `background-color`, `box-shadow`, `border`, `border-radius` → reset) para que **solo el indicator naranja del tab activo marque jerarquía**. Mismo tratamiento que `workspace.html`.
+- **Hover de tabs sin pill gris** — sólo cambio de color. Antes el hover mostraba un `--bg-soft` que parecía un segundo "selected".
+- **Modal width 1080 → 1200px** + grid de datos **2 → 3 columnas** (con fallback a 2 cols ≤1100px, 1 col ≤700px). Reduce el largo del scroll y aprovecha el ancho de los datos.
+- **Refactor `renderTramiteDatosCompletos` → `renderDetalleTabContent(t, tabId)`** + 5 funciones por tab:
+  - `_renderTabGeneral` → Identificación del trámite + datos generales del organismo.
+  - `_renderTabPersoneria` → F1 (15 campos) / F2 (15 campos) / F3 (5 campos) según organismo.
+  - `_renderTabAsamblea` → F1 Liga (tema + tabla reuniones + observaciones + convocante + quórum) / F3 Federación (constitución + asistentes). Tab oculto para Asociación (matriz no la incluye).
+  - `_renderTabEstructura` → F1 (7 sub-bloques A-G con tablas extendidas) / F2 (seccionales) / F3 (estructura completa con tablas extendidas de 6 y 7 columnas).
+  - `_renderTabCierre` → F1 (cert. conjunta) / F3 (3 certificaciones COC + Aval Paralímpico + No investigación) + cierre común.
+
+#### Fixed
+- **Tabs distintos a "General" mostraban contenido vacío**. La refactorización previa había dejado el dispatcher `renderDetalleTabContent(t, tabId)` apuntando a `_renderTabPersoneria`, `_renderTabAsamblea`, `_renderTabEstructura` y `_renderTabCierre`, **pero esas 4 funciones no existían**. Solo `_renderTabGeneral` estaba definida (y contenía todo el contenido). Resultado: clickear cualquier tab distinto del primero caía en `undefined` y el body del modal quedaba en blanco. Esta versión crea las 4 funciones faltantes.
+
+### Profesional · Workspace (`profesional/workspace.html`)
+
+#### Added
+- **Tab "Datos" enriquecida**: ahora muestra **TODOS** los datos diligenciados en el formulario por el usuario externo (no solo metadatos del trámite). Helper `renderTramiteDatosCompletos(t)` compartido conceptualmente con la bandeja del Coordinador. Feedback Juanma: el profesional necesita ver toda la información recolectada del formulario para poder validar contra los documentos cargados.
+
+### Bloqueantes activos
+
+- Plantillas Word/PDF de actos administrativos (Otorgamiento / Negación / Renovación).
+- Lista cerrada y final de roles.
+- HUs faltantes pasos 7-12.
+
+---
+
 ## [ivc-v1.5.8] — 2026-05-25
 
 > 📋 **Sweep exhaustivo del matriz XLSX oficial + bandeja Coordinador refactor + workspace fixes + tono formal + bug auto-scroll.**
