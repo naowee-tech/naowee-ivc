@@ -200,7 +200,212 @@
       border-top: 1px solid var(--border);
     }
 
-    /* Modal-local layout for masivo */
+    /* v1.5.3 rev (25/05/2026): Modal Asignación Masiva — UI/UX Pro Max.
+       Doug pidió:
+       - Trámites seleccionados como chips (escala a bulk grande)
+       - Caution + info fusionados en un summary compacto
+       - Sin --scrollable forzando height enorme */
+
+    /* Section title — gris uppercase letterspaced (paridad cross-secciones).
+       v1.5.3 rev7 (25/05/2026): aplicar al h3 directamente para que TODOS
+       los titles compartan el mismo estilo (no solo los con __title-text). */
+    .masivo-section { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    .masivo-section:first-child { margin-top: 0; }
+    .masivo-section__title {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .masivo-section__title-text { color: inherit; font-size: inherit; font-weight: inherit; letter-spacing: inherit; text-transform: inherit; }
+    .masivo-section__count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 24px; height: 22px;
+      padding: 0 8px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      font-feature-settings: 'tnum';
+      margin-left: 8px;
+    }
+    /* Chips de trámites seleccionados (escalable a muchos) */
+    .masivo-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 96px;       /* ≈3 filas — scroll si hay muchos */
+      overflow-y: auto;
+      padding: 12px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin: 8px 0 0;
+    }
+    .masivo-chips:empty::after {
+      content: 'Ningún trámite seleccionado';
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-style: italic;
+    }
+    .masivo-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: background var(--duration-fast), border-color var(--duration-fast);
+    }
+    .masivo-chip:hover { border-color: var(--accent); background: var(--orange-bg, #fff3e6); }
+    /* Scrollbar custom sutil */
+    .masivo-chips::-webkit-scrollbar { width: 6px; }
+    .masivo-chips::-webkit-scrollbar-thumb { background: var(--border-dark, #d0d4e6); border-radius: 3px; }
+    .masivo-chips::-webkit-scrollbar-track { background: transparent; }
+
+    /* v1.5.3 rev2: .masivo-summary* removido — Doug pidió 1 sola pieza
+       canónica .naowee-message (variant dinámico caution/informative).
+       El JS toggle entre los dos variants en updateCargaWarning('masivo'). */
+
+    /* v1.5.3 rev5 (25/05/2026): Modal "Distribuir trámites" — grid de
+       profesionales + lista con .naowee-dropdown canónico por fila.
+       Doug: usar componente DS, no select nativos. UI pro max. */
+
+    /* v1.5.3 rev6 (25/05/2026): cards en row con scroll horizontal nativo.
+       Antes eran grid-fixed 4-cols → con más profesionales (futuro) no había
+       forma de verlos. Ahora flex con min-width: 200px + overflow-x:auto. */
+    .ivc-prof-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 10px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 6px;       /* espacio para el scrollbar */
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* Scrollbar custom sutil */
+    .ivc-prof-grid::-webkit-scrollbar { height: 6px; }
+    .ivc-prof-grid::-webkit-scrollbar-thumb { background: var(--border-dark, #d0d4e6); border-radius: 3px; }
+    .ivc-prof-grid::-webkit-scrollbar-track { background: transparent; }
+
+    .ivc-prof-card {
+      flex: 0 0 200px;            /* ancho fijo para que entren ~3 visibles + scroll */
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+    }
+    .ivc-prof-card--active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(215, 64, 9, .08);
+    }
+    .ivc-prof-card__avatar {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.3px;
+    }
+    .ivc-prof-card__info { flex: 1; min-width: 0; }
+    .ivc-prof-card__name {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    .ivc-prof-card__count-label {
+      font-size: 10.5px;
+      color: var(--text-secondary);
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .ivc-prof-card__count {
+      flex-shrink: 0;
+      min-width: 26px; height: 26px;
+      padding: 0 8px;
+      background: var(--bg-soft);
+      color: var(--text-secondary);
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      font-feature-settings: 'tnum';
+    }
+    .ivc-prof-card--active .ivc-prof-card__count {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Lista de trámites con dropdown canónico */
+    .ivc-distribuir-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+    .ivc-distribuir-row {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 14px;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: border-color var(--duration-fast);
+    }
+    .ivc-distribuir-row:hover { border-color: var(--border-dark, #d0d4e6); }
+    .ivc-distribuir-row__id {
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: .3px;
+    }
+    .ivc-distribuir-row__org {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    /* El .naowee-dropdown dentro del row se ajusta al ancho */
+    .ivc-distribuir-row .naowee-dropdown__trigger {
+      height: 36px;
+      font-size: 12.5px;
+    }
+
+    /* Modal-local layout LEGACY (mantener para compat, no usado en masivo) */
     .masivo-summary-list {
       max-height: 140px;
       overflow-y: auto;
@@ -463,25 +668,33 @@
 
   <!-- ═══ Modal: Asignación Masiva ═══ -->
   <div class="naowee-modal-overlay" id="modalMasivoOverlay" role="dialog" aria-modal="true" aria-labelledby="modalMasivoTitle">
-    <div class="naowee-modal naowee-modal--scrollable" style="max-width: 640px;">
+    <!-- v1.5.3 rev: removido --scrollable (forzaba height:calc(100vh-64px) →
+         espacio vacío gigante cuando el contenido era corto). Doug 25/05/2026. -->
+    <div class="naowee-modal" style="max-width: 640px;">
       <div class="naowee-modal__header">
         <div class="naowee-modal__title-group">
           <h2 class="naowee-modal__title" id="modalMasivoTitle">Asignación masiva de trámites</h2>
           <p class="naowee-modal__subtitle">Selecciona la estrategia y el profesional responsable.</p>
         </div>
-        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small" id="modalMasivoClose" aria-label="Cerrar modal">
+        <!-- v1.5.3: X con --mute (Ghost canónico) en lugar de --quiet -->
+        <button type="button" class="naowee-modal__dismiss" id="modalMasivoClose" aria-label="Cerrar modal">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="naowee-modal__body">
 
-        <!-- Sección 1: trámites seleccionados -->
+        <!-- v1.5.3 rev: Trámites seleccionados con UI mejorada — chips para
+             scalar a bulk grande. Doug 25/05/2026: pensar en muchos trámites.
+             Patrón: header con badge prominente del count + lista de chips
+             con scroll vertical max 90px (≈3 filas de chips). -->
         <div class="masivo-section">
           <h3 class="masivo-section__title">
-            Trámites seleccionados
-            <span class="naowee-badge naowee-badge--informative naowee-badge--small" id="masivoCount">0</span>
+            <span class="masivo-section__title-text">Trámites a asignar</span>
+            <span class="masivo-section__count" id="masivoCount">0</span>
           </h3>
-          <div class="masivo-summary-list" id="masivoList">—</div>
+          <div class="masivo-chips" id="masivoList" aria-live="polite">
+            <!-- chips inyectados por JS -->
+          </div>
         </div>
 
         <!-- Sección 2: estrategia -->
@@ -494,12 +707,10 @@
             </label>
             <label class="naowee-radio" data-estrategia="distribuir">
               <span class="naowee-radio__circle"></span>
-              <span class="naowee-radio__label">Distribuir entre varios profesionales (equitativo)</span>
+              <span class="naowee-radio__label">Distribuir entre varios profesionales</span>
             </label>
-            <label class="naowee-radio" data-estrategia="manual">
-              <span class="naowee-radio__circle"></span>
-              <span class="naowee-radio__label">Asignación manual por cada trámite</span>
-            </label>
+            <!-- v1.5.3 rev6: "Asignación manual por cada trámite" removida —
+                 el coord usa los icon-btn de cada fila en la tabla para eso. -->
           </div>
         </div>
 
@@ -525,28 +736,22 @@
           </div>
         </div>
 
-        <!-- GAP #8 — Warning carga alta del profesional -->
-        <div class="naowee-message naowee-message--caution" id="masivoWarnCarga" style="display:none; margin-top:14px">
-          <div class="naowee-message__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <!-- v1.5.3 rev2 (25/05/2026): un solo .naowee-message canónico cuyo
+             variant cambia dinámicamente (caution si profesional con alta carga,
+             informative si todo OK). Patrón Doug: no inventar containers custom. -->
+        <div class="naowee-message naowee-message--informative" id="masivoSummary" style="margin-top:14px">
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon" id="masivoSummaryIcon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+            <span class="naowee-message__title" id="masivoSummaryTitle">Resumen de la asignación</span>
           </div>
-          <div class="naowee-message__content">
-            <p class="naowee-message__title" style="margin:0 0 4px;font-weight:700;font-size:13.5px;">Profesional con alta carga</p>
-            <p class="naowee-message__text" id="masivoWarnCargaText" style="margin:0">—</p>
+          <div class="naowee-message__text" id="masivoMsgText">
+            Se asignarán <strong id="msgCount">0</strong> trámites a <strong id="msgProf">Carlos Pérez</strong>. Se registrará fecha, hora y usuario responsable en cada uno.
           </div>
-        </div>
-
-        <!-- Mensaje informativo -->
-        <div class="naowee-message naowee-message--informative" id="masivoMsg">
-          <div class="naowee-message__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          </div>
-          <div class="naowee-message__content">
-            <p class="naowee-message__text" id="masivoMsgText">
-              Se asignarán <strong id="msgCount">0</strong> trámites a <strong id="msgProf">Carlos Pérez</strong>.
-              Se registrarán fecha, hora y usuario responsable en cada uno.
-            </p>
-          </div>
+          <!-- ocultos: el JS los lee y los inyecta dinámicamente en __text si hay alta carga -->
+          <span hidden id="masivoWarnCarga"></span>
+          <span hidden id="masivoWarnCargaText">—</span>
         </div>
 
         <!-- GAP #6 — Helper canónico --negative para validación -->
@@ -561,8 +766,8 @@
         </div>
 
       </div>
+      <!-- v1.5.3: Cancelar removido (la X del header ya cierra). -->
       <div class="naowee-modal__footer naowee-modal__footer--end">
-        <button type="button" class="naowee-btn naowee-btn--mute" id="modalMasivoCancel">Cancelar</button>
         <button type="button" class="naowee-btn naowee-btn--loud" id="modalMasivoConfirm">Confirmar asignación</button>
       </div>
     </div>
@@ -576,7 +781,9 @@
           <h2 class="naowee-modal__title" id="modalIndividualTitle">Asignar trámite</h2>
           <p class="naowee-modal__subtitle" id="modalIndividualSub">—</p>
         </div>
-        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small" id="modalIndividualClose" aria-label="Cerrar modal">
+        <!-- v1.5.3 (25/05/2026): X close con --mute (Ghost canónico) en lugar de --quiet
+             que tenía background naranja desde idle. -->
+        <button type="button" class="naowee-modal__dismiss" id="modalIndividualClose" aria-label="Cerrar modal">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -599,24 +806,59 @@
           </div>
         </div>
 
-        <!-- GAP #8 — Warning carga alta -->
+        <!-- v1.5.3 (25/05/2026): caution con title+icon en misma row, body sin gap excesivo.
+             Patrón canónico .naowee-message__header (igual que --informative).
+             GAP #8 — Warning carga alta. -->
         <div class="naowee-message naowee-message--caution" id="singleWarnCarga" style="display:none; margin-top:14px">
-          <div class="naowee-message__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <span class="naowee-message__title">Profesional con alta carga</span>
           </div>
-          <div class="naowee-message__content">
-            <p class="naowee-message__title" style="margin:0 0 4px;font-weight:700;font-size:13.5px;">Profesional con alta carga</p>
-            <p class="naowee-message__text" id="singleWarnCargaText" style="margin:0">—</p>
-          </div>
+          <div class="naowee-message__text" id="singleWarnCargaText">—</div>
         </div>
 
         <p style="margin: 14px 0 0; font-size: 12.5px; color: var(--text-secondary);">
           Se registrará fecha, hora y usuario responsable. El profesional verá el trámite en su bandeja inmediatamente.
         </p>
       </div>
+      <!-- v1.5.3: Cancelar removido (la X del header ya cierra). Solo el CTA loud. -->
       <div class="naowee-modal__footer naowee-modal__footer--end">
-        <button type="button" class="naowee-btn naowee-btn--mute" id="modalIndividualCancel">Cancelar</button>
         <button type="button" class="naowee-btn naowee-btn--loud" id="modalIndividualConfirm">Asignar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Modal: Distribuir entre varios profesionales (v1.5.3 rev4, 25/05/2026)
+       Doug pidió multi-selección manual: cada trámite se asigna a un profesional
+       específico via dropdown inline (no round-robin automático). -->
+  <div class="naowee-modal-overlay" id="modalDistribuirOverlay" role="dialog" aria-modal="true" aria-labelledby="modalDistribuirTitle">
+    <div class="naowee-modal" style="max-width: 720px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title" id="modalDistribuirTitle">Distribuir trámites entre profesionales</h2>
+          <p class="naowee-modal__subtitle">Asigna cada trámite a un profesional específico.</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="modalDistribuirClose" aria-label="Cerrar modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body">
+        <!-- v1.5.3 rev5: grid de profesionales (siempre visible arriba) +
+             lista de trámites con .naowee-dropdown canónico abajo. Doug pidió
+             que el summary sea más rico que un info-message. -->
+        <div class="ivc-prof-grid" id="distribuirProfGrid" role="list" aria-label="Distribución por profesional">
+          <!-- inyectado por JS -->
+        </div>
+
+        <!-- Lista de trámites con dropdown canónico por fila -->
+        <div class="ivc-distribuir-list" id="distribuirList" role="list">
+          <!-- inyectado por JS -->
+        </div>
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end">
+        <button type="button" class="naowee-btn naowee-btn--loud" id="modalDistribuirConfirm">Confirmar distribución</button>
       </div>
     </div>
   </div>
@@ -631,7 +873,7 @@
           <h2 class="naowee-modal__title" id="modalHistoricoTitle">Histórico del trámite</h2>
           <p class="naowee-modal__subtitle" id="modalHistoricoSub">—</p>
         </div>
-        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" id="modalHistoricoClose" aria-label="Cerrar modal">
+        <button type="button" class="naowee-modal__dismiss" id="modalHistoricoClose" aria-label="Cerrar modal">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -659,7 +901,9 @@
       modalTramiteId: null,  /* trámite del modal individual */
       estrategia: 'mismo',
       profesionalIdMasivo: 'cp-001',
-      profesionalIdSingle: 'cp-001'
+      profesionalIdSingle: 'cp-001',
+      /* v1.5.3 rev4: mapa { tramiteId: profesionalId } para distribución manual */
+      distribuirAsignaciones: {}
     };
 
     /* Mapa profesional → carga (activos) — para warning GAP #8 */
@@ -788,7 +1032,7 @@
     function getFilteredTramites() {
       return state.tramites.filter(function (t) {
         if (state.filtros.estado && t.estado !== state.filtros.estado) return false;
-        if (state.filtros.tipo && t.tipo !== state.filtros.tipo) return false;
+        if (state.filtros.tipo && (t.tipoTramite || t.tipo) !== state.filtros.tipo) return false;
         if (state.filtros.search) {
           var q = state.filtros.search.toLowerCase();
           if (t.id.toLowerCase().indexOf(q) < 0 && t.organismo.toLowerCase().indexOf(q) < 0) return false;
@@ -846,7 +1090,7 @@
             '</label>' +
           '</td>' +
           '<td><span class="row-radicado">' + t.id + '</span></td>' +
-          '<td><span class="row-tipo">' + t.tipo + '</span></td>' +
+          '<td><span class="row-tipo">' + (t.tipoTramite || t.tipo || '—') + '</span></td>' +
           '<td><span class="row-organismo">' + t.organismo + '<span class="row-organismo__sub">NIT ' + t.nit + '</span></span></td>' +
           '<td><span class="row-date">' + formatDate(t.fechaRadicacion) + '</span></td>' +
           '<td>' + badgePlazo + '</td>' +
@@ -1135,11 +1379,13 @@
             state.filtros[filterName] = value;
             renderTabla();
           }
-          /* Hooks de los dropdowns de profesional */
+          /* Hooks de los dropdowns de profesional
+             v1.5.3 rev7: updateMasivoMessage() ya hace TODO (texto + variant +
+             icono + título). updateCargaWarning('masivo') ya no se llama desde
+             acá — se mantiene la función para 'single' que es independiente. */
           if (wrap.id === 'ddProfesional') {
             state.profesionalIdMasivo = value;
             updateMasivoMessage();
-            updateCargaWarning('masivo');
           }
           if (wrap.id === 'ddProfesionalSingle') {
             state.profesionalIdSingle = value;
@@ -1237,15 +1483,42 @@
       setTimeout(function () { el.classList.remove('naowee-shake'); }, 500);
     }
 
-    /* GAP #8 — Mostrar warning si profesional tiene carga alta */
+    /* GAP #8 — v1.5.3 rev2: el warning de alta carga ahora cambia el variant
+       del .naowee-message canónico (informative → caution) en lugar de mostrar
+       un segundo bloque pegado. Doug: 1 sola pieza canónica.
+       En scope 'single', conserva el patrón anterior porque el modal individual
+       solo tiene el warning sin info adicional. */
     function updateCargaWarning(scope) {
       var profId = scope === 'masivo' ? state.profesionalIdMasivo : state.profesionalIdSingle;
       var carga = PROF_LOAD[profId] || 0;
       var nombre = PROF_NAMES[profId] || '—';
-      var warnEl  = document.getElementById(scope === 'masivo' ? 'masivoWarnCarga' : 'singleWarnCarga');
-      var textEl  = document.getElementById(scope === 'masivo' ? 'masivoWarnCargaText' : 'singleWarnCargaText');
+      var altaCarga = carga >= ALTA_CARGA_UMBRAL;
+
+      if (scope === 'masivo') {
+        /* Cambiar el variant del summary message según carga */
+        var summary = document.getElementById('masivoSummary');
+        var icon    = document.getElementById('masivoSummaryIcon');
+        var title   = document.getElementById('masivoSummaryTitle');
+        if (!summary) return;
+        if (altaCarga) {
+          summary.classList.remove('naowee-message--informative');
+          summary.classList.add('naowee-message--caution');
+          title.textContent = 'Profesional con alta carga';
+          icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        } else {
+          summary.classList.remove('naowee-message--caution');
+          summary.classList.add('naowee-message--informative');
+          title.textContent = 'Resumen de la asignación';
+          icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+        }
+        return;
+      }
+
+      /* scope === 'single' — patrón canónico original (warning bloc separado) */
+      var warnEl  = document.getElementById('singleWarnCarga');
+      var textEl  = document.getElementById('singleWarnCargaText');
       if (!warnEl || !textEl) return;
-      if (carga >= ALTA_CARGA_UMBRAL) {
+      if (altaCarga) {
         textEl.textContent = nombre + ' ya tiene ' + carga + ' trámites activos. Considera distribuir a otros profesionales.';
         warnEl.style.display = 'flex';
       } else {
@@ -1355,35 +1628,35 @@
       });
 
       document.getElementById('modalMasivoClose').addEventListener('click', closeModalMasivo);
-      document.getElementById('modalMasivoCancel').addEventListener('click', closeModalMasivo);
+      /* v1.5.3: modalMasivoCancel removido del markup (la X del header reemplaza) */
       masivoOv.addEventListener('click', function (e) { if (e.target === masivoOv) closeModalMasivo(); });
       document.getElementById('modalMasivoConfirm').addEventListener('click', confirmMasivo);
 
-      /* Radios de estrategia */
+      /* Radios de estrategia
+         v1.5.3 rev7: updateMasivoMessage() unificado hace texto + variant +
+         icono + título en un solo paso. Ya no hace falta llamar updateCargaWarning. */
       document.querySelectorAll('[data-estrategia]').forEach(function (r) {
         r.addEventListener('click', function () {
           document.querySelectorAll('[data-estrategia]').forEach(function (o) { o.classList.remove('naowee-radio--selected'); });
           r.classList.add('naowee-radio--selected');
           state.estrategia = r.getAttribute('data-estrategia');
-          updateMasivoMessage();
           /* Ocultar/mostrar bloque profesional según estrategia */
           var profWrap = document.getElementById('masivoProfWrap');
-          var warnWrap = document.getElementById('masivoWarnCarga');
-          if (state.estrategia === 'mismo') {
-            profWrap.style.display = '';
-            updateCargaWarning('masivo');
-          } else {
-            profWrap.style.display = 'none';
-            if (warnWrap) warnWrap.style.display = 'none';
-          }
+          profWrap.style.display = (state.estrategia === 'mismo') ? '' : 'none';
+          updateMasivoMessage();
         });
       });
 
       var indOv = document.getElementById('modalIndividualOverlay');
       document.getElementById('modalIndividualClose').addEventListener('click', closeModalIndividual);
-      document.getElementById('modalIndividualCancel').addEventListener('click', closeModalIndividual);
       indOv.addEventListener('click', function (e) { if (e.target === indOv) closeModalIndividual(); });
       document.getElementById('modalIndividualConfirm').addEventListener('click', confirmIndividual);
+
+      /* v1.5.3 rev4: Modal Distribuir (multi-selección manual por profesional) */
+      var distOv = document.getElementById('modalDistribuirOverlay');
+      document.getElementById('modalDistribuirClose').addEventListener('click', closeModalDistribuir);
+      distOv.addEventListener('click', function (e) { if (e.target === distOv) closeModalDistribuir(); });
+      document.getElementById('modalDistribuirConfirm').addEventListener('click', confirmDistribuir);
 
       /* Modal histórico (GAP #11) */
       var histOv = document.getElementById('modalHistoricoOverlay');
@@ -1398,43 +1671,256 @@
       document.getElementById('masivoCount').textContent = n;
       var ids = Object.keys(state.seleccionados).filter(function (k) { return state.seleccionados[k]; });
       var listEl = document.getElementById('masivoList');
-      listEl.textContent = ids.length === 0 ? '—' : ids.join(', ');
+      /* v1.5.3 rev (25/05/2026): render como chips para escalar a bulk grande.
+         Vacío → :empty::after del CSS pinta "Ningún trámite seleccionado". */
+      listEl.innerHTML = ids.map(function (id) {
+        return '<span class="masivo-chip" title="' + id + '">' + id + '</span>';
+      }).join('');
       /* Limpiar helper de error si existía */
       var helperErr = document.getElementById('masivoHelperError');
       if (helperErr) helperErr.style.display = 'none';
+      /* v1.5.3 rev7: updateMasivoMessage() ya hace texto + variant + icono + title.
+         updateCargaWarning('masivo') redundante removido. */
       updateMasivoMessage();
-      updateCargaWarning('masivo');
     }
     function closeModalMasivo() {
       document.getElementById('modalMasivoOverlay').classList.remove('open');
     }
+
+    /* ═══ Modal Distribuir (v1.5.3 rev4) ═══════════════════════════════════
+       Multi-selección manual: el coord elige qué profesional para cada trámite.
+       Patrón: cerrar masivo → abrir distribuir → renderizar filas con select
+       nativo → confirmar persiste todas las asignaciones de una. */
+    /* v1.5.3 rev5: usa .naowee-dropdown canónico (DS v1.8.0) en lugar de
+       <select> nativos. El controlador setupNaoweeDropdownController ya
+       hace event delegation global, así que NO necesito rebindear por dropdown.
+       Para capturar el cambio: listener global en .naowee-dropdown__option dentro
+       de menus portaled con [data-owned-by] que apunta a un dd con data-tid. */
+    var PROF_COLORS = {
+      'cp-001': '#1f78d1',
+      'mg-002': '#7c3aed',
+      'al-003': '#1f8923',
+      'lr-004': '#d74009'
+    };
+    var PROF_INIT = {
+      'cp-001': 'CP', 'mg-002': 'MG', 'al-003': 'AL', 'lr-004': 'LR'
+    };
+
+    function renderProfGrid() {
+      var grid = document.getElementById('distribuirProfGrid');
+      if (!grid) return;
+      var ids = Object.keys(state.seleccionados).filter(function (k) { return state.seleccionados[k]; });
+      var counts = { 'cp-001': 0, 'mg-002': 0, 'al-003': 0, 'lr-004': 0 };
+      ids.forEach(function (tid) {
+        var pid = state.distribuirAsignaciones[tid] || 'cp-001';
+        counts[pid] = (counts[pid] || 0) + 1;
+      });
+      var profIds = ['cp-001', 'mg-002', 'al-003', 'lr-004'];
+      grid.innerHTML = profIds.map(function (pid) {
+        var n = counts[pid] || 0;
+        var active = n > 0;
+        return '<div class="ivc-prof-card ' + (active ? 'ivc-prof-card--active' : '') + '" role="listitem">' +
+          '<span class="ivc-prof-card__avatar" style="background:' + PROF_COLORS[pid] + '">' + PROF_INIT[pid] + '</span>' +
+          '<div class="ivc-prof-card__info">' +
+            '<div class="ivc-prof-card__name">' + PROF_NAMES[pid] + '</div>' +
+            '<div class="ivc-prof-card__count-label">' + (n === 0 ? 'sin asignar' : (n === 1 ? '1 trámite' : n + ' trámites')) + '</div>' +
+          '</div>' +
+          '<span class="ivc-prof-card__count">' + n + '</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    function openModalDistribuir() {
+      var ids = Object.keys(state.seleccionados).filter(function(k){ return state.seleccionados[k]; });
+      if (!state.distribuirAsignaciones) state.distribuirAsignaciones = {};
+      ids.forEach(function (id) { state.distribuirAsignaciones[id] = state.distribuirAsignaciones[id] || 'cp-001'; });
+
+      var listEl = document.getElementById('distribuirList');
+      var rowsHtml = ids.map(function (tid) {
+        var t = state.tramites.find(function (x) { return x.id === tid; });
+        var org = t ? t.organismo : '';
+        var current = state.distribuirAsignaciones[tid] || 'cp-001';
+        var ddId = 'dd-dist-' + tid.replace(/[^a-z0-9]/gi, '');
+        return '<div class="ivc-distribuir-row" data-tid="' + tid + '" role="listitem">' +
+          '<div>' +
+            '<div class="ivc-distribuir-row__id">' + tid + '</div>' +
+            '<div class="ivc-distribuir-row__org">' + (org || '—') + '</div>' +
+          '</div>' +
+          /* .naowee-dropdown canónico */
+          '<div class="naowee-dropdown" data-distribuir="1" data-tid="' + tid + '" id="' + ddId + '">' +
+            '<button type="button" class="naowee-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">' +
+              '<span class="naowee-dropdown__value" data-value-label>' + PROF_NAMES[current] + '</span>' +
+              '<span class="naowee-dropdown__controls"><span class="naowee-dropdown__chevron">' +
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+              '</span></span>' +
+            '</button>' +
+            '<div class="naowee-dropdown__menu" role="listbox">' +
+              '<div class="naowee-dropdown__option ' + (current === 'cp-001' ? 'naowee-dropdown__option--selected' : '') + '" role="option" data-val="cp-001" tabindex="-1">Carlos Pérez</div>' +
+              '<div class="naowee-dropdown__option ' + (current === 'mg-002' ? 'naowee-dropdown__option--selected' : '') + '" role="option" data-val="mg-002" tabindex="-1">María García</div>' +
+              '<div class="naowee-dropdown__option ' + (current === 'al-003' ? 'naowee-dropdown__option--selected' : '') + '" role="option" data-val="al-003" tabindex="-1">Andrés López</div>' +
+              '<div class="naowee-dropdown__option ' + (current === 'lr-004' ? 'naowee-dropdown__option--selected' : '') + '" role="option" data-val="lr-004" tabindex="-1">Lucía Ramírez</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      listEl.innerHTML = rowsHtml;
+
+      renderProfGrid();
+      closeModalMasivo();
+      document.getElementById('modalDistribuirOverlay').classList.add('open');
+    }
+
+    function closeModalDistribuir() {
+      document.getElementById('modalDistribuirOverlay').classList.remove('open');
+    }
+
+    /* v1.5.3 rev5: updateDistribuirSummary ahora delega a renderProfGrid (live update).
+       Hook delegated del controlador del DS — el menu portaled vive en body con
+       data-owned-by que apunta al wrap original con data-distribuir + data-tid. */
+    function updateDistribuirSummary() {
+      renderProfGrid();
+    }
+
+    /* Listener delegado para clicks en options de dropdowns con data-distribuir */
+    document.addEventListener('click', function (ev) {
+      var opt = ev.target.closest && ev.target.closest('.naowee-dropdown__option');
+      if (!opt) return;
+      var menu = opt.closest('.naowee-dropdown__menu');
+      if (!menu) return;
+      var ownerId = menu.dataset.ownedBy;
+      var wrap = ownerId
+        ? document.querySelector('.naowee-dropdown[data-dd-id="' + ownerId + '"]')
+        : opt.closest('.naowee-dropdown');
+      if (!wrap || wrap.dataset.distribuir !== '1') return;
+      var tid = wrap.dataset.tid;
+      var profId = opt.getAttribute('data-val');
+      if (!tid || !profId) return;
+      state.distribuirAsignaciones[tid] = profId;
+      renderProfGrid();
+    }, true);  /* capture phase: corre ANTES del controlador del DS */
+
+    function confirmDistribuir() {
+      var ids = Object.keys(state.seleccionados).filter(function (k) { return state.seleccionados[k]; });
+      if (ids.length === 0) { closeModalDistribuir(); return; }
+      var counts = { 'cp-001': 0, 'mg-002': 0, 'al-003': 0, 'lr-004': 0 };
+
+      closeModalDistribuir();   /* Cerrar primero (UX rápido) */
+
+      setTimeout(function () {
+        try {
+          ids.forEach(function (tid) {
+            var pid = state.distribuirAsignaciones[tid] || 'cp-001';
+            IVCStore.asignar(tid, pid, 'Carolina Méndez (Coordinador · distribución)');
+            counts[pid]++;
+          });
+        } catch (e) { console.error('[confirmDistribuir] asignación:', e); }
+        try {
+          loadFromStore();
+          state.seleccionados = {};
+          state.distribuirAsignaciones = {};
+          renderStats();
+          renderTabla();
+          updateSubtitle();
+        } catch (e) { console.error('[confirmDistribuir] refresh:', e); }
+
+        var detalle = Object.keys(counts).filter(function (k) { return counts[k] > 0; })
+          .map(function (pid) { return PROF_NAMES[pid] + ' (' + counts[pid] + ')'; })
+          .join(', ');
+        if (window.IVCShell && window.IVCShell.showSnackbar) {
+          window.IVCShell.showSnackbar(ids.length + ' trámites distribuidos: ' + detalle, 'success');
+        }
+      }, 220);
+    }
+
+    /* v1.5.3 rev7 (25/05/2026): unificado — un solo punto de actualización
+       del summary message para garantizar sincronía entre texto + variant +
+       icono + título. Doug detectó que al cambiar a Lucía (5 activos), la
+       alerta naranja persistía: causa probable era race entre updateMasivoMessage
+       y updateCargaWarning. Ahora todo en una sola función. */
     function updateMasivoMessage() {
       var n = selectedCount();
       var profNombre = PROF_NAMES[state.profesionalIdMasivo] || 'Carlos Pérez';
-      document.getElementById('msgCount').textContent = n;
+      var carga = PROF_LOAD[state.profesionalIdMasivo] || 0;
+      var altaCarga = carga >= ALTA_CARGA_UMBRAL;
+
+      var summary = document.getElementById('masivoSummary');
+      var icon    = document.getElementById('masivoSummaryIcon');
+      var title   = document.getElementById('masivoSummaryTitle');
       var msgText = document.getElementById('masivoMsgText');
-      if (state.estrategia === 'mismo') {
-        msgText.innerHTML = 'Se asignarán <strong>' + n + '</strong> trámites a <strong>' + profNombre + '</strong>. Se registrarán fecha, hora y usuario responsable en cada uno.';
-      } else if (state.estrategia === 'distribuir') {
-        msgText.innerHTML = 'Los <strong>' + n + '</strong> trámites se distribuirán equitativamente entre 4 profesionales disponibles (~' + Math.ceil(n / 4) + ' por persona).';
+      var countEl = document.getElementById('msgCount');
+
+      if (countEl) countEl.textContent = n;
+      if (!summary || !msgText) return;
+
+      var ICON_INFO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+      var ICON_WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+
+      /* Solo "mismo profesional" puede activar el variant --caution */
+      var showCaution = (state.estrategia === 'mismo' && altaCarga);
+
+      /* 1. Variant del .naowee-message */
+      if (showCaution) {
+        summary.classList.remove('naowee-message--informative');
+        summary.classList.add('naowee-message--caution');
       } else {
-        msgText.innerHTML = 'Tras confirmar, asignarás manualmente uno a uno los <strong>' + n + '</strong> trámites en el siguiente paso.';
+        summary.classList.remove('naowee-message--caution');
+        summary.classList.add('naowee-message--informative');
+      }
+
+      /* 2. Icono */
+      if (icon) icon.innerHTML = showCaution ? ICON_WARN : ICON_INFO;
+
+      /* 3. Título */
+      if (title) title.textContent = showCaution
+        ? 'Profesional con alta carga'
+        : 'Resumen de la asignación';
+
+      /* 4. Texto del body */
+      if (state.estrategia === 'mismo') {
+        if (altaCarga) {
+          msgText.innerHTML =
+            '<strong>' + profNombre + '</strong> ya tiene <strong>' + carga + '</strong> trámites activos. ' +
+            'Al asignarle <strong>' + n + '</strong> más, su carga total será ' + (carga + n) + '. ' +
+            'Considera distribuir entre otros profesionales.';
+        } else {
+          msgText.innerHTML = 'Se asignarán <strong>' + n + '</strong> trámites a <strong>' + profNombre + '</strong>. Se registrará fecha, hora y usuario responsable en cada uno.';
+        }
+      } else if (state.estrategia === 'distribuir') {
+        msgText.innerHTML = 'Al confirmar, abrirás el panel de distribución donde podrás asignar <strong>' + n + '</strong> trámites uno a uno entre los profesionales disponibles.';
       }
     }
 
+    /* v1.5.3 rev4 (25/05/2026): refactor robusto.
+       Problema previo: el listener IVCStore.on('tramite:asignado') disparaba N
+       veces dentro del forEach, cada una re-renderizando la tabla. Eso podía
+       lanzar errores que rompían la cadena → el modal nunca se cerraba ni
+       el toast aparecía.
+       Solución:
+       1. Cerrar modal INMEDIATAMENTE al confirmar (UX rápido)
+       2. Persistir + refresh en setTimeout protegido con try/catch
+       3. Mostrar snackbar al final, independiente de errores de render */
     function confirmMasivo() {
       var n = selectedCount();
       if (n === 0) {
-        /* GAP #6/#7 — shake + helper en el modal si por alguna razón llegan vacíos */
         var helper = document.getElementById('masivoHelperError');
-        helper.querySelector('#masivoHelperErrorText') ||
-          (helper.querySelector('.naowee-helper__text').textContent = 'Selecciona al menos un trámite antes de asignar');
+        helper.querySelector('.naowee-helper__text').textContent = 'Selecciona al menos un trámite antes de asignar';
         helper.style.display = 'flex';
         shakeElement(document.querySelector('#modalMasivoOverlay .naowee-modal'));
         return;
       }
-      /* Si la estrategia exige profesional y no hay (defensivo) */
-      if (state.estrategia === 'mismo' && !state.profesionalIdMasivo) {
+
+      /* ESTRATEGIA "distribuir": ahora abre vista de multi-selección por
+         profesional. NO persiste directo (el user elige qué va a qué prof). */
+      if (state.estrategia === 'distribuir') {
+        openModalDistribuir();
+        return;
+      }
+
+      /* v1.5.3 rev6: estrategia "manual" removida.
+         Para asignación 1-a-1, el coord usa los icon-btn de cada fila en la tabla. */
+
+      /* ESTRATEGIA "mismo": validar profesional */
+      if (!state.profesionalIdMasivo) {
         var h2 = document.getElementById('masivoHelperError');
         h2.querySelector('.naowee-helper__text').textContent = 'Selecciona un profesional antes de confirmar';
         h2.style.display = 'flex';
@@ -1442,17 +1928,36 @@
         return;
       }
 
-      var profNombre = PROF_NAMES[state.profesionalIdMasivo] || 'Carlos Pérez';
-      /* v1.5.0: persist via IVCStore — el workspace del Profesional verá esto */
-      Object.keys(state.seleccionados).forEach(function(tramiteId){
-        IVCStore.asignar(tramiteId, state.profesionalIdMasivo, 'Carolina Méndez (Coordinador)');
-      });
-      loadFromStore();
-      state.seleccionados = {};
+      var ids = Object.keys(state.seleccionados).filter(function (k) { return state.seleccionados[k]; });
+      var profId = state.profesionalIdMasivo;
+      var profNombre = PROF_NAMES[profId] || 'Carlos Pérez';
+      var snackbarText = n + ' trámite' + (n === 1 ? '' : 's') + ' asignado' + (n === 1 ? '' : 's') + ' a ' + profNombre + '.';
+
+      /* 1. CERRAR MODAL INMEDIATAMENTE — UX rápido, no dependiente de render posterior */
       closeModalMasivo();
-      renderStats();
-      renderTabla();
-      window.IVCShell.showSnackbar(n + ' trámites asignados a ' + profNombre + '.', 'success');
+
+      /* 2. Persistir + refresh en setTimeout (después de la animación de cierre) */
+      setTimeout(function () {
+        try {
+          ids.forEach(function (tramiteId) {
+            IVCStore.asignar(tramiteId, profId, 'Carolina Méndez (Coordinador)');
+          });
+        } catch (e) { console.error('[confirmMasivo] error asignando:', e); }
+        try {
+          loadFromStore();
+          state.seleccionados = {};
+          renderStats();
+          renderTabla();
+          updateSubtitle();
+        } catch (e) { console.error('[confirmMasivo] error refrescando UI:', e); }
+
+        /* 3. Snackbar al final — siempre dispara, aún si hay errores en pasos 1-2 */
+        if (window.IVCShell && typeof window.IVCShell.showSnackbar === 'function') {
+          window.IVCShell.showSnackbar(snackbarText, 'success');
+        } else {
+          console.warn('[bandeja] showSnackbar no disponible:', snackbarText);
+        }
+      }, 220);
     }
 
     function openModalIndividual(tramiteId) {

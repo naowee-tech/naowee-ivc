@@ -18,18 +18,12 @@
   var K_WIZARD_STEP = 'naowee.ivc.wizardStep'; /* v1.1.4 #4 — tour reactivo */
   var K_TRAMITE_FOCAL = 'naowee.ivc.tramiteFocal'; /* v1.2.0 — workspace del Profesional */
 
-  /* ───── Perfiles disponibles ───── */
+  /* ───── Perfiles disponibles ─────
+     v1.5.3 (25/05/2026): perfil 'usuario-externo' removido del switcher.
+     Doug: el flujo Fase 1 arranca desde una pantalla pública (sin login).
+     No tiene sentido simular al ciudadano como "perfil" interno del Ministerio.
+     El formulario sigue accesible; el switch sólo lista roles internos. */
   var PERFILES = {
-    'usuario-externo': {
-      id: 'usuario-externo',
-      nombre: 'Liga de Atletismo de Bolívar',
-      nit: '800.245.678-3',
-      rol: 'Usuario Externo · Liga Deportiva',
-      avatar: 'LB',
-      etapa: 'Fase 1',
-      enabled: true,
-      color: '#002B5B'
-    },
     'coordinador': {
       id: 'coordinador',
       nombre: 'Carolina Méndez',
@@ -247,7 +241,11 @@
 
   /* ───── Public API ───── */
   function getPerfil() {
-    return read(K_PERFIL, null);
+    /* v1.5.3: default a 'coordinador' (primer perfil interno disponible)
+       en lugar de null/usuario-externo que fue removido. */
+    var p = read(K_PERFIL, null);
+    if (!p || !PERFILES[p]) p = 'coordinador';
+    return p;
   }
 
   function setPerfil(perfilId) {

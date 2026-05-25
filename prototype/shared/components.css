@@ -257,42 +257,81 @@
   background: var(--green);
 }
 
-/* ───── Snackbar ───── */
+/* ───── Snackbar canónico (DS v1.8.0) ─────
+   v1.5.3 rev (25/05/2026): markup paridad con DS oficial (líneas 3172-3232).
+   Estructura: .naowee-snackbar > .__content > .__badge + .__text
+   Variants: --success (verde), --info (azul), --caution (naranja), --negative (rojo)
+   Position fixed + animación entrada/salida es page-scoped (no del DS). */
 .naowee-snackbar {
+  /* Position + entrada/salida (no del DS — paridad con Project v2.0.3) */
   position: fixed;
-  bottom: 24px;
+  bottom: 80px;
   left: 50%;
-  transform: translateX(-50%) translateY(120%);
-  background: var(--text-primary);
-  color: var(--text-inverse);
-  padding: 14px 20px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
   z-index: var(--z-snackbar);
+  /* Tokens canónicos del DS oficial */
+  background: var(--azul, #002B5B);    /* Figma: --naowee-color-blue-900 */
+  color: #fff;
+  border-radius: 12px;                  /* --naowee-border-radius-containers-compact */
+  padding: 16px;
+  box-shadow: 0 8px 12px 0 rgba(40, 40, 52, 0.1);
   display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: transform var(--duration-normal) var(--ease-out);
-  max-width: 480px;
+  align-items: flex-start;
+  gap: 16px;
+  width: 600px;
+  max-width: calc(100vw - 40px);
+  font-family: 'Inter', sans-serif;
+  overflow: clip;
+  transition:
+    transform .28s cubic-bezier(.4, 0, .2, 1),
+    opacity .25s ease-out;
+  pointer-events: none;
 }
-
 .naowee-snackbar.is-visible {
   transform: translateX(-50%) translateY(0);
+  opacity: 1;
 }
 
-.naowee-snackbar--success::before {
-  content: '✓';
-  background: var(--green);
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
+.naowee-snackbar__content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.naowee-snackbar__badge {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--blue-info, #006AFF);  /* default = info */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  color: #fff;
 }
+.naowee-snackbar__badge svg { width: 14px; height: 14px; }
+.naowee-snackbar__text {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #fff;
+}
+
+/* Variants — solo el badge cambia de color (canónico) */
+.naowee-snackbar--success .naowee-snackbar__badge { background: var(--green, #1f8923); }
+.naowee-snackbar--info    .naowee-snackbar__badge { background: var(--blue-info, #006AFF); }
+.naowee-snackbar--caution .naowee-snackbar__badge { background: var(--accent, #d74009); }
+.naowee-snackbar--negative .naowee-snackbar__badge { background: #ed314a; }
+
+@media (max-width: 600px) {
+  .naowee-snackbar { width: calc(100vw - 24px); bottom: 70px; }
+}
+
+/* v1.5.3 rev: ::before legacy removido — el ícono ahora vive dentro del
+   .naowee-snackbar__badge canónico generado por JS. */
 
 /* ───── Stat card (dashboard pattern)
    Doug v1.1.3: SIN border, CON shadow canónico project v2.1.
@@ -722,4 +761,84 @@
 }
 .naowee-table-card .naowee-table tbody tr:hover {
   background: #fafbfd;
+}
+
+/* ───── Modal layout v1.5.3 (25/05/2026) ─────
+   El DS canónico tiene padding 32px en el .naowee-modal CONTAINER + padding
+   adicional en header/body/footer → resultado: el bottom acumula 32px+padding-bottom
+   propio del footer = espacio doble vs lados. Doug pidió simetría perfecta.
+
+   Reset del padding del container a 0 y aplico padding consistente
+   (28px lados, 24px header bottom, 18px footer top/bottom) en cada sección.
+   Patrón paridad con modal-convocatoria de Project v2.0.3. */
+.naowee-modal-overlay .naowee-modal {
+  padding: 0;     /* override del 32px 0 canónico — cada sección define el suyo */
+}
+.naowee-modal-overlay .naowee-modal__header {
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.naowee-modal-overlay .naowee-modal__body {
+  padding: 18px 28px;
+}
+.naowee-modal-overlay .naowee-modal__footer {
+  padding: 16px 28px 20px;
+  border-top: 1px solid var(--border);
+  gap: 10px;
+}
+
+/* ───── .naowee-modal__dismiss canónico (Project v2.0.3) ─────
+   X gris del header del modal — patrón canónico portado:
+   /naowee-test-digitacion/project/v2.0.3/shared/modal-convocatoria.js L309-316.
+   v1.5.3 rev: hover background --bg-soft (#f5f6fa) — antes usaba --bg
+   (#ffffff blanco) que era invisible sobre fondo blanco. Doug 25/05/2026. */
+.naowee-modal__dismiss {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out);
+}
+.naowee-modal__dismiss:hover {
+  background: var(--bg-soft);          /* gris claro #f5f6fa — paridad con Project --grey-bg */
+  color: var(--text-primary);
+}
+.naowee-modal__dismiss:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.naowee-modal__dismiss svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ───── .naowee-message: __header layout (v1.5.3) ─────
+   El DS canónico maneja __header en una row (icon + title). Doug pidió
+   que el caution también respete este patrón sin gaps excesivos con __text. */
+.naowee-message .naowee-message__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.naowee-message .naowee-message__title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.naowee-message .naowee-message__text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-primary);
+  margin-top: 2px;
 }

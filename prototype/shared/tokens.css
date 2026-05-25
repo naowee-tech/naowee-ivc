@@ -130,9 +130,11 @@
   /* ── Z-index ─────────────────────────────────────── */
   --z-sidebar: 100;
   --z-header: 200;
-  --z-snackbar: 900;
   --z-modal: 1000;
   --z-demo-switcher: 1200;
+  /* v1.5.3 (25/05/2026): snackbar subido de 900 → 1300 para aparecer
+     POR ENCIMA del demo-switcher (1200). Antes quedaba detrás del pill. */
+  --z-snackbar: 1300;
   --z-tour: 1500;
 }
 

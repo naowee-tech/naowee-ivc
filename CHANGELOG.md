@@ -6,6 +6,85 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.3] — 2026-05-25
+
+> 🧩 **Profesional end-to-end (bandeja + workspace canónico) + modal asignación masiva refactor + limpieza de perfiles.**
+
+### Added — Nueva pantalla `prototype/profesional/bandeja.html` (~800 líneas)
+- Lista de trámites asignados al profesional logueado (default `cp-001`), leída en vivo de `IVCStore.misAsignaciones(profId)`.
+- **3 stat cards** en la cabecera: "Pendientes de validar", "En validación", "Cumplidos hoy" — usan tokens `--green` / `--orange-bg` / `--blue-bg` y se recalculan a cada render.
+- Tabla con columnas: Radicado, Tipo (con badge `--tipo-tramite-bg`), Organismo, Radicado en, Plazo (semáforo verde >5d / naranja 1-5d / rojo vencido), Estado, Asignado por, Acciones.
+- Empty state canónico DS (`.naowee-empty-state`) cuando no hay asignaciones.
+- Filtros por estado + buscador + footer flotante (patrón Project v2.0.3).
+- Reactividad: listeners de `tramite:asignado` y `store:mode-changed` re-renderan automáticamente.
+
+### Added — Reescritura completa de `prototype/profesional/workspace.html` (~1300 líneas, patrón `proyecto-detalle.html` v2.0.3)
+- **Hero card** sin shadow/elevation (override DS), header con `Volver a la bandeja` justificado a la izquierda + metadatos del trámite (radicado, organismo, tipo, plazo restante).
+- **Tabs container** con indicator naranja canónico DS (`.naowee-tabs__indicator`), divider de borde a borde (no recortado), padding lateral en los tabs + hover gris suave en no-seleccionados.
+- **Tab "Documentos"** con patrón `.ra-item + .ra-toggle` portado verbatim de `revisar-area.html` v2.0.3:
+  - Tri-state por documento (`cumple` / `parcial` / `no cumple`) con tooltips canónicos en cada acción.
+  - CTA "Descargar documento" ghost button (label naranja + hover naranja claro), reemplaza al previo "Ver documento".
+  - Barra de progreso semáforo (rojo→naranja→verde) con porcentaje X de Y validados.
+- **Tab "Datos"** con grid 2-col, labels uppercase 10px letterspaced gris claro (`--text-muted`).
+- **Tab "Historial"** con timeline vertical + colores semánticos por tipo de evento (positive / caution / negative / info), portado de Project v2.0.3.
+- **CTA único "Finalizar revisión"** inline (sin sticky footer): infiere resultado del checklist y cambia label + color + handler dinámicamente (`cumple` verde, `parcial` naranja, `no cumple` rojo).
+- **Tooltip portal pattern** (`overflow: visible !important` en padres + `z-index: 9999`) — los tooltips ya no se recortan dentro de cards con overflow.
+- **Indicator z-index trick**: `bottom: -1px; z-index: 2` para cubrir el `border-top` gris del panel y cerrar el hueco visual entre tab activo y borde.
+
+### Changed — Modal asignación masiva (`coordinador/bandeja.html`)
+- **2 estrategias finales** (eliminada la opción "manual" — confusa y redundante):
+  1. **Mismo profesional para todos** — grid de cards de profesionales con avatar + scroll horizontal (cabe N sin romper el layout).
+  2. **Distribuir manualmente** — `.naowee-dropdown` canónico por fila (reemplaza el `<select>` nativo que se había colado).
+- **Summary unificado**: un solo `.naowee-message` con `variant` dinámico (`caution` cuando hay validación pendiente, `informative` cuando todo está OK).
+- **Section titles uppercase letterspaced** consistentes con el resto del DS.
+- **X canónico** (`.naowee-modal__dismiss`) gris claro con hover gris medio en el header.
+- **Dividers** vía `border-bottom` / `border-top` en header y footer (no en el contenedor).
+- **Tooltips portaled** en las cards de profesionales — antes se recortaban por el `overflow: hidden` del grid.
+
+### Changed — Limpieza del switcher de perfiles
+- **Eliminado el perfil "usuario-externo"** de `shared/data.js` y `shared/shell.js` (no aporta a la demo del módulo IVC — el flujo del solicitante vive en el formulario standalone).
+- Default perfil cambiado a `coordinador`.
+- Card destacado en `prototype/index.html` ahora es **Coordinadora** ("Iniciar como Coordinadora de Deporte" → `coordinador/bandeja.html`).
+- **Item de navegación acortado**: "Bandeja de trámites" → **"Bandeja"** (más limpio en el sidebar colapsado).
+- `NAV_ITEMS['profesional']` agrega `bandeja-prof` → `profesional/bandeja.html`.
+
+### Fixed — Segmented control "Modo demo" no respondía
+- **Causa**: los `<button>` se renderizaban después de que `wireModeSwitch()` registrara el listener individual por botón, así que los nuevos no escuchaban click.
+- **Solución**: event delegation sobre el contenedor del segmented (`.demo-role-switcher__mode-switch`), idéntico al patrón de Project v2.0.3.
+
+### Fixed — Snackbar quedaba detrás del demo-switcher
+- **Causa**: `--z-snackbar: 900` < `--z-demo-switcher: 1200`.
+- **Solución**: subido a `--z-snackbar: 1300` en `shared/tokens.css`.
+
+### Fixed — `TIPO` mostraba `undefined` en la bandeja del coordinador
+- **Causa**: el store persiste como `tipoTramite` pero la tabla leía `t.tipo`.
+- **Solución**: fallback `(t.tipoTramite || t.tipo || '—')` en el render.
+
+### Fixed — Toast no aparecía tras `confirmMasivo`
+- **Causa**: race condition entre el cierre del modal, el re-render de la tabla y el snackbar dentro del mismo tick.
+- **Solución**: cerrar modal primero, luego `setTimeout(220ms)` con `try/catch` separados para `asignar()`, `refresh()` y `snackbar()`.
+
+### Fixed — Bug crítico de `IVCStore` (silent failure)
+- **Causa**: `SEED.profesionales` era accedido durante la creación del literal de `SEED` → `undefined` durante la inicialización → IIFE crashea → `window.IVCStore` nunca se asigna → todos los botones del demo-switcher fallaban en silencio.
+- **Solución**: extraída constante `PROFESIONALES` + factory `buildSeed()` que se invoca después.
+
+### Fixed — Workspace: múltiples rondas de pulido visual
+- Divider de borde a borde de los tabs (movido a `.ivc-tab-panel { border-top }` porque `.naowee-tabs` tenía `overflow-x: auto` que recortaba el `::after`).
+- Tabs con background transparente (`!important`) — el DS aplicaba `--naowee-color-interactive-fill-mute-idle` (crema) que chocaba con el indicator naranja.
+- Botón "Volver a la bandeja" sin estilo `textlink` (sin underline, sin color accent — ahora es ghost).
+- Quitada la barra fixed inferior con leyenda "no cumple / parcial / cumple" — los botones por documento ya son auto-explicativos.
+
+### Changed — Snackbar a markup canónico DS v1.8.0
+- `<div class="naowee-snackbar naowee-snackbar--{variant}">` con `.naowee-snackbar__icon` + `.naowee-snackbar__content` + `.naowee-snackbar__action` opcional.
+- Variants: `positive` (verde), `informative` (azul), `caution` (naranja), `negative` (rojo).
+- Aplicado en `shared/shell.js` (helper `Snackbar.show()`) — todas las páginas heredan el patrón.
+
+### Changed — Pill de versionamiento y logo Naowee en footers
+- `shared/naowee-footer.js` bumpea a `v1.5.3`.
+- Logo Naowee SVG real (no placeholder) en los footers flotantes del formulario Fase 1 y de la bandeja.
+
+---
+
 ## [ivc-v1.4.8] — 2026-05-23
 
 > 🏷️ **Pill de versionamiento + fix tooltips bandeja + limpieza paso 1 Fase 1.**

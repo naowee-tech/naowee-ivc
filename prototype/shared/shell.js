@@ -43,13 +43,15 @@
     ],
     /* v1.2.0 — Fase 2 Sprint 1: Coordinador habilitado (HU-3) */
     'coordinador': [
-      { id: 'bandeja-coord', label: 'Bandeja de asignación', icon: ICONS.bandeja,  href: 'bandeja.html', badge: '4' },
+      { id: 'bandeja-coord', label: 'Bandeja',                icon: ICONS.bandeja,  href: 'bandeja.html', badge: '4' },
       { id: 'en-validacion', label: 'Trámites en validación', icon: ICONS.tramites, href: '#' },
       { id: 'historico-coord', label: 'Histórico',           icon: ICONS.docs,     href: '#' }
     ],
-    /* v1.2.0 — Fase 2 Sprint 1: Profesional habilitado (HU-4/HU-6) */
+    /* v1.2.0 — Fase 2 Sprint 1: Profesional habilitado (HU-4/HU-6)
+       v1.5.4 (25/05/2026): bandeja-prof ahora apunta a bandeja.html (lista de
+       asignados), no a workspace.html (que es la vista de validación 1-trámite). */
     'profesional': [
-      { id: 'bandeja-prof', label: 'Mi bandeja',        icon: ICONS.bandeja,  href: 'workspace.html', badge: '3' },
+      { id: 'bandeja-prof', label: 'Mi bandeja',        icon: ICONS.bandeja,  href: 'bandeja.html', badge: '4' },
       { id: 'revision',     label: 'En revisión',       icon: ICONS.tramites, href: '#' },
       { id: 'historico-prof', label: 'Histórico',       icon: ICONS.docs,     href: '#' }
     ],
@@ -87,8 +89,11 @@
 
   /* ───── Sidebar (canonical markup) ───── */
   function renderSidebar(opts) {
-    var perfilId = (opts && opts.perfilId) || (window.IVCData && window.IVCData.getPerfil()) || 'usuario-externo';
-    var items = NAV_ITEMS[perfilId] || NAV_ITEMS['usuario-externo'];
+    /* v1.5.3: default a 'coordinador' (perfil interno) en lugar de 'usuario-externo'
+       que fue removido del switcher. usuario-externo sigue existiendo en NAV_ITEMS
+       como fallback para la ruta /usuario-externo/ pero ya no es perfil seleccionable. */
+    var perfilId = (opts && opts.perfilId) || (window.IVCData && window.IVCData.getPerfil()) || 'coordinador';
+    var items = NAV_ITEMS[perfilId] || NAV_ITEMS['coordinador'] || NAV_ITEMS['usuario-externo'];
     var activeId = (opts && opts.activeNav) || items[0].id;
     var isCollapsed = getCollapsed();
     var sectionLabel = SECTION_LABELS[perfilId] || 'OPERACIÓN';
@@ -351,7 +356,7 @@
         var landings = {
           'usuario-externo': 'usuario-externo/dashboard.html',
           'coordinador':     'coordinador/bandeja.html',
-          'profesional':     'profesional/workspace.html'
+          'profesional':     'profesional/bandeja.html'
         };
         var landing = landings[next];
         if (landing) {
@@ -382,36 +387,52 @@
       });
     }
 
-    /* v1.5.2 (25/05/2026): Modo demo (Guiado·vacío / Libre·con datos)
-       Patrón Project v2.0.3. Mutual exclusive segmented control. */
-    var modeButtons = document.querySelectorAll('.demo-role-switcher__mode-btn');
+    /* v1.5.3 (25/05/2026): Modo demo (Guiado·vacío / Libre·con datos)
+       Event delegation en document — sobrevive re-renders del panel.
+       Antes hacía querySelectorAll una sola vez y los bindings se perdían
+       si el switcher se re-renderizaba. Doug 25/05/2026. */
     function syncModeButtons() {
       if (!window.IVCStore) return;
       var current = window.IVCStore.getMode();
-      modeButtons.forEach(function (b) {
+      document.querySelectorAll('.demo-role-switcher__mode-btn').forEach(function (b) {
         b.setAttribute('aria-pressed', b.dataset.mode === current ? 'true' : 'false');
       });
     }
     syncModeButtons();
-    modeButtons.forEach(function (b) {
-      b.addEventListener('click', function (e) {
+
+    /* Event delegation: el handler vive en document, sobrevive a cualquier
+       re-mount del panel demo-switcher. */
+    if (!window.__ivcModeBound) {
+      window.__ivcModeBound = true;
+      document.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('.demo-role-switcher__mode-btn');
+        if (!btn) return;
         e.stopPropagation();
-        if (!window.IVCStore) return;
-        var mode = b.dataset.mode;
+        if (!window.IVCStore) {
+          console.warn('[IVC] Modo demo clicked but IVCStore not loaded');
+          return;
+        }
+        var mode = btn.dataset.mode;
         if (mode === window.IVCStore.getMode()) return;
         window.IVCStore.setMode(mode);
         syncModeButtons();
-        /* Snackbar de confirmación */
+        /* v1.5.3 (25/05/2026): cerrar el panel demo-switcher ANTES de
+           mostrar el snackbar, así no queda detrás del pill. */
+        var swPanel = document.getElementById('demoSwitcher');
+        if (swPanel) swPanel.classList.remove('is-open');
         if (window.IVCShell && window.IVCShell.showSnackbar) {
-          window.IVCShell.showSnackbar(
-            mode === 'demo'
-              ? 'Modo libre: 12 trámites cargados'
-              : 'Modo guiado: bandeja vacía. Crea un trámite desde el formulario.',
-            'success'
-          );
+          /* Pequeño delay para que el cierre del menu se vea fluido antes del snack */
+          setTimeout(function () {
+            window.IVCShell.showSnackbar(
+              mode === 'demo'
+                ? 'Modo libre: 12 trámites cargados'
+                : 'Modo guiado: bandeja vacía. Crea un trámite desde el formulario.',
+              'success'
+            );
+          }, 180);
         }
       });
-    });
+    }
 
     /* Logout */
     document.querySelectorAll('[data-action="logout"]').forEach(function (link) {
@@ -424,19 +445,38 @@
     setupTooltips();
   }
 
-  /* ───── Snackbar (toast) ───── */
+  /* ───── Snackbar canónico (DS v1.8.0) ─────
+     v1.5.3 rev (25/05/2026): markup paridad con .naowee-snackbar del DS
+     oficial (líneas 3172-3232). Variants soportados:
+     - 'success'  → badge verde (positive)
+     - 'info'     → badge azul (informative, default)
+     - 'caution'  → badge naranja (caution)
+     - 'negative' → badge rojo (negative)
+     El positionamiento (fixed bottom + animación) vive en components.css. */
+  var SNACK_ICONS = {
+    success:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    info:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    caution:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    negative: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+  };
   function showSnackbar(text, variant) {
+    var v = SNACK_ICONS[variant] ? variant : 'info';
     var existing = document.querySelector('.naowee-snackbar');
     if (existing) existing.remove();
-    var snack = el('<div class="naowee-snackbar ' +
-      (variant === 'success' ? 'naowee-snackbar--success' : '') +
-      '">' + text + '</div>');
+    var snack = el(
+      '<div class="naowee-snackbar naowee-snackbar--' + v + '" role="status" aria-live="polite">' +
+        '<div class="naowee-snackbar__content">' +
+          '<span class="naowee-snackbar__badge">' + SNACK_ICONS[v] + '</span>' +
+          '<span class="naowee-snackbar__text">' + text + '</span>' +
+        '</div>' +
+      '</div>'
+    );
     document.body.appendChild(snack);
     requestAnimationFrame(function () { snack.classList.add('is-visible'); });
     setTimeout(function () {
       snack.classList.remove('is-visible');
       setTimeout(function () { snack.remove(); }, 300);
-    }, 3000);
+    }, 3200);
   }
 
   /* ───── Init (public API consumed by 4 HTML pages) ───── */

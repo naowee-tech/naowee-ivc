@@ -23,34 +23,21 @@
   var KEY = 'ivc:store';
   var SEED_VERSION = 1;            /* bump si cambia el schema del seed */
 
-  /* ─── Seed inicial ─────────────────────────────────────────────────── */
-  var SEED = {
-    seedVersion: SEED_VERSION,
-    ultimoRadicado: 12,
-    profesionales: [
-      { id: 'cp-001', nombre: 'Carlos Pérez',     area: 'aficionado', activos: 12 },
-      { id: 'mg-002', nombre: 'María García',     area: 'aficionado', activos: 8  },
-      { id: 'al-003', nombre: 'Andrés López',     area: 'aficionado', activos: 15 },
-      { id: 'lr-004', nombre: 'Lucía Ramírez',    area: 'aficionado', activos: 5  }
-    ],
-    tramites: [
-      mkSeed('IVC-2026-001', 'liga',       'Otorgamiento',  'Liga de Atletismo de Bolívar',        '800.245.678-3', '2026-05-21', 15, 'No asignada'),
-      mkSeed('IVC-2026-002', 'liga',       'Renovación',    'Liga de Voleibol de Cundinamarca',    '800.456.789-1', '2026-05-20', 12, 'No asignada'),
-      mkSeed('IVC-2026-003', 'asociacion', 'Otorgamiento',  'Asociación de Patinaje del Valle',    '901.234.567-2', '2026-05-19',  3, 'Asignada',      'cp-001'),
-      mkSeed('IVC-2026-004', 'liga',       'Actualización', 'Liga de Natación del Atlántico',      '800.789.012-4', '2026-05-19', -2, 'No asignada'),
-      mkSeed('IVC-2026-005', 'liga',       'Otorgamiento',  'Liga de Tenis de Mesa de Antioquia',  '811.345.678-9', '2026-05-18', 18, 'En validación','mg-002'),
-      mkSeed('IVC-2026-006', 'liga',       'Renovación',    'Liga de Ciclismo de Boyacá',          '900.567.890-5', '2026-05-18',  5, 'Asignada',      'al-003'),
-      mkSeed('IVC-2026-007', 'asociacion', 'Otorgamiento',  'Asociación de Taekwondo de Caldas',   '901.456.789-3', '2026-05-17', -5, 'No asignada'),
-      mkSeed('IVC-2026-008', 'liga',       'Otorgamiento',  'Liga de Fútbol de Sala del Tolima',   '800.234.567-8', '2026-05-17', 20, 'En validación','lr-004'),
-      mkSeed('IVC-2026-009', 'liga',       'Renovación',    'Liga de Karate del Quindío',          '900.123.456-7', '2026-05-15',  2, 'Asignada',      'cp-001'),
-      mkSeed('IVC-2026-010', 'liga',       'Otorgamiento',  'Liga de Baloncesto de Risaralda',     '800.345.678-2', '2026-05-14', 10, 'No asignada'),
-      mkSeed('IVC-2026-011', 'asociacion', 'Otorgamiento',  'Asociación de Esgrima del Meta',      '901.789.012-1', '2026-05-13',  4, 'En validación','mg-002'),
-      mkSeed('IVC-2026-012', 'federacion', 'Renovación',    'Federación Colombiana de Atletismo',  '900.987.654-3', '2026-05-12', 25, 'No asignada')
-    ]
-  };
+  /* ─── Seed inicial ───────────────────────────────────────────────────
+     v1.5.3 FIX (25/05/2026): bug crítico — antes mkSeed referenciaba
+     SEED.profesionales mientras SEED se estaba construyendo, lo que tiraba
+     "Cannot read property of undefined" y dejaba IVCStore sin asignar.
+     Solución: extraer PROFESIONALES y SEED_TRAMITES_RAW como constantes
+     independientes y construir SEED con .map(). */
+  var PROFESIONALES = [
+    { id: 'cp-001', nombre: 'Carlos Pérez',     area: 'aficionado', activos: 12 },
+    { id: 'mg-002', nombre: 'María García',     area: 'aficionado', activos: 8  },
+    { id: 'al-003', nombre: 'Andrés López',     area: 'aficionado', activos: 15 },
+    { id: 'lr-004', nombre: 'Lucía Ramírez',    area: 'aficionado', activos: 5  }
+  ];
 
   function mkSeed(id, tipoOrg, tipoTramite, organismo, nit, fechaIso, plazoDias, estado, profId) {
-    var prof = profId && SEED.profesionales.find(function(p){ return p.id === profId; });
+    var prof = profId && PROFESIONALES.find(function(p){ return p.id === profId; });
     var hist = [
       { fecha: fechaIso, hora: '08:15', actor: 'Liga de Atletismo (demo)', accion: 'Radicado' },
       { fecha: fechaIso, hora: '08:15', actor: 'Sistema', accion: 'Remisión automática a Deporte Aficionado' }
@@ -76,6 +63,32 @@
       historico: hist,
       documentos: {},
       datos: {}
+    };
+  }
+
+  /* SEED construido AFTER mkSeed está definido. Las 12 filas raw como tuplas. */
+  var SEED_TRAMITES_RAW = [
+    ['IVC-2026-001', 'liga',       'Otorgamiento',  'Liga de Atletismo de Bolívar',        '800.245.678-3', '2026-05-21', 15, 'No asignada'],
+    ['IVC-2026-002', 'liga',       'Renovación',    'Liga de Voleibol de Cundinamarca',    '800.456.789-1', '2026-05-20', 12, 'No asignada'],
+    ['IVC-2026-003', 'asociacion', 'Otorgamiento',  'Asociación de Patinaje del Valle',    '901.234.567-2', '2026-05-19',  3, 'Asignada',      'cp-001'],
+    ['IVC-2026-004', 'liga',       'Actualización', 'Liga de Natación del Atlántico',      '800.789.012-4', '2026-05-19', -2, 'No asignada'],
+    ['IVC-2026-005', 'liga',       'Otorgamiento',  'Liga de Tenis de Mesa de Antioquia',  '811.345.678-9', '2026-05-18', 18, 'En validación','mg-002'],
+    ['IVC-2026-006', 'liga',       'Renovación',    'Liga de Ciclismo de Boyacá',          '900.567.890-5', '2026-05-18',  5, 'Asignada',      'al-003'],
+    ['IVC-2026-007', 'asociacion', 'Otorgamiento',  'Asociación de Taekwondo de Caldas',   '901.456.789-3', '2026-05-17', -5, 'No asignada'],
+    ['IVC-2026-008', 'liga',       'Otorgamiento',  'Liga de Fútbol de Sala del Tolima',   '800.234.567-8', '2026-05-17', 20, 'En validación','lr-004'],
+    ['IVC-2026-009', 'liga',       'Renovación',    'Liga de Karate del Quindío',          '900.123.456-7', '2026-05-15',  2, 'Asignada',      'cp-001'],
+    ['IVC-2026-010', 'liga',       'Otorgamiento',  'Liga de Baloncesto de Risaralda',     '800.345.678-2', '2026-05-14', 10, 'No asignada'],
+    ['IVC-2026-011', 'asociacion', 'Otorgamiento',  'Asociación de Esgrima del Meta',      '901.789.012-1', '2026-05-13',  4, 'En validación','mg-002'],
+    ['IVC-2026-012', 'federacion', 'Renovación',    'Federación Colombiana de Atletismo',  '900.987.654-3', '2026-05-12', 25, 'No asignada']
+  ];
+
+  function buildSeed() {
+    return {
+      seedVersion: SEED_VERSION,
+      ultimoRadicado: 12,
+      mode: 'demo',
+      profesionales: JSON.parse(JSON.stringify(PROFESIONALES)),
+      tramites: SEED_TRAMITES_RAW.map(function (row) { return mkSeed.apply(null, row); })
     };
   }
 
@@ -116,8 +129,7 @@
     init: function () {
       var s = read();
       if (!s) {
-        s = JSON.parse(JSON.stringify(SEED));   /* deep clone */
-        s.mode = 'demo';                         /* modo por default */
+        s = buildSeed();                         /* deep clone construido */
         write(s);
       }
       if (!s.mode) { s.mode = 'demo'; write(s); }  /* migration */
@@ -136,13 +148,12 @@
         s = {
           seedVersion: SEED_VERSION,
           ultimoRadicado: 0,
-          profesionales: JSON.parse(JSON.stringify(SEED.profesionales)),  /* profesionales sí, los necesita el Coordinador */
+          profesionales: JSON.parse(JSON.stringify(PROFESIONALES)),  /* profesionales sí, los necesita el Coordinador */
           tramites: [],
           mode: 'blank'
         };
       } else {
-        s = JSON.parse(JSON.stringify(SEED));
-        s.mode = 'demo';
+        s = buildSeed();
       }
       write(s);
       emit('store:mode-changed', mode);

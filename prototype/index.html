@@ -368,32 +368,54 @@
       <h2 class="landing-section__title">Perfiles disponibles en el demo</h2>
       <div class="perfiles-grid">
 
-        <article class="perfil-card perfil-card--featured" data-perfil-card="usuario-externo">
-          <span class="perfil-card__phase-pill">Fase 1 · Activo</span>
+        <!-- v1.5.3 (25/05/2026): Coordinador es ahora el perfil principal
+             del demo. El Usuario Externo se accede directo desde el botón
+             "Abrir formulario público" abajo (no es un "perfil simulado"). -->
+        <article class="perfil-card perfil-card--featured" data-perfil-card="coordinador">
+          <span class="perfil-card__phase-pill">Fase 2 · Activo</span>
           <div class="perfil-card__head">
-            <div class="perfil-card__avatar" style="background:rgba(255,255,255,.2);color:white">LB</div>
+            <div class="perfil-card__avatar" style="background:rgba(255,255,255,.2);color:white">CM</div>
             <div>
-              <p class="perfil-card__nombre">Liga de Atletismo de Bolívar</p>
-              <p class="perfil-card__rol">Usuario Externo · NIT 800.245.678-3</p>
+              <p class="perfil-card__nombre">Carolina Méndez</p>
+              <p class="perfil-card__rol">Coordinadora · Deporte Aficionado</p>
             </div>
           </div>
           <p class="perfil-card__desc">
-            Como organismo deportivo departamental, vas a radicar un Otorgamiento por primera vez. Cargas los 7 documentos del Decreto 1387/1970 y haces seguimiento.
+            Recibe los trámites radicados, los asigna a profesionales del área y hace seguimiento de SLAs. Gestiona la bandeja de asignación, validación e histórico.
           </p>
           <div class="perfil-card__cta">
             <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="ctaStart" style="width:100%">
-              Iniciar como Liga Deportiva →
+              Iniciar como Coordinadora de Deporte →
             </button>
           </div>
         </article>
 
         <article class="perfil-card perfil-card--disabled">
-          <span class="perfil-card__phase-pill">Fase 2</span>
+          <span class="perfil-card__phase-pill">Fase 1 · Público</span>
           <div class="perfil-card__head">
-            <div class="perfil-card__avatar" style="background:#eef5ff;color:#1f78d1">CM</div>
+            <div class="perfil-card__avatar" style="background:#eef5ff;color:#002B5B">LB</div>
+            <div>
+              <p class="perfil-card__nombre">Usuario Externo</p>
+              <p class="perfil-card__rol">Organismo deportivo · Sin login</p>
+            </div>
+          </div>
+          <p class="perfil-card__desc">
+            El flujo público arranca radicando un trámite. No es un perfil interno — accede directo al formulario público de radicación desde el botón abajo.
+          </p>
+          <div class="perfil-card__cta">
+            <a href="usuario-externo/formulario-fase-1.html" class="naowee-btn naowee-btn--quiet naowee-btn--small" style="width:100%">
+              Abrir formulario público →
+            </a>
+          </div>
+        </article>
+
+        <article class="perfil-card perfil-card--disabled">
+          <span class="perfil-card__phase-pill">Fase 3</span>
+          <div class="perfil-card__head">
+            <div class="perfil-card__avatar" style="background:#eef5ff;color:#1f78d1">CP</div>
             <div>
               <p class="perfil-card__nombre">Profesional IVC</p>
-              <p class="perfil-card__rol">Carolina Méndez</p>
+              <p class="perfil-card__rol">Carlos Pérez · Deporte Aficionado</p>
             </div>
           </div>
           <p class="perfil-card__desc">
@@ -402,21 +424,7 @@
         </article>
 
         <article class="perfil-card perfil-card--disabled">
-          <span class="perfil-card__phase-pill">Fase 2</span>
-          <div class="perfil-card__head">
-            <div class="perfil-card__avatar" style="background:#f3edff;color:#7c3aed">AS</div>
-            <div>
-              <p class="perfil-card__nombre">Coordinador IVC</p>
-              <p class="perfil-card__rol">Andrés Salazar</p>
-            </div>
-          </div>
-          <p class="perfil-card__desc">
-            Revisa el acto antes de pasar al Director y aprueba la coordinación.
-          </p>
-        </article>
-
-        <article class="perfil-card perfil-card--disabled">
-          <span class="perfil-card__phase-pill">Fase 2</span>
+          <span class="perfil-card__phase-pill">Fase 4</span>
           <div class="perfil-card__head">
             <div class="perfil-card__avatar" style="background:#fff3e6;color:#d74009">MR</div>
             <div>
@@ -436,8 +444,8 @@
       <h2 class="landing-section__title">¿Cómo usar este demo?</h2>
       <div class="howto-list">
         <div class="howto-item">
-          <h3 class="howto-item__title">Selecciona "Iniciar como Liga Deportiva"</h3>
-          <p class="howto-item__desc">Entra al perfil de Usuario Externo y verás la bandeja de trámites con tu histórico.</p>
+          <h3 class="howto-item__title">Selecciona "Iniciar como Coordinadora de Deporte"</h3>
+          <p class="howto-item__desc">Entra al perfil de Coordinador IVC y verás la bandeja de asignación con los trámites radicados.</p>
         </div>
         <div class="howto-item">
           <h3 class="howto-item__title">El tour te guía paso a paso</h3>
@@ -452,7 +460,7 @@
 
     <div class="landing-cta-row">
       <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="ctaStart2">
-        Iniciar como Liga Deportiva →
+        Iniciar como Coordinadora de Deporte →
       </button>
       <button type="button" class="naowee-btn naowee-btn--mute" id="ctaReset">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>
@@ -472,8 +480,10 @@
   <script>
     /* Landing-specific behavior */
     function goStart() {
-      window.IVCData.setPerfil('usuario-externo');
-      window.location.href = 'usuario-externo/dashboard.html';
+      /* v1.5.3 (25/05/2026): default ahora es Coordinador (perfil interno).
+         Usuario Externo se accede directo desde el card "Abrir formulario público". */
+      window.IVCData.setPerfil('coordinador');
+      window.location.href = 'coordinador/bandeja.html';
     }
     document.getElementById('ctaStart').addEventListener('click', goStart);
     document.getElementById('ctaStart2').addEventListener('click', goStart);

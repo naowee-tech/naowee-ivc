@@ -14,183 +14,197 @@
   <link rel="stylesheet" href="../shared/tokens.css">
   <link rel="stylesheet" href="../shared/components.css">
   <link rel="stylesheet" href="../shared/shell.css">
+  <link rel="stylesheet" href="../shared/naowee-footer.css">
   <style>
-    /* Page-local styles — minimal, only for layout patterns that no DS class
-       cubre. Sin invención de naowee-* classes. */
-    .breadcrumb {
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-    .breadcrumb a { color: var(--text-secondary); }
-    .breadcrumb__sep { margin: 0 6px; color: var(--text-muted); }
+    /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
+       Hero card (info + plazo) + naowee-tabs--animated + sticky decision footer.
+       Prefijo .ivc-* para todo lo custom; sin invención .naowee-*. */
 
-    .page-title-block { margin-bottom: 4px; }
-    .page-title {
-      margin: 0;
-      font-size: 28px;
+    .page-inner { max-width: 1280px !important; }
+
+    /* Back button — pegado al borde superior izquierdo del page.
+       v1.5.4: text-decoration: none para quitar el underline del <a>. */
+    .ivc-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      margin: 0 0 6px 0;       /* v1.5.4: reducido de 14px → 6px para acercar al hero */
+      width: auto;
+      text-align: left;
+      text-decoration: none !important;
+    }
+    .ivc-back-link:hover { text-decoration: none !important; }
+    .page-inner { text-align: left; }
+
+    /* ──────────────── HERO ──────────────── */
+    .ivc-hero {
+      background: linear-gradient(135deg, #fff 0%, #fafbff 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl, 20px);
+      padding: 26px 28px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: stretch;
+      box-shadow: none;
+    }
+    @media (max-width: 900px) { .ivc-hero { grid-template-columns: 1fr; gap: 20px; } }
+
+    .ivc-hero__left { min-width: 0; }
+    .ivc-hero__rad {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent, #d74009);
+      letter-spacing: .3px;
+      margin-bottom: 6px;
+    }
+    .ivc-hero__title {
+      margin: 0 0 8px;
+      font-size: 24px;
       font-weight: 800;
-      letter-spacing: -.5px;
+      letter-spacing: -.4px;
       color: var(--text-primary);
       line-height: 1.2;
     }
-    .page-subtitle {
-      margin: 6px 0 0;
-      font-size: 14px;
+    .ivc-hero__meta {
+      font-size: 13px;
       color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    /* Info-card grid del trámite — KV pairs en 2 columnas */
-    .tramite-info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px 24px;
-    }
-    @media (max-width: 900px) { .tramite-info-grid { grid-template-columns: 1fr; } }
-    .tramite-info-grid__cell {
+      margin-bottom: 14px;
       display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .tramite-info-grid__label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: .3px;
-    }
-    .tramite-info-grid__value {
-      font-size: 14px;
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-    .tramite-info-grid__value--mono {
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      font-weight: 700;
-    }
-    .tramite-info-grid__value--warn {
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    /* Doc-row dentro de checklist (variante page-scoped del doc-upload-card) */
-    .doc-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 14px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      transition: border-color var(--duration-fast) var(--ease-in-out);
-    }
-    .doc-row + .doc-row { margin-top: 10px; }
-    .doc-row.is-cumple    { background: #f4faf5; border-color: var(--green-border); }
-    .doc-row.is-obs       { background: var(--orange-bg); border-color: var(--orange-border); }
-    .doc-row.is-no-cumple { background: var(--red-bg); border-color: var(--red-border); }
-
-    .doc-row__icon {
-      width: 38px;
-      height: 38px;
-      border-radius: var(--radius-md);
-      background: var(--bg-soft);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: var(--text-secondary);
-    }
-    .doc-row__main { flex: 1; min-width: 0; }
-    .doc-row__title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin: 0 0 4px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
+      gap: 12px;
       flex-wrap: wrap;
     }
-    .doc-row__meta {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin: 0;
+    .ivc-hero__meta > span { display: inline-flex; align-items: center; }
+    .ivc-hero__meta > span + span::before {
+      content: '·';
+      margin-right: 12px;
+      color: var(--text-muted);
     }
-    .doc-row__viewlink {
-      display: inline-block;
-      margin-top: 6px;
-      font-size: 12.5px;
-      color: var(--accent);
-      font-weight: 600;
-    }
-    .doc-row__actions {
+    .ivc-hero__badges { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Hero right — bloque de plazo (vertical separador en desktop) */
+    .ivc-hero__right {
+      border-left: 1px solid var(--border);
+      padding-left: 28px;
+      min-width: 220px;
       display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .doc-row__validation-btn {
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: center;
-      border: 1px solid var(--border-dark);
-      background: var(--surface);
-      border-radius: var(--radius-md);
-      cursor: pointer;
+      align-items: flex-start;
+    }
+    @media (max-width: 900px) {
+      .ivc-hero__right {
+        border-left: 0;
+        padding-left: 0;
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
+      }
+    }
+    .ivc-hero__right-label {
+      font-size: 11px;
+      font-weight: 700;
       color: var(--text-secondary);
-      font-size: 16px;
-      transition: all var(--duration-fast) var(--ease-in-out);
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
     }
-    .doc-row__validation-btn:hover {
-      border-color: var(--text-primary);
-      transform: translateY(-1px);
+    .ivc-hero__right-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      line-height: 1;
+      margin-bottom: 6px;
+      font-feature-settings: 'tnum';
     }
-    .doc-row__validation-btn.is-active-cumple {
-      background: var(--green);
-      color: var(--text-inverse);
-      border-color: var(--green);
-    }
-    .doc-row__validation-btn.is-active-obs {
-      background: var(--naranja);
-      color: var(--text-inverse);
-      border-color: var(--naranja);
-    }
-    .doc-row__validation-btn.is-active-no {
-      background: var(--red);
-      color: var(--text-inverse);
-      border-color: var(--red);
+    .ivc-hero__right-value--positive { color: var(--green, #1f8923); }
+    .ivc-hero__right-value--caution  { color: var(--accent, #d74009); }
+    .ivc-hero__right-value--negative { color: #c0392b; }
+    .ivc-hero__right-sub {
+      font-size: 12.5px;
+      color: var(--text-secondary);
     }
 
-    .doc-row__obs-input {
-      margin-top: 8px;
-      display: none;
+    /* ──────────────── TABS CARD ──────────────── */
+    /* v1.5.4 rev2 (25/05/2026): sticky footer removido → no necesitamos
+       margin-bottom: 100px. overflow:visible para que los tooltips canónicos
+       de los toggle btns no queden recortados. */
+    .ivc-tabs-card {
+      margin-top: 18px;
+      margin-bottom: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl, 20px);
+      overflow: visible;
     }
-    .doc-row.is-obs .doc-row__obs-input,
-    .doc-row.is-no-cumple .doc-row__obs-input {
-      display: block;
+    /* Force overflow visible para padres del tooltip + z-index alto */
+    .ivc-tabs-card,
+    .ivc-tab-panel,
+    .ivc-ra-list,
+    .ivc-ra-item,
+    .ivc-ra-toggle { overflow: visible !important; }
+    .ivc-ra-toggle .naowee-tooltip__content { z-index: 9999 !important; }
+    /* v1.5.4 rev3 (25/05/2026):
+       - .naowee-tabs con padding lateral interno (los tabs no quedan pegados al borde)
+       - tabs background transparent (sin fill crema del DS, evita conflicto visual con el indicator)
+       - .naowee-tabs__indicator con z-index sobre el border-top del panel (cubre la línea gris bajo el tab activo)
+       - .ivc-tab-panel margin-top: -1px para que su border-top "abrace" exactamente con la base del .naowee-tabs */
+    .ivc-tabs-card > .naowee-tabs {
+      padding: 8px 16px 0;
+      border-bottom: 0;
+      background: transparent;
+      position: relative;
+      z-index: 1;
+    }
+    .ivc-tabs-card > .naowee-tabs > .naowee-tab {
+      padding: 12px 18px;
+      background: transparent !important;     /* override del fill mute-idle del DS */
+      border-radius: var(--radius-sm, 6px) var(--radius-sm, 6px) 0 0;
+      transition: background var(--duration-fast) var(--ease-in-out), color var(--duration-fast) var(--ease-in-out);
+    }
+    .ivc-tabs-card > .naowee-tabs > .naowee-tab:hover:not(.naowee-tab--selected) {
+      background: var(--bg-soft, #f5f6fa) !important;   /* hover gris claro, no naranja */
+      color: var(--text-primary);
+    }
+    .ivc-tabs-card > .naowee-tabs > .naowee-tab--selected {
+      color: var(--accent, #d74009);
+    }
+    /* Indicator: garantizar color accent + z-index sobre el border-top del panel */
+    .ivc-tabs-card > .naowee-tabs > .naowee-tabs__indicator {
+      background: var(--accent, #d74009);
+      z-index: 2;
+      bottom: -1px;   /* baja 1px para cubrir el border-top del panel = sin hueco */
+      height: 3px;
+      border-radius: 3px 3px 0 0;
     }
 
-    /* Progreso checklist */
-    .checklist-progress {
+    .ivc-tab-panel {
+      padding: 24px 28px;
+      border-top: 1px solid var(--border);
+    }
+    .ivc-tab-panel[hidden] { display: none; }
+
+    /* ──────────────── TAB: Documentos ──────────────── */
+    /* v1.5.4: barra progresiva tipo SEMÁFORO — el fill cambia de rojo →
+       naranja → verde según el progreso. data-progress en el JS escribe
+       la clase modifier en el contenedor. */
+    .ivc-checklist-progress {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       padding: 14px 18px;
       background: var(--bg-soft);
       border-radius: var(--radius-md);
     }
-    .checklist-progress__text {
+    .ivc-checklist-progress__text {
       font-size: 13.5px;
       font-weight: 600;
       color: var(--text-primary);
     }
-    .checklist-progress__bar {
+    .ivc-checklist-progress__bar {
       flex: 1;
       max-width: 280px;
       height: 6px;
@@ -198,31 +212,321 @@
       border-radius: 3px;
       overflow: hidden;
     }
-    .checklist-progress__fill {
+    .ivc-checklist-progress__fill {
       height: 100%;
-      background: var(--accent);
-      transition: width var(--duration-normal) var(--ease-in-out);
+      background: #c0392b;   /* rojo por default (0%) */
+      transition: width var(--duration-normal) var(--ease-in-out),
+                  background var(--duration-normal) var(--ease-in-out);
     }
+    /* Semáforo según data-progress en el wrapper */
+    .ivc-checklist-progress[data-progress="low"]    .ivc-checklist-progress__fill { background: #c0392b; }                    /* 0-33%  rojo */
+    .ivc-checklist-progress[data-progress="medium"] .ivc-checklist-progress__fill { background: var(--accent, #d74009); }     /* 34-66% naranja */
+    .ivc-checklist-progress[data-progress="high"]   .ivc-checklist-progress__fill { background: var(--green, #1f8923); }      /* 67-99% verde tenue */
+    .ivc-checklist-progress[data-progress="full"]   .ivc-checklist-progress__fill { background: var(--green, #1f8923); }      /* 100%   verde */
 
-    /* Footer sticky con botones de decisión */
-    .decision-footer {
-      position: sticky;
-      bottom: 0;
+    /* Patrón canónico ra-item + ra-toggle (port from revisar-area.html v2.0.3,
+       prefijado .ivc-ra-* para scope discipline) */
+    .ivc-ra-list {
       background: var(--surface);
-      border-top: 1px solid var(--border);
-      padding: 14px 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .ivc-ra-item {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .ivc-ra-item:last-child { border-bottom: 0; }
+    .ivc-ra-item:hover { background: #fafbff; }
+    .ivc-ra-item__num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-soft, #f5f6fa);
+      color: var(--text-secondary);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      margin: 24px -28px -28px;
-      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
-      z-index: 10;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background .15s, color .15s;
     }
-    .decision-footer__right { display: flex; gap: 10px; }
+    .ivc-ra-item.is-cumple   .ivc-ra-item__num { background: var(--green-bg);  color: var(--green); }
+    .ivc-ra-item.is-nocumple .ivc-ra-item__num { background: var(--red-bg);    color: #c01818; }
+    .ivc-ra-item.is-obs      .ivc-ra-item__num { background: var(--orange-bg); color: var(--accent); }
 
-    /* Acto preview en modal */
-    .acto-preview {
+    .ivc-ra-item__main { min-width: 0; }
+    .ivc-ra-item__text {
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: var(--text-primary);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .ivc-ra-item__ref {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    /* v1.5.4: "Descargar documento" como ghost button (label naranja, hover bg naranja claro) */
+    .ivc-ra-item__viewlink {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 4px 10px;
+      font-size: 12.5px;
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius-sm, 6px);
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+    .ivc-ra-item__viewlink:hover,
+    .ivc-ra-item__viewlink:focus-visible {
+      background: var(--orange-bg, #fff3e6);
+      color: var(--accent);
+      outline: none;
+      text-decoration: none;
+    }
+    .ivc-ra-item__viewlink svg { width: 14px; height: 14px; }
+    .ivc-ra-item__obs-input { margin-top: 8px; display: none; max-width: 520px; }
+    .ivc-ra-item.is-obs .ivc-ra-item__obs-input,
+    .ivc-ra-item.is-nocumple .ivc-ra-item__obs-input { display: block; }
+
+    .ivc-ra-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: transparent;
+      border: 0;
+      padding: 0;
+    }
+    .ivc-ra-toggle__btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      min-width: 0;
+      font-family: inherit;
+      background: transparent;
+      border: 0;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .12s, color .12s, transform .12s;
+      flex-shrink: 0;
+    }
+    .ivc-ra-toggle__btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .ivc-ra-toggle__btn[data-r="cumple"]   { color: var(--green, #1f8923); }
+    .ivc-ra-toggle__btn[data-r="nocumple"] { color: #c01818; }
+    .ivc-ra-toggle__btn[data-r="obs"]      { color: var(--accent, #d74009); }
+    .ivc-ra-toggle__btn[data-r="cumple"]:hover    { background: var(--green-bg, #e6f4e7); }
+    .ivc-ra-toggle__btn[data-r="nocumple"]:hover  { background: var(--red-bg, #fff0ee); }
+    .ivc-ra-toggle__btn[data-r="obs"]:hover       { background: var(--orange-bg, #fff3e6); }
+    .ivc-ra-toggle__btn:active { transform: scale(.94); }
+    .ivc-ra-toggle__btn.is-active--cumple   { background: var(--green-bg, #e6f4e7);  color: #156d18; }
+    .ivc-ra-toggle__btn.is-active--nocumple { background: var(--red-bg, #fff0ee);    color: #8a1212; }
+    .ivc-ra-toggle__btn.is-active--obs      { background: var(--orange-bg, #fff3e6); color: var(--accent); }
+
+    /* ──────────────── TAB: Datos ──────────────── */
+    .ivc-data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px 32px;
+    }
+    @media (max-width: 900px) { .ivc-data-grid { grid-template-columns: 1fr; } }
+    .ivc-data-grid__cell { display: flex; flex-direction: column; gap: 4px; }
+    .ivc-data-grid__label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    .ivc-data-grid__value {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .ivc-data-grid__value--mono {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-weight: 700;
+    }
+
+    /* ──────────────── TAB: Historial — Timeline canónico .ivc-* ──────────────── */
+    .ivc-timeline { list-style: none; margin: 0; padding: 0 0 4px 0; position: relative; }
+    .ivc-timeline::before {
+      content: '';
+      position: absolute;
+      left: 9px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: var(--border);
+    }
+    .ivc-timeline__item {
+      position: relative;
+      padding: 0 0 18px 32px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+    .ivc-timeline__item:last-child { padding-bottom: 0; }
+    .ivc-timeline__dot {
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent, #d74009);
+      box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--accent, #d74009);
+    }
+    .ivc-timeline__item--muted .ivc-timeline__dot {
+      background: var(--text-muted, #9ca3af);
+      box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--border-dark, #d0d4e6);
+    }
+    .ivc-timeline__item--positive .ivc-timeline__dot {
+      background: var(--green, #1f8923);
+      box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--green, #1f8923);
+    }
+    .ivc-timeline__item--caution .ivc-timeline__dot {
+      background: var(--accent, #d74009);
+      box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--accent, #d74009);
+    }
+    .ivc-timeline__item--negative .ivc-timeline__dot {
+      background: #c01818;
+      box-shadow: 0 0 0 3px #fff, 0 0 0 4px #c01818;
+    }
+    .ivc-timeline__item--info .ivc-timeline__dot {
+      background: var(--blue-info, #1f78d1);
+      box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--blue-info, #1f78d1);
+    }
+    .ivc-timeline__title {
+      display: block;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      margin-bottom: 2px;
+    }
+    .ivc-timeline__meta {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .ivc-timeline__actor {
+      display: block;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* v1.5.4 rev2 (25/05/2026): sticky footer con 3 botones REMOVIDO.
+       Doug: los 3 botones funcionaban como "leyenda redundante". Ahora el
+       resultado se infiere del checklist y se materializa con 1 solo CTA
+       "Finalizar revisión" al final del tab Documentos (inline, no fixed). */
+    .ivc-finalizar-row {
+      display: flex;
+      justify-content: flex-end;
+      padding: 18px 0 0 0;
+      margin-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .ivc-finalizar-row__hint {
+      flex: 1;
+      align-self: center;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    .ivc-finalizar-row__btn {
+      flex-shrink: 0;
+    }
+    /* El botón se colorea según el resultado calculado del checklist */
+    .ivc-finalizar-row__btn[data-result="cumple"] {
+      background: #15803d !important;
+      border-color: #15803d !important;
+      color: #fff !important;
+    }
+    .ivc-finalizar-row__btn[data-result="cumple"]:hover { background: #166534 !important; }
+    .ivc-finalizar-row__btn[data-result="parcial"] {
+      background: var(--accent) !important;
+      border-color: var(--accent) !important;
+      color: #fff !important;
+    }
+    .ivc-finalizar-row__btn[data-result="parcial"]:hover { background: #b8350a !important; }
+    .ivc-finalizar-row__btn[data-result="no"] {
+      background: #c0392b !important;
+      border-color: #c0392b !important;
+      color: #fff !important;
+    }
+    .ivc-finalizar-row__btn[data-result="no"]:hover { background: #9d2f23 !important; }
+    .ivc-finalizar-row__btn svg { stroke: #fff !important; color: #fff !important; }
+    .ivc-finalizar-row__btn:disabled {
+      background: var(--bg-soft) !important;
+      border-color: var(--border) !important;
+      color: var(--text-muted) !important;
+      cursor: not-allowed;
+    }
+    .ivc-finalizar-row__btn:disabled svg { stroke: var(--text-muted) !important; }
+
+    /* Decision button color variants — full contrast (#fff text + #fff stroke
+       on SVG) sobre los 3 fondos semánticos: verde / naranja / rojo. */
+    .ivc-btn-cumple {
+      background: #15803d !important;
+      border-color: #15803d !important;
+      color: #fff !important;
+    }
+    .ivc-btn-cumple:hover:not(:disabled),
+    .ivc-btn-cumple:focus-visible {
+      background: #166534 !important;
+      border-color: #166534 !important;
+      color: #fff !important;
+    }
+    .ivc-btn-cumple svg { stroke: #fff !important; color: #fff !important; }
+
+    .ivc-btn-parcial {
+      background: var(--accent, #d74009) !important;
+      border-color: var(--accent, #d74009) !important;
+      color: #fff !important;
+    }
+    .ivc-btn-parcial:hover:not(:disabled),
+    .ivc-btn-parcial:focus-visible {
+      background: #b8350a !important;
+      border-color: #b8350a !important;
+      color: #fff !important;
+    }
+    .ivc-btn-parcial svg { stroke: #fff !important; color: #fff !important; }
+
+    .ivc-btn-no {
+      background: #c0392b !important;
+      border-color: #c0392b !important;
+      color: #fff !important;
+    }
+    .ivc-btn-no:hover:not(:disabled),
+    .ivc-btn-no:focus-visible {
+      background: #9d2f23 !important;
+      border-color: #9d2f23 !important;
+      color: #fff !important;
+    }
+    .ivc-btn-no svg { stroke: #fff !important; color: #fff !important; }
+
+    /* Vista previa de acto (modal) — paridad con la versión anterior */
+    .ivc-acto-preview {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
@@ -233,35 +537,32 @@
       line-height: 1.65;
       color: var(--text-primary);
     }
-    .acto-preview__head {
+    .ivc-acto-preview__head {
       text-align: center;
       margin-bottom: 18px;
       padding-bottom: 14px;
       border-bottom: 2px solid var(--text-primary);
     }
-    .acto-preview__ministerio {
+    .ivc-acto-preview__ministerio {
       font-weight: 700;
       font-size: 13px;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: var(--azul);
     }
-    .acto-preview__num {
+    .ivc-acto-preview__num {
       margin: 14px 0 4px;
       font-weight: 700;
       font-size: 14px;
     }
-    .acto-preview__por-la-cual {
+    .ivc-acto-preview__por-la-cual {
       font-style: italic;
       font-size: 13px;
       color: var(--text-secondary);
       margin: 0 0 18px;
     }
-    .acto-preview__body p {
-      margin: 0 0 10px;
-      text-align: justify;
-    }
-    .acto-preview__firma {
+    .ivc-acto-preview__body p { margin: 0 0 10px; text-align: justify; }
+    .ivc-acto-preview__firma {
       margin-top: 20px;
       padding-top: 20px;
       border-top: 1px dashed var(--border);
@@ -271,20 +572,29 @@
       font-size: 12.5px;
     }
 
-    /* Datos auto-generados */
-    .auto-data-grid {
+    .ivc-section-title {
+      margin: 24px 0 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .ivc-section-title:first-child { margin-top: 0; }
+
+    .ivc-auto-data {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin-top: 14px;
+      margin-top: 8px;
     }
-    @media (max-width: 700px) { .auto-data-grid { grid-template-columns: 1fr; } }
-    .auto-data-grid__cell {
+    @media (max-width: 700px) { .ivc-auto-data { grid-template-columns: 1fr; } }
+    .ivc-auto-data__cell {
       background: var(--bg-soft);
       border-radius: var(--radius-md);
       padding: 10px 14px;
     }
-    .auto-data-grid__label {
+    .ivc-auto-data__label {
       font-size: 10.5px;
       font-weight: 600;
       color: var(--text-secondary);
@@ -293,23 +603,14 @@
       display: block;
       margin-bottom: 2px;
     }
-    .auto-data-grid__value {
+    .ivc-auto-data__value {
       font-size: 13px;
       font-weight: 600;
       color: var(--text-primary);
     }
-    .auto-data-grid__value--mono {
+    .ivc-auto-data__value--mono {
       font-family: ui-monospace, SFMono-Regular, monospace;
     }
-
-    /* Section title generic — page scoped */
-    .section-title {
-      margin: 24px 0 12px;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    .section-title:first-child { margin-top: 0; }
   </style>
 </head>
 <body>
@@ -319,173 +620,84 @@
   <template id="page-content">
     <div class="page-inner">
 
-      <!-- Breadcrumb -->
-      <nav class="breadcrumb" aria-label="Ruta de navegación">
-        <a href="#">Mi bandeja</a>
-        <span class="breadcrumb__sep">›</span>
-        <span>Validación IVC-2026-001</span>
-      </nav>
+      <!-- Back -->
+      <a href="bandeja.html" class="naowee-btn naowee-btn--mute naowee-btn--small ivc-back-link" id="btnBack">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Volver a la bandeja
+      </a>
 
-      <header class="page-title-block">
-        <h1 class="page-title">Validación del trámite IVC-2026-001</h1>
-        <p class="page-subtitle">Otorgamiento de Reconocimiento Deportivo — Liga de Atletismo de Bolívar</p>
-      </header>
-
-      <!-- Info card del trámite -->
-      <section class="naowee-card" style="margin-top: 18px; padding: 22px 24px;">
-        <div class="naowee-card__header">
-          <div>
-            <h2 class="naowee-card__title">Datos del trámite</h2>
-            <p class="naowee-card__subtitle">Información radicada por el organismo deportivo.</p>
-          </div>
-        </div>
-        <div class="naowee-card__body" style="padding-top: 14px;">
-          <div class="tramite-info-grid">
-            <div class="tramite-info-grid__cell">
-              <span class="tramite-info-grid__label">Radicado</span>
-              <span class="tramite-info-grid__value tramite-info-grid__value--mono">IVC-2026-001</span>
-            </div>
-            <div class="tramite-info-grid__cell">
-              <span class="tramite-info-grid__label">Tipo</span>
-              <span class="tramite-info-grid__value">Otorgamiento de Reconocimiento Deportivo</span>
-            </div>
-            <div class="tramite-info-grid__cell">
-              <span class="tramite-info-grid__label">Organismo</span>
-              <span class="tramite-info-grid__value">Liga de Atletismo de Bolívar <span style="color:var(--text-secondary); font-weight:400;">(NIT 800.245.678-3)</span></span>
-            </div>
-            <div class="tramite-info-grid__cell">
-              <span class="tramite-info-grid__label">Disciplina</span>
-              <span class="tramite-info-grid__value">Atletismo</span>
-            </div>
-            <div class="tramite-info-grid__cell">
-              <span class="tramite-info-grid__label">Fecha radicación</span>
-              <span class="tramite-info-grid__value">21 may 2026</span>
-            </div>
-            <div class="tramite-info-grid__cell">
-              <span class="tramite-info-grid__label">Asignado a mí</span>
-              <span class="tramite-info-grid__value">21 may 2026, 14:32 <span style="color:var(--text-muted); font-weight:400;">(hace 15 min)</span></span>
-            </div>
-            <div class="tramite-info-grid__cell">
-              <span class="tramite-info-grid__label">Plazo restante</span>
-              <span class="tramite-info-grid__value tramite-info-grid__value--warn">14 días hábiles</span>
-            </div>
-            <div class="tramite-info-grid__cell">
-              <span class="tramite-info-grid__label">Estado actual</span>
-              <span class="tramite-info-grid__value"><span class="naowee-badge naowee-badge--informative">En validación</span></span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Documentos cargados (checklist) -->
-      <section class="naowee-card" style="margin-top: 18px; padding: 22px 24px 28px;" data-tour="checklist-documentos">
-        <div class="naowee-card__header">
-          <div>
-            <h2 class="naowee-card__title">Documentos cargados</h2>
-            <p class="naowee-card__subtitle">Decreto 1387/1970 — 7 documentos. Marca cada uno como Cumple, Observación o No cumple.</p>
-          </div>
-        </div>
-        <div class="naowee-card__body" style="padding-top: 16px;">
-          <div class="checklist-progress">
-            <span class="checklist-progress__text"><strong id="docsValidadosCount">0</strong> de 7 documentos validados</span>
-            <div class="checklist-progress__bar"><div class="checklist-progress__fill" id="progressFill" style="width:0%"></div></div>
-          </div>
-          <div id="docsList"></div>
-        </div>
-
-        <!-- Decision footer sticky con todos los botones -->
-        <div class="decision-footer" data-tour="botones-decision">
-          <button type="button" class="naowee-btn naowee-btn--mute" id="btnBack">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            Volver a bandeja
-          </button>
-          <div class="decision-footer__right">
-            <button type="button" class="naowee-btn naowee-btn--quiet" id="btnNoCumple" disabled>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-              No cumple
-            </button>
-            <button type="button" class="naowee-btn naowee-btn--quiet" id="btnParcial" disabled>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              Cumplimiento parcial
-            </button>
-            <button type="button" class="naowee-btn naowee-btn--loud" id="btnCumple" disabled>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Cumple totalmente
-            </button>
-          </div>
-        </div>
-      </section>
+      <!-- Slot: hero + tabs cards. JS inyecta. -->
+      <div id="workspaceContent"></div>
 
     </div>
   </template>
 
-  <!-- ═══ Modal: Generar Acto Cumple (HU-6) ═══ -->
+  <!-- Modal: Generar Acto Cumple -->
   <div class="naowee-modal-overlay" id="modalCumpleOverlay" role="dialog" aria-modal="true" aria-labelledby="modalCumpleTitle">
     <div class="naowee-modal naowee-modal--scrollable" style="max-width: 720px;">
       <div class="naowee-modal__header">
         <div class="naowee-modal__title-group">
-          <h2 class="naowee-modal__title" id="modalCumpleTitle">Generar Acto Administrativo</h2>
-          <p class="naowee-modal__subtitle">Reconocimiento Deportivo — Cumplimiento total</p>
+          <h2 class="naowee-modal__title" id="modalCumpleTitle">Generar acto administrativo</h2>
+          <p class="naowee-modal__subtitle" id="modalCumpleSub">Reconocimiento Deportivo — Cumplimiento total</p>
         </div>
         <button type="button" class="naowee-modal__dismiss" id="modalCumpleClose" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <div class="naowee-modal__body" data-tour="acto-preview">
+      <div class="naowee-modal__body">
 
         <div class="naowee-message naowee-message--informative">
-          <div class="naowee-message__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+            <span class="naowee-message__title">Acto pendiente de firma</span>
           </div>
-          <div class="naowee-message__content">
-            <p class="naowee-message__text">
-              Se generará un acto administrativo con numeración consecutiva automática. <strong>El acto NO se enviará automáticamente;</strong> deberá ser revisado y firmado por el Director del IVC en la siguiente fase.
-            </p>
+          <div class="naowee-message__text">
+            Se generará un acto administrativo con numeración consecutiva automática. El acto NO se enviará automáticamente; deberá ser firmado por el Director del IVC en la siguiente fase.
           </div>
         </div>
 
-        <h3 class="section-title" style="margin-top: 20px;">Vista previa del acto</h3>
-        <article class="acto-preview">
-          <header class="acto-preview__head">
-            <div class="acto-preview__ministerio">República de Colombia · Ministerio del Deporte</div>
-            <p class="acto-preview__num">RESOLUCIÓN NÚMERO <span id="cumpleNumActo">2026-001</span> DE 2026</p>
-            <p class="acto-preview__por-la-cual">"Por la cual se otorga el Reconocimiento Deportivo a la Liga de Atletismo de Bolívar"</p>
+        <h3 class="ivc-section-title">Vista previa del acto</h3>
+        <article class="ivc-acto-preview">
+          <header class="ivc-acto-preview__head">
+            <div class="ivc-acto-preview__ministerio">República de Colombia · Ministerio del Deporte</div>
+            <p class="ivc-acto-preview__num">RESOLUCIÓN NÚMERO <span id="cumpleNumActo">—</span> DE 2026</p>
+            <p class="ivc-acto-preview__por-la-cual" id="cumplePorLaCual">"Por la cual se otorga el Reconocimiento Deportivo"</p>
           </header>
-          <div class="acto-preview__body">
+          <div class="ivc-acto-preview__body">
             <p><strong>EL MINISTRO DEL DEPORTE</strong>, en uso de sus facultades legales, y en particular las conferidas por el Decreto 1387 de 1970, la Ley 181 de 1995 y el Decreto 1085 de 2015,</p>
             <p><strong>CONSIDERANDO:</strong></p>
-            <p>1. Que la Liga de Atletismo de Bolívar, identificada con NIT 800.245.678-3, radicó solicitud de Otorgamiento de Reconocimiento Deportivo con número IVC-2026-001 el día 21 de mayo de 2026.</p>
-            <p>2. Que la documentación aportada cumple con los requisitos exigidos por el Artículo 2.1.1.2 del Decreto 1387 de 1970.</p>
-            <p>3. Que el Profesional asignado a la validación verificó la completitud y conformidad de los siete (7) documentos requeridos.</p>
+            <p id="cumpleConsiderando">1. Que el organismo radicó la solicitud y la documentación aportada cumple con los requisitos exigidos por el Artículo 2.1.1.2 del Decreto 1387 de 1970.</p>
             <p><strong>RESUELVE:</strong></p>
-            <p><strong>ARTÍCULO PRIMERO.</strong> Otorgar Reconocimiento Deportivo a la Liga de Atletismo de Bolívar, en los términos de la legislación vigente.</p>
+            <p><strong>ARTÍCULO PRIMERO.</strong> Otorgar Reconocimiento Deportivo en los términos de la legislación vigente.</p>
             <p><strong>ARTÍCULO SEGUNDO.</strong> Disponer la inscripción en el Registro Nacional Deportivo.</p>
           </div>
-          <footer class="acto-preview__firma">
-            [Por firmar electrónicamente por el Director del IVC — Fase 3]
+          <footer class="ivc-acto-preview__firma">
+            [Por firmar electrónicamente por el Director del IVC]
           </footer>
         </article>
 
-        <h3 class="section-title">Datos auto-generados</h3>
-        <div class="auto-data-grid">
-          <div class="auto-data-grid__cell">
-            <span class="auto-data-grid__label">Número de acto</span>
-            <span class="auto-data-grid__value auto-data-grid__value--mono" id="cumpleNumActo2">2026-001</span>
+        <h3 class="ivc-section-title">Datos auto-generados</h3>
+        <div class="ivc-auto-data">
+          <div class="ivc-auto-data__cell">
+            <span class="ivc-auto-data__label">Número de acto</span>
+            <span class="ivc-auto-data__value ivc-auto-data__value--mono" id="cumpleNumActo2">—</span>
           </div>
-          <div class="auto-data-grid__cell">
-            <span class="auto-data-grid__label">Fecha de generación</span>
-            <span class="auto-data-grid__value" id="cumpleFechaGen">—</span>
+          <div class="ivc-auto-data__cell">
+            <span class="ivc-auto-data__label">Fecha de generación</span>
+            <span class="ivc-auto-data__value" id="cumpleFechaGen">—</span>
           </div>
-          <div class="auto-data-grid__cell">
-            <span class="auto-data-grid__label">Profesional responsable</span>
-            <span class="auto-data-grid__value">Carlos Pérez</span>
+          <div class="ivc-auto-data__cell">
+            <span class="ivc-auto-data__label">Profesional responsable</span>
+            <span class="ivc-auto-data__value">Carlos Pérez</span>
           </div>
         </div>
 
       </div>
       <div class="naowee-modal__footer naowee-modal__footer--end">
         <button type="button" class="naowee-btn naowee-btn--mute" id="modalCumpleCancel">Cancelar</button>
-        <button type="button" class="naowee-btn naowee-btn--loud" id="modalCumpleConfirm">
+        <button type="button" class="naowee-btn naowee-btn--loud ivc-btn-cumple" id="modalCumpleConfirm">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Confirmar y generar acto
         </button>
@@ -493,105 +705,158 @@
     </div>
   </div>
 
-  <!-- ═══ Modal: Generar Acto No Cumple (HU-4) ═══ -->
+  <!-- Modal: Cumplimiento parcial — devolver para subsanación -->
+  <div class="naowee-modal-overlay" id="modalParcialOverlay" role="dialog" aria-modal="true" aria-labelledby="modalParcialTitle">
+    <div class="naowee-modal" style="max-width: 560px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title" id="modalParcialTitle">Devolver para subsanación</h2>
+          <p class="naowee-modal__subtitle">El organismo deberá completar las observaciones marcadas.</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="modalParcialClose" aria-label="Cerrar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body">
+        <div class="naowee-message naowee-message--caution">
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <span class="naowee-message__title">Cumplimiento parcial</span>
+          </div>
+          <div class="naowee-message__text">
+            El trámite volverá al organismo con las observaciones marcadas. El plazo se pausa hasta que el organismo subsane.
+          </div>
+        </div>
+
+        <h3 class="ivc-section-title">Observaciones generales</h3>
+        <div class="naowee-textfield naowee-textfield--textarea">
+          <div class="naowee-textfield__input-wrap">
+            <textarea class="naowee-textfield__input" id="parcialObsText" rows="4" placeholder="Describe brevemente lo que falta corregir para que el organismo pueda subsanar."></textarea>
+          </div>
+        </div>
+
+        <h3 class="ivc-section-title">Documentos a subsanar</h3>
+        <div id="docsParcialList" style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">—</div>
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="modalParcialCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="modalParcialConfirm">Enviar a subsanación</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: No Cumple -->
   <div class="naowee-modal-overlay" id="modalNoCumpleOverlay" role="dialog" aria-modal="true" aria-labelledby="modalNoCumpleTitle">
     <div class="naowee-modal naowee-modal--scrollable" style="max-width: 720px;">
       <div class="naowee-modal__header">
         <div class="naowee-modal__title-group">
-          <h2 class="naowee-modal__title" id="modalNoCumpleTitle">Generar Acto de No Cumplimiento</h2>
+          <h2 class="naowee-modal__title" id="modalNoCumpleTitle">Generar acto de no cumplimiento</h2>
           <p class="naowee-modal__subtitle">Reconocimiento Deportivo — Rechazo del trámite</p>
         </div>
         <button type="button" class="naowee-modal__dismiss" id="modalNoCumpleClose" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="naowee-modal__body">
 
-        <div class="naowee-message naowee-message--caution">
-          <div class="naowee-message__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="naowee-message naowee-message--negative">
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </span>
+            <span class="naowee-message__title">Rechazo del trámite</span>
           </div>
-          <div class="naowee-message__content">
-            <p class="naowee-message__text">
-              Este acto formaliza el rechazo del trámite. El organismo recibirá notificación del cambio de estado y registrará la trazabilidad completa.
-            </p>
+          <div class="naowee-message__text">
+            Este acto formaliza el rechazo del trámite. El organismo recibirá notificación del cambio de estado y se registrará la trazabilidad completa.
           </div>
         </div>
 
-        <h3 class="section-title">Causales de no cumplimiento</h3>
+        <h3 class="ivc-section-title">Causales de no cumplimiento</h3>
         <div class="naowee-textfield naowee-textfield--textarea">
-          <span class="naowee-textfield__label">Descripción del Profesional</span>
           <div class="naowee-textfield__input-wrap">
-            <textarea class="naowee-textfield__input"
-                      id="causalesText"
-                      rows="4"
-                      placeholder="Describe las causales generales del no cumplimiento..."></textarea>
+            <textarea class="naowee-textfield__input" id="causalesText" rows="4" placeholder="Describe las causales generales del no cumplimiento..."></textarea>
           </div>
-          <p class="ivc-field-helper" style="margin: 6px 0 0; font-size: 12px; color: var(--text-secondary);">Esta descripción quedará registrada en el Acto Administrativo y será notificada al organismo.</p>
         </div>
 
-        <h3 class="section-title">Documentos que no cumplen</h3>
-        <div id="docsNoCumpleList" style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">
-          —
-        </div>
+        <h3 class="ivc-section-title">Documentos que no cumplen</h3>
+        <div id="docsNoCumpleList" style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">—</div>
 
-        <h3 class="section-title">Vista previa del acto</h3>
-        <article class="acto-preview">
-          <header class="acto-preview__head">
-            <div class="acto-preview__ministerio">República de Colombia · Ministerio del Deporte</div>
-            <p class="acto-preview__num">RESOLUCIÓN NÚMERO <span id="noCumpleNumActo">2026-002</span> DE 2026 — NO CUMPLIMIENTO</p>
-            <p class="acto-preview__por-la-cual">"Por la cual se rechaza el trámite de Otorgamiento de Reconocimiento Deportivo presentado por la Liga de Atletismo de Bolívar"</p>
+        <h3 class="ivc-section-title">Vista previa del acto</h3>
+        <article class="ivc-acto-preview">
+          <header class="ivc-acto-preview__head">
+            <div class="ivc-acto-preview__ministerio">República de Colombia · Ministerio del Deporte</div>
+            <p class="ivc-acto-preview__num">RESOLUCIÓN NÚMERO <span id="noCumpleNumActo">—</span> DE 2026 — NO CUMPLIMIENTO</p>
+            <p class="ivc-acto-preview__por-la-cual" id="noCumplePorLaCual">"Por la cual se rechaza el trámite de Otorgamiento de Reconocimiento Deportivo"</p>
           </header>
-          <div class="acto-preview__body">
+          <div class="ivc-acto-preview__body">
             <p><strong>EL MINISTRO DEL DEPORTE</strong>, en uso de sus facultades legales,</p>
             <p><strong>CONSIDERANDO:</strong></p>
-            <p>1. Que la Liga de Atletismo de Bolívar radicó solicitud IVC-2026-001 el 21 de mayo de 2026.</p>
-            <p>2. Que la documentación aportada presenta inconsistencias frente a los requisitos exigidos por el Artículo 2.1.1.2 del Decreto 1387 de 1970.</p>
+            <p>1. Que la documentación aportada presenta inconsistencias frente a los requisitos exigidos por el Artículo 2.1.1.2 del Decreto 1387 de 1970.</p>
             <p><strong>RESUELVE:</strong></p>
-            <p><strong>ARTÍCULO PRIMERO.</strong> Rechazar el trámite de Otorgamiento de Reconocimiento Deportivo radicado bajo el número IVC-2026-001.</p>
+            <p><strong>ARTÍCULO PRIMERO.</strong> Rechazar el trámite.</p>
             <p><strong>ARTÍCULO SEGUNDO.</strong> Notificar al organismo el presente acto y la trazabilidad asociada.</p>
           </div>
-          <footer class="acto-preview__firma">
-            [Por firmar electrónicamente por el Director del IVC — Fase 3]
+          <footer class="ivc-acto-preview__firma">
+            [Por firmar electrónicamente por el Director del IVC]
           </footer>
         </article>
 
-        <h3 class="section-title">Datos auto-generados</h3>
-        <div class="auto-data-grid">
-          <div class="auto-data-grid__cell">
-            <span class="auto-data-grid__label">Número de acto</span>
-            <span class="auto-data-grid__value auto-data-grid__value--mono" id="noCumpleNumActo2">2026-002</span>
+        <h3 class="ivc-section-title">Datos auto-generados</h3>
+        <div class="ivc-auto-data">
+          <div class="ivc-auto-data__cell">
+            <span class="ivc-auto-data__label">Número de acto</span>
+            <span class="ivc-auto-data__value ivc-auto-data__value--mono" id="noCumpleNumActo2">—</span>
           </div>
-          <div class="auto-data-grid__cell">
-            <span class="auto-data-grid__label">Fecha de generación</span>
-            <span class="auto-data-grid__value" id="noCumpleFechaGen">—</span>
+          <div class="ivc-auto-data__cell">
+            <span class="ivc-auto-data__label">Fecha de generación</span>
+            <span class="ivc-auto-data__value" id="noCumpleFechaGen">—</span>
           </div>
-          <div class="auto-data-grid__cell">
-            <span class="auto-data-grid__label">Profesional responsable</span>
-            <span class="auto-data-grid__value">Carlos Pérez</span>
+          <div class="ivc-auto-data__cell">
+            <span class="ivc-auto-data__label">Profesional responsable</span>
+            <span class="ivc-auto-data__value">Carlos Pérez</span>
           </div>
         </div>
 
       </div>
       <div class="naowee-modal__footer naowee-modal__footer--end">
         <button type="button" class="naowee-btn naowee-btn--mute" id="modalNoCumpleCancel">Cancelar</button>
-        <button type="button" class="naowee-btn naowee-btn--loud" id="modalNoCumpleConfirm">
+        <button type="button" class="naowee-btn naowee-btn--loud ivc-btn-no" id="modalNoCumpleConfirm">
           Confirmar y generar acto
         </button>
       </div>
     </div>
   </div>
 
+  <!-- v1.5.4 rev2 (25/05/2026): Sticky footer con 3 botones REMOVIDO.
+       El CTA "Finalizar revisión" inline al final del tab Documentos lo
+       reemplaza. Se renderiza desde JS en renderDocsTab. -->
+
   <!-- Scripts -->
   <script src="../shared/data.js"></script>
   <script src="../shared/shell.js"></script>
-  <script src="../shared/demo-tour.js"></script>
+  <script src="../shared/ivc-store.js"></script>
+  <script src="../shared/naowee-footer.js" defer></script>
   <script>
-    /* State local del workspace */
+    /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
-      docs: [],         /* [{id, orden, titulo, obligatorio, validacion: 'cumple'|'obs'|'no'|null, observacion: ''}] */
-      decision: null    /* 'Cumple' | 'NoCumple' | 'Parcial' | null */
+      tramite: null,
+      docs: [],        /* [{id, orden, titulo, obligatorio, validacion, observacion}] */
+      activeTab: 'documentos'
     };
+
+    /* Catálogo de 7 documentos del Decreto 1387/1970 — copia local read-only.
+       Si window.IVCData.DOCUMENTOS_DECRETO_1387 está disponible, se prefiere. */
+    var DOCS_FALLBACK = [
+      { id: 'acta-constitucion',     orden: 1, titulo: 'Copia del Acta de Constitución',                obligatorio: true  },
+      { id: 'lista-afiliados',       orden: 2, titulo: 'Lista de afiliados con nóminas de Directivos', obligatorio: true  },
+      { id: 'estatutos',             orden: 3, titulo: 'Copia de Estatutos y Reglamentos',              obligatorio: true  },
+      { id: 'personeria',            orden: 4, titulo: 'Documento de Personería Jurídica',              obligatorio: true  },
+      { id: 'afiliacion-internacional', orden: 5, titulo: 'Constancia de afiliación internacional',    obligatorio: false },
+      { id: 'inventario',            orden: 6, titulo: 'Inventario de bienes',                          obligatorio: true  },
+      { id: 'sede',                  orden: 7, titulo: 'Acta de designación de sede',                   obligatorio: true  }
+    ];
 
     document.addEventListener('DOMContentLoaded', function () {
       window.IVCData.setPerfil('profesional');
@@ -602,187 +867,566 @@
 
       window.IVCShell.init({ title: null, activeNav: 'bandeja-prof' });
 
-      var focal = window.IVCData.getTramiteFocal();
-      state.docs = focal.documentos.map(function (d) {
-        return Object.assign({}, d, { validacion: null, observacion: '' });
+      IVCStore.init();
+
+      var id = new URLSearchParams(location.search).get('id');
+      state.tramite = id ? IVCStore.getTramite(id) : null;
+
+      var content = document.getElementById('workspaceContent');
+      if (!state.tramite) {
+        renderEmpty(content);
+        return;
+      }
+
+      /* Hidratar el checklist con catálogo + cualquier validación previa */
+      var catalog = (window.IVCData && window.IVCData.DOCUMENTOS_DECRETO_1387) || DOCS_FALLBACK;
+      var prevDocs = (state.tramite.documentos && Array.isArray(state.tramite.documentos))
+        ? state.tramite.documentos : [];
+      state.docs = catalog.map(function (d) {
+        var prev = prevDocs.find(function (p) { return p.id === d.id; }) || {};
+        return {
+          id: d.id,
+          orden: d.orden,
+          titulo: d.titulo,
+          obligatorio: !!d.obligatorio,
+          validacion: prev.validacion || null,
+          observacion: prev.observacion || ''
+        };
       });
 
-      renderDocs();
-      wireFooter();
+      renderWorkspace(content);
+      mountFooter();
+      wireTabs();
+      wireDocActions();
+      wireFooterActions();
       wireModales();
 
-      window.IVCTour.mount({ pageId: 'profesional/workspace.html' });
+      /* Subscriptions: refrescar si el store cambia (otra tab, etc.) */
+      IVCStore.on('store:changed-external', function () {
+        state.tramite = IVCStore.getTramite(id);
+        if (!state.tramite) return;
+        /* Re-render solo si el estado cambió (no perder el draft de docs) */
+        renderHistorial();
+      });
     });
 
-    /* ─────────── Render docs checklist ─────────── */
-    function renderDocs() {
-      var html = state.docs.map(function (d, i) {
+    /* ───────── Empty (trámite no existe) ───────── */
+    function renderEmpty(host) {
+      host.innerHTML =
+        '<div class="naowee-empty-state" style="max-width:560px; margin:48px auto;">' +
+          '<div class="naowee-empty-state__icon">' +
+            '<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">' +
+              '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' +
+            '</svg>' +
+          '</div>' +
+          '<div class="naowee-empty-state__title">Trámite no encontrado</div>' +
+          '<div class="naowee-empty-state__description">El identificador del trámite no es válido o ya no está disponible.</div>' +
+          '<div class="naowee-empty-state__action">' +
+            '<a class="naowee-btn naowee-btn--quiet" href="bandeja.html">Volver a la bandeja</a>' +
+          '</div>' +
+        '</div>';
+    }
+
+    /* ───────── Hero + tabs ───────── */
+    function renderWorkspace(host) {
+      var t = state.tramite;
+      var plazo = (typeof t.plazoDias === 'number') ? t.plazoDias : 15;
+      var plazoCls = plazo <= 0 ? 'negative' : plazo <= 5 ? 'caution' : 'positive';
+      var plazoLabel = plazo <= 0 ? 'Vencido' : (plazo + ' días');
+      var venceTxt = computeVence(t.fechaRadicacion, 15);
+
+      var estadoBadge = badgeForEstado(t.estado);
+      var tipoBadge = '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">' + (t.tipoTramite || t.tipo || 'Otorgamiento') + '</span>';
+
+      host.innerHTML =
+        /* HERO */
+        '<section class="ivc-hero">' +
+          '<div class="ivc-hero__left">' +
+            '<div class="ivc-hero__rad">' + t.id + '</div>' +
+            '<h1 class="ivc-hero__title">' + (t.organismo || '—') + '</h1>' +
+            '<div class="ivc-hero__meta">' +
+              '<span>NIT ' + (t.nit || '—') + '</span>' +
+              '<span>' + (t.tipoTramite || 'Otorgamiento') + '</span>' +
+              '<span>Radicado: ' + formatDate(t.fechaRadicacion) + '</span>' +
+            '</div>' +
+            '<div class="ivc-hero__badges">' + estadoBadge + tipoBadge + '</div>' +
+          '</div>' +
+          '<div class="ivc-hero__right">' +
+            '<div class="ivc-hero__right-label">Plazo restante</div>' +
+            '<div class="ivc-hero__right-value ivc-hero__right-value--' + plazoCls + '">' + plazoLabel + '</div>' +
+            '<div class="ivc-hero__right-sub">Vence ' + venceTxt + '</div>' +
+          '</div>' +
+        '</section>' +
+
+        /* TABS CARD */
+        '<section class="ivc-tabs-card">' +
+          '<div class="naowee-tabs naowee-tabs--animated" role="tablist">' +
+            '<button class="naowee-tab naowee-tab--selected" data-tab="documentos" role="tab" type="button">Documentos</button>' +
+            '<button class="naowee-tab" data-tab="datos" role="tab" type="button">Datos</button>' +
+            '<button class="naowee-tab" data-tab="historial" role="tab" type="button">Historial</button>' +
+            '<span class="naowee-tabs__indicator"></span>' +
+          '</div>' +
+
+          '<div class="ivc-tab-panel" data-panel="documentos" id="panelDocumentos">' +
+            renderDocsPanel() +
+          '</div>' +
+          '<div class="ivc-tab-panel" data-panel="datos" id="panelDatos" hidden>' +
+            renderDatosPanel() +
+          '</div>' +
+          '<div class="ivc-tab-panel" data-panel="historial" id="panelHistorial" hidden>' +
+            renderHistorialPanel() +
+          '</div>' +
+        '</section>';
+    }
+
+    /* ───────── Render: Documentos panel ───────── */
+    function renderDocsPanel() {
+      var html = '<div class="ivc-checklist-progress">' +
+        '<span class="ivc-checklist-progress__text"><strong id="docsValidadosCount">0</strong> de ' + state.docs.length + ' documentos validados</span>' +
+        '<div class="ivc-checklist-progress__bar"><div class="ivc-checklist-progress__fill" id="progressFill" style="width:0%"></div></div>' +
+      '</div>' +
+      '<div id="docsList">' + buildDocRows() + '</div>';
+      return html;
+    }
+
+    function buildDocRows() {
+      var iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+      var iconX     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      var iconWarn  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+
+      var html = '<div class="ivc-ra-list">';
+      html += state.docs.map(function (d) {
         var cls = '';
         if (d.validacion === 'cumple') cls = 'is-cumple';
         else if (d.validacion === 'obs') cls = 'is-obs';
-        else if (d.validacion === 'no') cls = 'is-no-cumple';
+        else if (d.validacion === 'no') cls = 'is-nocumple';
 
         var optionalBadge = !d.obligatorio
-          ? '<span class="naowee-badge naowee-badge--quiet naowee-badge--small">Opcional</span>'
+          ? ' <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Opcional</span>'
           : '';
 
-        return '<div class="doc-row ' + cls + '" data-doc-id="' + d.id + '">' +
-          '<div class="doc-row__icon">' +
-            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
-          '</div>' +
-          '<div class="doc-row__main">' +
-            '<h3 class="doc-row__title">' + d.orden + '. ' + d.titulo + ' ' + optionalBadge + '</h3>' +
-            '<p class="doc-row__meta">PDF · 245 KB · cargado el 21 may 2026</p>' +
-            '<a href="#" class="doc-row__viewlink">Ver documento</a>' +
-            '<div class="doc-row__obs-input">' +
+        var obsValue = (d.observacion || '').replace(/"/g, '&quot;');
+        var refTxt = 'Decreto 1387/1970 · Art 2.1.1.2';
+
+        return '<div class="ivc-ra-item ' + cls + '" data-doc-id="' + d.id + '">' +
+          '<div class="ivc-ra-item__num">' + d.orden + '</div>' +
+          '<div class="ivc-ra-item__main">' +
+            '<div class="ivc-ra-item__text">' + d.titulo + optionalBadge + '</div>' +
+            '<div class="ivc-ra-item__ref">' + refTxt + ' · PDF · 245 KB</div>' +
+            /* v1.5.4: ghost button, "Descargar documento" con icono */
+            '<a href="#" class="ivc-ra-item__viewlink" aria-label="Descargar documento">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+              '<span>Descargar documento</span>' +
+            '</a>' +
+            '<div class="ivc-ra-item__obs-input">' +
               '<div class="naowee-textfield naowee-textfield--small">' +
                 '<div class="naowee-textfield__input-wrap">' +
-                  '<input type="text" class="naowee-textfield__input" data-obs="' + d.id + '" placeholder="Observación..." value="' + (d.observacion || '') + '" />' +
+                  '<input type="text" class="naowee-textfield__input" data-obs="' + d.id + '" placeholder="Observación..." value="' + obsValue + '" />' +
                 '</div>' +
               '</div>' +
             '</div>' +
           '</div>' +
-          '<div class="doc-row__actions">' +
-            '<button type="button" class="doc-row__validation-btn ' + (d.validacion === 'cumple' ? 'is-active-cumple' : '') + '" data-validate="cumple" data-doc="' + d.id + '" title="Cumple" aria-label="Marcar como Cumple">✓</button>' +
-            '<button type="button" class="doc-row__validation-btn ' + (d.validacion === 'obs' ? 'is-active-obs' : '') + '" data-validate="obs" data-doc="' + d.id + '" title="Observación" aria-label="Marcar con Observación">⚠</button>' +
-            '<button type="button" class="doc-row__validation-btn ' + (d.validacion === 'no' ? 'is-active-no' : '') + '" data-validate="no" data-doc="' + d.id + '" title="No cumple" aria-label="Marcar como No cumple">✗</button>' +
+          /* v1.5.4: tooltips canónicos del DS (.naowee-tooltip + __content) */
+          '<div class="ivc-ra-toggle" role="group" aria-label="Veredicto del documento">' +
+            '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+              '<button type="button" class="ivc-ra-toggle__btn ' + (d.validacion === 'cumple' ? 'is-active--cumple' : '') + '" data-r="cumple" data-doc="' + d.id + '" aria-label="Marcar como Cumple">' + iconCheck + '</button>' +
+              '<span class="naowee-tooltip__content">Cumple</span>' +
+            '</span>' +
+            '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+              '<button type="button" class="ivc-ra-toggle__btn ' + (d.validacion === 'no' ? 'is-active--nocumple' : '') + '" data-r="nocumple" data-doc="' + d.id + '" aria-label="Marcar como No cumple">' + iconX + '</button>' +
+              '<span class="naowee-tooltip__content">No cumple</span>' +
+            '</span>' +
+            '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+              '<button type="button" class="ivc-ra-toggle__btn ' + (d.validacion === 'obs' ? 'is-active--obs' : '') + '" data-r="obs" data-doc="' + d.id + '" aria-label="Marcar como Cumplimiento parcial">' + iconWarn + '</button>' +
+              '<span class="naowee-tooltip__content">Cumplimiento parcial</span>' +
+            '</span>' +
           '</div>' +
         '</div>';
       }).join('');
+      html += '</div>';
 
-      document.getElementById('docsList').innerHTML = html;
-      wireDocRows();
-      updateProgress();
+      /* v1.5.4 rev2: CTA único "Finalizar revisión" al final del tab.
+         El JS de updateProgress() habilita/deshabilita + setea data-result
+         según el estado del checklist (cumple/parcial/no). */
+      html +=
+        '<div class="ivc-finalizar-row">' +
+          '<div class="ivc-finalizar-row__hint" id="finalizarHint">' +
+            'Marca todos los documentos obligatorios para finalizar la revisión.' +
+          '</div>' +
+          '<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large ivc-finalizar-row__btn" id="btnFinalizar" disabled>' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+            '<span id="btnFinalizarLabel">Finalizar revisión</span>' +
+          '</button>' +
+        '</div>';
+      return html;
     }
 
-    function wireDocRows() {
-      document.querySelectorAll('[data-validate]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var docId = btn.getAttribute('data-doc');
-          var val = btn.getAttribute('data-validate');
-          state.docs = state.docs.map(function (d) {
-            if (d.id !== docId) return d;
-            return Object.assign({}, d, { validacion: d.validacion === val ? null : val });
+    /* ───────── Render: Datos panel ───────── */
+    function renderDatosPanel() {
+      var t = state.tramite;
+      var coordActor = (t.historico || []).find(function (h) {
+        return /asignad/i.test(h.accion || '') && (h.actor || '').toLowerCase().indexOf('coordinador') >= 0;
+      });
+      var coord = coordActor ? coordActor.actor : 'Carolina Méndez (Coordinador)';
+      var orgLabel = t.tipoOrganismo === 'liga' ? 'Liga' : t.tipoOrganismo === 'asociacion' ? 'Asociación' : t.tipoOrganismo === 'federacion' ? 'Federación' : (t.tipoOrganismo || '—');
+      var area = t.area === 'aficionado' ? 'Deporte Aficionado' : t.area === 'profesional' ? 'Deporte Profesional' : (t.area || '—');
+      var plazo = (typeof t.plazoDias === 'number') ? t.plazoDias : 15;
+      var plazoTxt = plazo <= 0 ? 'Vencido' : plazo + ' días hábiles';
+
+      return '<div class="ivc-data-grid">' +
+        cell('Organismo', t.organismo || '—') +
+        cell('NIT', t.nit || '—', true) +
+        cell('Tipo de organismo', orgLabel) +
+        cell('Tipo de trámite', t.tipoTramite || '—') +
+        cell('Área', area) +
+        cell('Fecha de radicación', formatDate(t.fechaRadicacion)) +
+        cell('Plazo restante', plazoTxt) +
+        cell('Estado actual', t.estado || '—') +
+        cell('Coordinador asignador', coord) +
+        cell('Profesional asignado', t.profesionalNombre || '—') +
+      '</div>';
+
+      function cell(label, value, mono) {
+        var valCls = 'ivc-data-grid__value' + (mono ? ' ivc-data-grid__value--mono' : '');
+        return '<div class="ivc-data-grid__cell">' +
+          '<span class="ivc-data-grid__label">' + label + '</span>' +
+          '<span class="' + valCls + '">' + value + '</span>' +
+        '</div>';
+      }
+    }
+
+    /* ───────── Render: Historial panel ───────── */
+    function timelineItemVariant(accion) {
+      var a = (accion || '').toLowerCase();
+      if (a.indexOf('no cumple') >= 0 || a.indexOf('rechaz') >= 0) return 'negative';
+      if (a.indexOf('cumple') >= 0 && a.indexOf('parcial') < 0)   return 'positive';
+      if (a.indexOf('parcial') >= 0 || a.indexOf('devuelt') >= 0) return 'caution';
+      if (a.indexOf('radicad') >= 0 || a.indexOf('asignad') >= 0 || a.indexOf('validaci') >= 0) return 'info';
+      return 'muted';
+    }
+
+    function renderHistorialPanel() {
+      var t = state.tramite;
+      var hist = (t.historico || []);
+      if (hist.length === 0) {
+        return '<div class="naowee-empty-state">' +
+          '<div class="naowee-empty-state__title">Sin eventos</div>' +
+          '<div class="naowee-empty-state__description">Aún no hay actividad registrada para este trámite.</div>' +
+        '</div>';
+      }
+      var ordered = hist.slice();
+      return '<ol class="ivc-timeline">' +
+        ordered.map(function (ev) {
+          var variant = timelineItemVariant(ev.accion || ev.titulo);
+          var meta = (ev.fecha || '') + (ev.hora ? ' · ' + ev.hora : (ev.meta ? ' · ' + ev.meta : ''));
+          return '<li class="ivc-timeline__item ivc-timeline__item--' + variant + '">' +
+            '<span class="ivc-timeline__dot"></span>' +
+            '<span class="ivc-timeline__title">' + (ev.accion || ev.titulo || '—') + '</span>' +
+            '<span class="ivc-timeline__meta">' + meta + '</span>' +
+            '<span class="ivc-timeline__actor">' + (ev.actor || '—') + '</span>' +
+          '</li>';
+        }).join('') +
+      '</ol>';
+    }
+
+    function renderHistorial() {
+      var panel = document.getElementById('panelHistorial');
+      if (panel) panel.innerHTML = renderHistorialPanel();
+    }
+
+    /* ───────── Tabs interaction (paridad con Project v2.0.3) ───────── */
+    function wireTabs() {
+      var tabsEl = document.querySelector('.ivc-tabs-card .naowee-tabs');
+      if (!tabsEl) return;
+      var indicator = tabsEl.querySelector('.naowee-tabs__indicator');
+
+      function positionIndicator(tab) {
+        if (!indicator) return;
+        var r = tab.getBoundingClientRect();
+        var parent = tabsEl.getBoundingClientRect();
+        indicator.style.width = r.width + 'px';
+        indicator.style.transform = 'translateX(' + (r.left - parent.left) + 'px)';
+      }
+      var initial = tabsEl.querySelector('.naowee-tab--selected');
+      if (initial) requestAnimationFrame(function () { positionIndicator(initial); });
+
+      tabsEl.querySelectorAll('.naowee-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          var key = tab.dataset.tab;
+          tabsEl.querySelectorAll('.naowee-tab').forEach(function (t) {
+            t.classList.toggle('naowee-tab--selected', t === tab);
           });
-          renderDocs();
+          document.querySelectorAll('.ivc-tab-panel').forEach(function (p) {
+            p.hidden = p.dataset.panel !== key;
+          });
+          state.activeTab = key;
+          positionIndicator(tab);
         });
       });
-      document.querySelectorAll('[data-obs]').forEach(function (inp) {
-        inp.addEventListener('input', function () {
-          var docId = inp.getAttribute('data-obs');
-          state.docs = state.docs.map(function (d) {
-            if (d.id !== docId) return d;
-            return Object.assign({}, d, { observacion: inp.value });
-          });
+
+      window.addEventListener('resize', function () {
+        var current = tabsEl.querySelector('.naowee-tab--selected');
+        if (current) positionIndicator(current);
+      });
+    }
+
+    /* ───────── Doc actions (tri-state + observación) ───────── */
+    /* data-r → state.validacion mapping: cumple|obs|nocumple → cumple|obs|no */
+    function mapToggleToState(r) {
+      if (r === 'nocumple') return 'no';
+      return r; /* cumple | obs */
+    }
+    function wireDocActions() {
+      document.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('.ivc-ra-toggle__btn[data-r]');
+        if (!btn) return;
+        var docId = btn.getAttribute('data-doc');
+        var val = mapToggleToState(btn.getAttribute('data-r'));
+        state.docs = state.docs.map(function (d) {
+          if (d.id !== docId) return d;
+          return Object.assign({}, d, { validacion: d.validacion === val ? null : val });
+        });
+        rerenderDocs();
+      });
+      document.addEventListener('input', function (ev) {
+        var inp = ev.target.closest('[data-obs]');
+        if (!inp) return;
+        var docId = inp.getAttribute('data-obs');
+        state.docs = state.docs.map(function (d) {
+          if (d.id !== docId) return d;
+          return Object.assign({}, d, { observacion: inp.value });
         });
       });
+    }
+
+    function rerenderDocs() {
+      var host = document.getElementById('docsList');
+      if (host) host.innerHTML = buildDocRows();
+      updateProgress();
     }
 
     function updateProgress() {
       var validados = state.docs.filter(function (d) { return d.validacion !== null; }).length;
-      document.getElementById('docsValidadosCount').textContent = validados;
-      document.getElementById('progressFill').style.width = (validados / 7 * 100) + '%';
+      var total = state.docs.length;
+      var pct = total > 0 ? (validados / total * 100) : 0;
+      var cntEl = document.getElementById('docsValidadosCount');
+      var fillEl = document.getElementById('progressFill');
+      if (cntEl) cntEl.textContent = validados;
+      if (fillEl) fillEl.style.width = pct + '%';
 
-      /* Persistir docsValidados al tour state */
-      if (window.IVCData.updateTramiteFocalState) {
-        window.IVCData.updateTramiteFocalState({ docsValidados: validados });
+      /* v1.5.4: semáforo según pct — rojo → naranja → verde */
+      var wrap = fillEl ? fillEl.closest('.ivc-checklist-progress') : null;
+      if (wrap) {
+        var tier = 'low';
+        if (pct === 100) tier = 'full';
+        else if (pct >= 67) tier = 'high';
+        else if (pct >= 34) tier = 'medium';
+        wrap.setAttribute('data-progress', tier);
       }
 
-      /* Enable/disable decision buttons — requiere todos los obligatorios validados */
+      /* v1.5.4 rev2: 1 solo CTA "Finalizar revisión" que cambia color/label/handler
+         según el estado del checklist (cumple / parcial / no cumple). */
       var obligatorios = state.docs.filter(function (d) { return d.obligatorio; });
       var obligatoriosValidados = obligatorios.filter(function (d) { return d.validacion !== null; }).length;
       var todos = obligatoriosValidados === obligatorios.length;
-
-      var btnCumple = document.getElementById('btnCumple');
-      var btnNoCumple = document.getElementById('btnNoCumple');
-      var btnParcial = document.getElementById('btnParcial');
-
-      btnNoCumple.disabled = !todos;
-      btnParcial.disabled = !todos;
-
-      /* Cumple total solo si TODOS los obligatorios son 'cumple' */
+      var hayNo = obligatorios.some(function (d) { return d.validacion === 'no'; });
+      var hayObs = obligatorios.some(function (d) { return d.validacion === 'obs'; });
       var todosCumplen = obligatorios.every(function (d) { return d.validacion === 'cumple'; });
-      btnCumple.disabled = !(todos && todosCumplen);
+
+      var btn = document.getElementById('btnFinalizar');
+      var label = document.getElementById('btnFinalizarLabel');
+      var hint = document.getElementById('finalizarHint');
+      if (!btn) return;
+
+      if (!todos) {
+        btn.disabled = true;
+        btn.removeAttribute('data-result');
+        if (label) label.textContent = 'Finalizar revisión';
+        if (hint) hint.textContent = 'Marca todos los documentos obligatorios (' + obligatoriosValidados + ' de ' + obligatorios.length + ').';
+        return;
+      }
+
+      btn.disabled = false;
+      var result, lbl, msg;
+      if (hayNo) {
+        result = 'no';
+        lbl = 'Generar acto de no cumplimiento';
+        msg = obligatorios.filter(function(d){return d.validacion==='no'}).length + ' documento(s) marcados como No cumple. La decisión generará un acto administrativo de no cumplimiento.';
+      } else if (hayObs) {
+        result = 'parcial';
+        lbl = 'Devolver para subsanación';
+        msg = obligatorios.filter(function(d){return d.validacion==='obs'}).length + ' documento(s) con observaciones. La decisión devolverá el trámite al organismo.';
+      } else if (todosCumplen) {
+        result = 'cumple';
+        lbl = 'Generar acto de cumplimiento';
+        msg = 'Todos los documentos cumplen. La decisión generará el acto administrativo favorable.';
+      }
+      btn.setAttribute('data-result', result);
+      if (label) label.textContent = lbl;
+      if (hint) hint.textContent = msg;
     }
 
-    /* ─────────── Footer wiring ─────────── */
-    function wireFooter() {
-      document.getElementById('btnBack').addEventListener('click', function () {
-        window.IVCData.setPerfil('coordinador');
-        window.location.href = '../coordinador/bandeja.html';
-      });
-      document.getElementById('btnCumple').addEventListener('click', openCumple);
-      document.getElementById('btnNoCumple').addEventListener('click', openNoCumple);
-      document.getElementById('btnParcial').addEventListener('click', function () {
-        window.IVCShell.showSnackbar('Cumplimiento parcial (HU-5) — disponible en Sprint 2.');
+    /* v1.5.4 rev2: handler único — abre el modal apropiado según data-result */
+    function handleFinalizar() {
+      var btn = document.getElementById('btnFinalizar');
+      if (!btn || btn.disabled) return;
+      var result = btn.getAttribute('data-result');
+      if (result === 'cumple')  return openCumple();
+      if (result === 'parcial') return openParcial();
+      if (result === 'no')      return openNoCumple();
+    }
+
+    /* v1.5.4 rev2: mountFooter ya no monta el sticky footer — el CTA único
+       vive inline al final del tab Documentos. Solo refresca progress. */
+    function mountFooter() {
+      updateProgress();
+    }
+
+    /* v1.5.4 rev2: wireFooterActions ahora bindea el botón único + dispatch */
+    function wireFooterActions() {
+      /* Event delegation: el #btnFinalizar se re-crea cada renderDocsPanel */
+      document.addEventListener('click', function (ev) {
+        var btn = ev.target.closest && ev.target.closest('#btnFinalizar');
+        if (btn) handleFinalizar();
       });
     }
 
-    /* ─────────── Modales ─────────── */
+    /* ───────── Modales ───────── */
     function wireModales() {
-      var cOv = document.getElementById('modalCumpleOverlay');
-      document.getElementById('modalCumpleClose').addEventListener('click', function () { cOv.classList.remove('open'); });
-      document.getElementById('modalCumpleCancel').addEventListener('click', function () { cOv.classList.remove('open'); });
-      cOv.addEventListener('click', function (e) { if (e.target === cOv) cOv.classList.remove('open'); });
+      bind('modalCumpleOverlay', 'modalCumpleClose', 'modalCumpleCancel');
+      bind('modalNoCumpleOverlay', 'modalNoCumpleClose', 'modalNoCumpleCancel');
+      bind('modalParcialOverlay', 'modalParcialClose', 'modalParcialCancel');
       document.getElementById('modalCumpleConfirm').addEventListener('click', confirmCumple);
-
-      var ncOv = document.getElementById('modalNoCumpleOverlay');
-      document.getElementById('modalNoCumpleClose').addEventListener('click', function () { ncOv.classList.remove('open'); });
-      document.getElementById('modalNoCumpleCancel').addEventListener('click', function () { ncOv.classList.remove('open'); });
-      ncOv.addEventListener('click', function (e) { if (e.target === ncOv) ncOv.classList.remove('open'); });
       document.getElementById('modalNoCumpleConfirm').addEventListener('click', confirmNoCumple);
+      document.getElementById('modalParcialConfirm').addEventListener('click', confirmParcial);
+
+      function bind(ovId, closeId, cancelId) {
+        var ov = document.getElementById(ovId);
+        var closeBtn = document.getElementById(closeId);
+        var cancelBtn = document.getElementById(cancelId);
+        if (closeBtn) closeBtn.addEventListener('click', function () { ov.classList.remove('open'); });
+        if (cancelBtn) cancelBtn.addEventListener('click', function () { ov.classList.remove('open'); });
+        if (ov) ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('open'); });
+      }
     }
 
     function nowStamp() {
-      /* Fecha hoy + hora local — 21 may 2026, 14:47 */
-      var hh = String(new Date().getHours()).padStart(2, '0');
-      var mm = String(new Date().getMinutes()).padStart(2, '0');
-      return '21 may 2026, ' + hh + ':' + mm;
+      var d = new Date();
+      var months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      var hh = String(d.getHours()).padStart(2, '0');
+      var mm = String(d.getMinutes()).padStart(2, '0');
+      return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ', ' + hh + ':' + mm;
+    }
+
+    function nextActoNum() {
+      /* Mock: contador local. En real, vendría del backend. */
+      var key = 'ivc:next-acto';
+      var n = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+      localStorage.setItem(key, String(n));
+      var pad = String(n).padStart(3, '0');
+      return '2026-' + pad;
     }
 
     function openCumple() {
+      var num = nextActoNum();
+      document.getElementById('cumpleNumActo').textContent = num;
+      document.getElementById('cumpleNumActo2').textContent = num;
       document.getElementById('cumpleFechaGen').textContent = nowStamp();
+      document.getElementById('cumplePorLaCual').textContent =
+        '"Por la cual se otorga el Reconocimiento Deportivo a ' + (state.tramite.organismo || '—') + '"';
+      document.getElementById('cumpleConsiderando').textContent =
+        '1. Que ' + (state.tramite.organismo || '—') + ', identificada con NIT ' + (state.tramite.nit || '—') +
+        ', radicó solicitud bajo el número ' + state.tramite.id + ' el ' + formatDate(state.tramite.fechaRadicacion) + '.';
       document.getElementById('modalCumpleOverlay').classList.add('open');
     }
 
-    function confirmCumple() {
-      window.IVCData.updateTramiteFocalState({
-        decision: 'Cumple',
-        numActo: '2026-001',
-        fechaActo: nowStamp(),
-        docsValidados: state.docs.filter(function (d) { return d.validacion !== null; }).length
-      });
-      document.getElementById('modalCumpleOverlay').classList.remove('open');
-      window.IVCShell.showSnackbar('Acto administrativo 2026-001 generado. Pendiente de firma por el Director.', 'success');
-      state.decision = 'Cumple';
+    function openParcial() {
+      var parcialDocs = state.docs.filter(function (d) { return d.validacion === 'obs' || d.validacion === 'no'; });
+      var listEl = document.getElementById('docsParcialList');
+      if (parcialDocs.length === 0) {
+        listEl.innerHTML = '<span style="color:var(--text-muted); font-style:italic;">Ningún documento marcado con observación o no cumple.</span>';
+      } else {
+        listEl.innerHTML = '<ul style="margin:0; padding-left:18px;">' + parcialDocs.map(function (d) {
+          var tag = d.validacion === 'obs' ? 'Observación' : 'No cumple';
+          return '<li style="margin-bottom:6px;"><strong>' + d.titulo + '</strong> · ' + tag +
+            (d.observacion ? ' — <span style="color:var(--text-secondary);">' + d.observacion + '</span>' : '') + '</li>';
+        }).join('') + '</ul>';
+      }
+      document.getElementById('modalParcialOverlay').classList.add('open');
     }
 
     function openNoCumple() {
+      var num = nextActoNum();
       var noCumplen = state.docs.filter(function (d) { return d.validacion === 'no'; });
       var listEl = document.getElementById('docsNoCumpleList');
       if (noCumplen.length === 0) {
-        listEl.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Ningún documento marcado como No cumple. Se rechaza el trámite por la descripción general anterior.</span>';
+        listEl.innerHTML = '<span style="color:var(--text-muted); font-style:italic;">Ningún documento marcado como No cumple. Se rechaza por la descripción general.</span>';
       } else {
         listEl.innerHTML = '<ul style="margin:0; padding-left:18px;">' + noCumplen.map(function (d) {
-          return '<li style="margin-bottom:6px;"><strong>' + d.titulo + '</strong>' + (d.observacion ? ' — <span style="color:var(--text-secondary);">' + d.observacion + '</span>' : '') + '</li>';
+          return '<li style="margin-bottom:6px;"><strong>' + d.titulo + '</strong>' +
+            (d.observacion ? ' — <span style="color:var(--text-secondary);">' + d.observacion + '</span>' : '') + '</li>';
         }).join('') + '</ul>';
       }
+      document.getElementById('noCumpleNumActo').textContent = num;
+      document.getElementById('noCumpleNumActo2').textContent = num;
       document.getElementById('noCumpleFechaGen').textContent = nowStamp();
+      document.getElementById('noCumplePorLaCual').textContent =
+        '"Por la cual se rechaza el trámite de ' + (state.tramite.tipoTramite || 'Otorgamiento') + ' presentado por ' + (state.tramite.organismo || '—') + '"';
       document.getElementById('modalNoCumpleOverlay').classList.add('open');
+    }
+
+    function confirmCumple() {
+      var actor = 'Carlos Pérez (Profesional)';
+      IVCStore.actualizarEstado(state.tramite.id, 'Cumple', actor, 'Acto administrativo generado');
+      state.tramite = IVCStore.getTramite(state.tramite.id);
+      document.getElementById('modalCumpleOverlay').classList.remove('open');
+      window.IVCShell.showSnackbar('Acto administrativo generado. Pendiente de firma por el Director.', 'success');
+      renderHistorial();
+    }
+
+    function confirmParcial() {
+      var obs = document.getElementById('parcialObsText').value;
+      var actor = 'Carlos Pérez (Profesional)';
+      IVCStore.actualizarEstado(state.tramite.id, 'Parcial', actor, obs || 'Devuelto para subsanación');
+      state.tramite = IVCStore.getTramite(state.tramite.id);
+      document.getElementById('modalParcialOverlay').classList.remove('open');
+      window.IVCShell.showSnackbar('Trámite devuelto al organismo para subsanación.', 'caution');
+      renderHistorial();
     }
 
     function confirmNoCumple() {
       var causales = document.getElementById('causalesText').value;
-      window.IVCData.updateTramiteFocalState({
-        decision: 'NoCumple',
-        numActo: '2026-002',
-        fechaActo: nowStamp(),
-        observacionesNoCumple: causales,
-        docsValidados: state.docs.filter(function (d) { return d.validacion !== null; }).length
-      });
+      var actor = 'Carlos Pérez (Profesional)';
+      IVCStore.actualizarEstado(state.tramite.id, 'NoCumple', actor, causales || 'No cumple con los requisitos');
+      state.tramite = IVCStore.getTramite(state.tramite.id);
       document.getElementById('modalNoCumpleOverlay').classList.remove('open');
-      window.IVCShell.showSnackbar('Acto de No Cumplimiento 2026-002 generado. El organismo será notificado.', 'success');
-      state.decision = 'NoCumple';
+      window.IVCShell.showSnackbar('Acto de no cumplimiento generado. El organismo será notificado.', 'negative');
+      renderHistorial();
+    }
+
+    /* ───────── Helpers ───────── */
+    function formatDate(iso) {
+      if (!iso) return '—';
+      var p = iso.split('-');
+      var months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      return p[2] + ' ' + months[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    }
+
+    function computeVence(fechaRadIso, plazoDiasInicial) {
+      if (!fechaRadIso) return '—';
+      var d = new Date(fechaRadIso);
+      d.setDate(d.getDate() + plazoDiasInicial);
+      return formatDate(d.toISOString().slice(0, 10));
+    }
+
+    function badgeForEstado(estado) {
+      if (estado === 'No asignada') return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">En remisión</span>';
+      if (estado === 'Asignada')    return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Pendiente</span>';
+      if (estado === 'En validación') return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">En validación</span>';
+      if (estado === 'Cumple')      return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Cumple</span>';
+      if (estado === 'NoCumple')    return '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet">No cumple</span>';
+      if (estado === 'Parcial')     return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Parcial</span>';
+      return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">' + (estado || '—') + '</span>';
     }
   </script>
 </body>
