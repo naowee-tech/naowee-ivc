@@ -6,6 +6,121 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.8] — 2026-05-25
+
+> 📋 **Sweep exhaustivo del matriz XLSX oficial + bandeja Coordinador refactor + workspace fixes + tono formal + bug auto-scroll.**
+
+### Coordinador · Bandeja (`coordinador/bandeja.html`)
+
+#### Changed
+- **Sidebar limpio**: removidas las dos entradas vacías ("Trámites en validación" + "Histórico"); solo queda "Bandeja". Pasaron a ser parte del flujo de filtros existentes.
+- **Modal Histórico**: alto fijo `max-height: 70vh` con scroll interno, header + footer fijos, body con `overflow-y: auto`. Antes crecía sin límite y ocultaba el footer.
+- **Modal Histórico — eventos**: helper `normalizeEvento()` tolerante a dos shapes (`{titulo, meta, actor}` del mock local vs `{accion, fecha, hora, actor}` del IVCStore). Antes mostraba `undefined` para los eventos creados por el store.
+- **Modal Asignación Individual — confirmar**: refactor con `try/catch` defensivo. Si `IVCStore.asignar` falla, el modal cierra igual y muestra snackbar de error en lugar de quedar bloqueado.
+
+### Profesional · Workspace (`profesional/workspace.html`)
+
+#### Changed
+- **Page width**: `max-width: 1280 → 1480px` para igualar con bandejas y aprovechar pantallas amplias.
+- **Modales de decisión (Cumple / Parcial / No Cumple)**:
+  - `max-height: 85vh` con scroll interno (antes 100vh menos 64px).
+  - Body con `overflow-y: auto`, header y footer `flex-shrink: 0` (footer ya no flota encima del contenido).
+  - Removido botón "Cancelar" en los 3 modales (redundante con X canónica + click overlay).
+- **Textarea canónico DS** en los 3 modales: borde `--naowee-color-gray-300`, placeholder `--text-secondary` weight 400, `height: auto`, `resize: vertical`.
+- **Botón "Confirmar y generar acto"** (cumple): pasa de verde `.ivc-btn-cumple` a `.naowee-btn--loud` naranja canónico (consistencia con el glow DS).
+- **Botón "Finalizar revisión"**: glow del box-shadow ahora matchea el color de fondo (verde/naranja/rojo) según `data-result`. Antes el glow naranja se mantenía sobre cualquier color.
+- **Divider del footer "Finalizar revisión"**: full-width (negative margin lateral compensa el padding del panel).
+- **Section titles internos** (`.ivc-section-title`): de 14px / `--text-primary` a 11px / `--text-secondary` letterspaced. Consistencia con labels del tab Datos.
+
+### Formulario Fase 1 (`usuario-externo/formulario-fase-1.html`) · Sweep matriz XLSX
+
+#### Added (campos faltantes según matriz oficial XLSX)
+- **F1-2.6 / F1-2.7 / F1-2.8** (Liga · Renovación/Actualización): No. Resolución de RD anterior, Fecha de Notificación, Fecha de Firmeza. Condicionales por `tipoTramite`.
+- **F1-2.9** (Liga · Personería): N° Resolución/Acta de Inscripción de Miembros. Movido desde Asamblea (estaba mal ubicado).
+- **F1-6b columns** (Liga · OA): tabla completa con 6 columnas según matriz (nombre, identificación, cargo, ¿Capacitación?, nombrado_por, N° períodos).
+- **F1-6b.1 / F1-6b.2** (Liga · OA extra): ¿Antecedentes disciplinarios? + Persona con discapacidad.
+- **F1-6g.5** (Liga · Paradeporte): Fecha de la asamblea en que se eligieron integrantes de la Comisión de Paradeporte.
+- **F1 Sección 7 · Información Adicional y Cierre**: Certificación conjunta + radicado + observaciones + documentos adjuntos.
+- **F2-2.5 / F2-2.5a** (Asociación · Inscripción de Miembros): N° Resolución + Radicado.
+- **F2-0.1 sub-tipo** (Asociación): nuevo sub-dropdown "Asociación Juvenil" / "Asociación Recreativa" en paso 2.
+- **F2 Sección 4 · Cierre**: radicado + observaciones + documentos adjuntos.
+- **F3-2.1 / F3-2.2 / F3-2.3** (Federación · Constitución): Período Estatutario Inicial + N° Resolución de Mínimos + N° de Mínimos.
+- **F3-3.1 / F3-3.2 / F3-3.3** (Federación · Asamblea de Constitución): Tipo convocatoria + Fecha Convocatoria + Fecha Realización.
+- **F3-4.1 a F3-4.4-DOC** (Federación · Asistentes y Quórum).
+- **F3-5b columns** (Federación · OA): tabla con 6 columnas (nombre, cargo, identificación, ¿Capacitación?, nombrado_por, ¿Acepta cargo?).
+- **F3-5b.1 a F3-5b.5-DOC** (Federación · OA extra): persona discapacidad + fechas de reunión + certificado de residencia.
+- **F3-5c columns** (Federación · Revisor Fiscal): tabla con 7 columnas (Cargo, nombre, identificación, N° tarjeta, ¿Acepta?, ¿Antecedentes disciplinarios?, ¿Firma revisoría?).
+- **F3-5c.11 / F3-5c.12 / F3-5c.12-DOC** (Federación · OC extra): certificado de residencia del OC.
+- **F3-5d columns** (Federación · CD): 4 columnas (Órgano electivo, nombre, identificación, ¿Acepta?).
+- **F3-5d.10** (Federación · CD): Fecha reunión OA elección Miembro 3.
+- **F3 Sección 6 · Cierre**: 3 certificaciones (COC + Aval Paralímpico + No cursar investigación disciplinaria/penal) + radicado + observaciones + documentos.
+
+#### Changed (alineación con matriz oficial)
+- **Naming de organismos** según matriz oficial:
+  - `liga` → "**Ligas o asociaciones deportivas**" (antes: "Liga Deportiva Departamental")
+  - `asociacion` → "**Asociaciones juveniles o recreativas**" (antes: "Asociación Deportiva")
+  - `federacion` → "**Federaciones deportivas**" (antes: "Federación Deportiva Nacional")
+- **TRAMITES_POR_ORGANISMO** ajustado al matriz:
+  - **F1 (Liga)**: agregada opción "Negación" (4 opciones total — antes faltaba).
+  - **F2 (Asociación)**: removida "Actualización" (solo Otorgamiento + Renovación).
+  - **F3 (Federación)**: removidas "Renovación" + "Actualización" + "Impugnación" (solo Otorgamiento de Personería Jurídica — FR-047 fijo).
+- **F1-3b columna "Antelación"**: TEXT input ("15 días" placeholder) → **DATE** canónico (`fecha_antelacion_estatutos`). Header de columna renombrado a "Fecha Antelación Estatutos".
+- **F1-3b tabla**: 9 filas predefinidas con dropdown DS Naowee + tipo prediligenciado por fila + 5 columnas según matriz.
+- **F1-6g.1 label**: "¿Aplica Paradeporte?" → "¿Se le exige al organismo contar con Comisión Especializada o de Paradeporte?".
+- **F3-3.1 Tipo de convocatoria**: refactor de `radioYN` confuso (Sí/No mapeado a enum) a **2 radios explícitos con labels canónicos** ("Comité Provisional" / "Iniciativa Propia").
+- **F3 Constitución (renderStep2_F3)**: simplificada de 10 campos del Liga reutilizado a **solo 3 campos canónicos** F3-2.1/2.2/2.3.
+- **F3 Estructura · F3-5b OA**: tabla extendida a 6 columnas (agregadas `tiene_capacitacion`, `nombrado_por` que faltaban).
+- **F3 Estructura · F3-5c RF**: tabla extendida a 7 columnas (agregadas `antecedentes_disciplinarios`, `firma_revisoria` que faltaban).
+- **F3-6.1 label**: "determinación de la modalidad deportiva" → "**determinación técnica**" (matriz).
+- **F3-6.3 label**: "no cursar investigaciones" → "**no cursar investigación disciplinaria o penal contra los dignatarios**" (matriz).
+- **NIT condicional**: solo se renderiza para `liga` (F2 y F3 no tienen NIT según matriz).
+- **Municipio condicional**: NO se renderiza para `asociacion` (F2 no tiene municipio según matriz).
+- **Stepper dinámico** según organismo: Liga/Federación 7 pasos, Asociación 6 pasos (sin Asamblea). Antes mostraba 7 fijos con salto visual 3→5.
+- **Nombre del organismo dinámico** (placeholder + ejemplo seed): cambia según tipo elegido en lugar de mostrar siempre "Liga de Atletismo de Antioquia".
+- **Modal de Dirección estructurado** (patrón SUID): reemplaza textfield libre por trigger que abre modal con Tipo de vía, Número, Letra, BIS, Cruce, Casa, Información adicional. Componentes canónicos DS (dropdown, checkbox).
+
+#### Added (sistema de máscaras)
+- Nuevo helper `applyMask(maskType, raw)` con soporte para `tel`, `numeric`, `money`, `email`, `alpha`. Aplicado a NIT, teléfono, correo, todos los campos numéricos del modal de Dirección.
+- `inputmode` correcto para teclados mobile.
+
+#### Changed (tono formal — feedback Doug)
+- "Estás radicando como X" → "Trámite a radicar para X"
+- "Si te equivocaste, vuelve" → "En caso de error, regrese"
+- "Recibirás" → "Recibirá"
+- "Tu solicitud" → "Su solicitud"
+- "Tu trámite" → "El trámite"
+- "Selecciona" → "Seleccione" (todos los placeholders)
+- "Carga cada documento" → "Cargue cada documento"
+- "Haz clic o arrastra" → "Cargar archivo (clic o arrastrar)"
+- "Click para diligenciar" → "Diligencie la dirección"
+- "¿Qué tipo de organismo eres?" → "¿Cuál es el tipo de organismo?"
+- "Continúa al siguiente paso" → "Continúe con el siguiente paso"
+- Etc. (14 cadenas modificadas)
+
+#### Fixed (UI/UX refinements)
+- **Auto-scroll bug**: `window.scrollTo({ top: 0 })` se ejecutaba en CADA `render()` (incluido al hacer click en un radio button), causando que la pantalla saltara arriba al diligenciar. Ahora solo scrollea cuando CAMBIA el paso (tracking via `__lastRenderedStep`).
+- **NIT solo para Liga**: campo y validación condicionales según organismo (matriz).
+- **Inputs del repeatable F1-3b**: forzar `min-width: 0` + `text-overflow: ellipsis` en celdas del grid — evita que "Extraordinaria con carácter de Ordinaria" o fechas largas hagan crecer las columnas.
+- **Modal Dirección**: dismiss canónico DS (`.naowee-modal__dismiss`), removido botón "Cancelar" redundante, checkbox BIS con markup canónico DS Naowee (`.naowee-checkbox` + `__box` + modifier `--checked`).
+- **Textfield = dropdown** (consistencia visual): override scoped en `.wz-card` y `.ivc-modal` para que ambos usen `--naowee-color-gray-300` como border-color y placeholder `--text-secondary` weight 400.
+- **Bordes del repeatable**: head + add con `border-radius` correctos (no se "rompen" las esquinas del wrapper).
+- **Mini-inputs canónicos**: radius `var(--radius-md)` (8px), height 40, padding `0 12`, font `var(--text-base)` (14px). Antes 6/36/10/13.
+- **File uploader sutil**: icono 20×20 stroke 1.5 (antes 32×32 stroke 2), padding 18×18.
+- **Botón "Anterior" + "+ Agregar fila"**: pasan de `.naowee-btn--quiet` (fill crema) a `.naowee-btn--mute` (ghost transparent + hover sutil).
+- **Información adicional + Observaciones (Asamblea)** separadas visualmente del repeatable con margen superior extra.
+- **Sub-secciones condicionales F2 (inventario / afiliación)**: file uploaders aparecen al elegir "Sí" en los radios.
+
+### Profesional · Bandeja (`profesional/bandeja.html`)
+- Stats cards (Pendientes / En validación / Cumplidos hoy), filtros, badge de plazo en semáforo (>5d verde / 1-5d naranja / vencido rojo). Sin cambios mayores en esta versión.
+
+### Shared
+
+#### Changed
+- `naowee-footer.js`: `IVC_VERSION = 'v1.5.8'`.
+- `shell.js`: sidebar limpio (Coordinador + Profesional con solo una entrada cada uno).
+
+---
+
 ## [ivc-v1.5.7] — 2026-05-25
 
 > 🎛️ **Refinamiento profundo de Fase 1: stepper dinámico, máscaras de entrada, modal de Dirección estructurado, alineación 100% con DS Naowee.**

@@ -526,6 +526,21 @@
     padding: 12px 14px;
     align-items: center;
   }
+  /* v1.5.8 (25/05/2026): forzar min-width:0 + ellipsis en celdas del grid para
+     que ningún input/dropdown/datepicker crezca por encima del width del col.
+     Feedback Juanma: el "Extraordinaria con carácter de Ordinaria" y las fechas
+     largas hacían crecer las celdas y rompían la grilla.
+     Sin min-width:0 los flex/grid children por default crecen con el contenido. */
+  .ivc-repeatable__row > * { min-width: 0; }
+  .ivc-repeatable__row .naowee-dropdown__value,
+  .ivc-repeatable__row .naowee-dropdown__placeholder,
+  .ivc-repeatable__row .naowee-datepicker-field__value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    min-width: 0;
+  }
   .ivc-repeatable__head {
     background: #fafbff;
     border-bottom: 1px solid var(--border);
@@ -922,7 +937,7 @@
 
   <div class="wz-page__header">
     <h1 class="wz-page__title">Radicación de trámite</h1>
-    <p class="wz-page__subtitle">Otorgamiento de Reconocimiento Deportivo · Completa los pasos siguientes para radicar tu solicitud.</p>
+    <p class="wz-page__subtitle">Otorgamiento de Reconocimiento Deportivo · Diligencie los pasos siguientes para radicar la solicitud.</p>
   </div>
 
   <article class="wz-card">
@@ -1020,7 +1035,7 @@ function indiceVisual(stepIdx) {
 }
 
 const MUNICIPIOS = [
-  { v:'', t:'Selecciona un municipio…' },
+  { v:'', t:'Seleccione un municipio…' },
   { v:'bogota', t:'Bogotá D.C.' },
   { v:'medellin', t:'Medellín' },
   { v:'cali', t:'Cali' },
@@ -1041,7 +1056,7 @@ const EJEMPLOS_POR_ORGANISMO = {
     nit:    '800123456-7' // las ligas departamentales sí manejan NIT como persona jurídica
   },
   asociacion: {
-    nombre: 'Asociación de Tenis de Cundinamarca',
+    nombre: 'Asociación Juvenil Deportiva de Cundinamarca',
     nit:    '' // las asociaciones no manejan NIT en este trámite
   },
   federacion: {
@@ -1069,6 +1084,37 @@ function aplicarEjemploOrganismo(orgId) {
   }
 }
 
+/* v1.5.8 (25/05/2026): Catálogos para feedback Juanma/Danna sobre F1.
+   - Tipos de reunión de Asamblea (Decreto 1085/2015, art. asambleas).
+   - Tipos de convocante para el F1-4.1. */
+const TIPOS_REUNION_ASAMBLEA = [
+  { v:'',                     t:'—' },
+  { v:'ORDINARIA',            t:'Ordinaria' },
+  { v:'EXTRAORDINARIA',       t:'Extraordinaria' },
+  { v:'EXT_CARACTER_ORD',     t:'Extraordinaria con carácter de Ordinaria' },
+  { v:'SEGUNDA_CONVOCATORIA', t:'Segunda convocatoria' },
+  { v:'NO_PRESENCIAL',        t:'No presencial' },
+  { v:'DERECHO_PROPIO',       t:'De pleno derecho' },
+  { v:'CONSTITUTIVA',         t:'Constitutiva' },
+  { v:'UNIVERSAL',            t:'Universal' },
+  { v:'DEL_OA',               t:'Del Órgano de Administración' }
+];
+
+/* v1.5.8 (sweep matriz F2-0.1): sub-tipos de Asociación. */
+const SUB_TIPOS_ASOCIACION = [
+  { v:'',           t:'Seleccionar' },
+  { v:'JUVENIL',    t:'Asociación Juvenil' },
+  { v:'RECREATIVA', t:'Asociación Recreativa' }
+];
+
+const TIPOS_CONVOCANTE = [
+  { v:'',                       t:'Seleccionar' },
+  { v:'OA',                     t:'Órgano de Administración' },
+  { v:'PRESIDENTE',             t:'Presidente del Organismo' },
+  { v:'OC',                     t:'Órgano de Control' },
+  { v:'COMITE_PROVISIONAL',     t:'Comité Provisional' }
+];
+
 const STATE = {
   step: 0,
   tipoOrganismo: '',
@@ -1080,22 +1126,91 @@ const STATE = {
     municipio: '',
     telefono: '',
     correo: '',
-    f1: { no_res_personeria:'', radicado_personeria:'', fecha_reforma:'', radicado_estatutos:'', no_res_estatutos:'', periodo_inicial:'', periodo_vigente:'', tiene_constancia:'', fecha_constancia:'', no_res_minimos:'', n_minimos:'' },
+    /* v1.5.8 (25/05/2026): Liga (F1) — sweep matriz XLSX completo.
+       Agregados: F1-2.6 (no_res_rd_anterior), F1-2.7 (fecha_notif_rd),
+       F1-2.8 (fecha_firmeza_rd) condicionales Renovación/Actualización.
+       F1-2.9 (f1_no_acta_miembros) movido desde asamblea (estaba mal ubicado).
+       Resto: Personería (2.1/2.1a), Estatutos (2.2/2.2a/2.3), Períodos (2.4/2.5),
+       Constancia (2.10/2.11), Mínimos (2.12/2.13). */
+    f1: {
+      no_res_personeria:'', radicado_personeria:'',
+      fecha_reforma:'', radicado_estatutos:'', no_res_estatutos:'',
+      periodo_inicial:'', periodo_vigente:'',
+      no_res_rd_anterior:'',     // F1-2.6 (cond Renovación/Actualización)
+      fecha_notif_rd:'',         // F1-2.7 (cond)
+      fecha_firmeza_rd:'',       // F1-2.8 (cond)
+      f1_no_acta_miembros:'',    // F1-2.9 (movido desde asamblea)
+      tiene_constancia:'', fecha_constancia:'',
+      no_res_minimos:'', n_minimos:''
+    },
     /* v1.5.6 (25/05/2026): Asociación (F2) — feedback Juanma:
        1) Faltaban 2 campos F2-2.5 / F2-2.5a (Inscripción de Miembros, texto libre).
-       2) Al decir "Sí" en inventario o afiliación no aparecía el uploader del archivo. */
-    f2: { no_personeria:'', radicado_personeria:'', fecha_estatutos:'', radicado_estatutos:'', no_acta_sede:'', radicado_acta_sede:'', no_acta_constitucion:'', radicado_acta_constitucion:'', no_inscripcion_miembros:'', radicado_inscripcion_miembros:'', tiene_inventario:'', archivo_inventario:null, tiene_afiliacion:'', archivo_afiliacion:null },
-    f3: { no_res_personeria:'', radicado_personeria:'', fecha_reforma:'', radicado_estatutos:'', no_res_estatutos:'', periodo_inicial:'', periodo_vigente:'', tipo_convocatoria:'', fecha_convocatoria:'', fecha_realizacion:'' },
+       2) Al decir "Sí" en inventario o afiliación no aparecía el uploader del archivo.
+       v1.5.8 (sweep matriz XLSX): agregado `sub_tipo` (F2-0.1 con 2 opciones:
+       'Asociación Juvenil' o 'Asociación Recreativa'). */
+    f2: { sub_tipo:'', no_personeria:'', radicado_personeria:'', fecha_estatutos:'', radicado_estatutos:'', no_acta_sede:'', radicado_acta_sede:'', no_acta_constitucion:'', radicado_acta_constitucion:'', no_inscripcion_miembros:'', radicado_inscripcion_miembros:'', tiene_inventario:'', archivo_inventario:null, tiene_afiliacion:'', archivo_afiliacion:null },
+    /* v1.5.8 (25/05/2026): Federación (F3) — feedback Juanma.
+       Personería (2 campos canónicos) + Constitución (3 campos: F3-2.1, F3-2.2, F3-2.3).
+       Eliminados los campos de Estatutos/Períodos/Asamblea que estaban duplicados
+       desde F1 Liga (no aplican a Federación según matriz XLSX). */
+    f3: {
+      no_res_personeria:'',                  // Personería F3 (común)
+      radicado_personeria:'',                // Personería F3 (común)
+      // Constitución (F3-2.x · 3 campos canónicos del XLSX)
+      f3_periodo_estatutario_inicial:'',     // F3-2.1 TEXT
+      f3_no_res_minimos:'',                  // F3-2.2 TEXT
+      f3_n_minimos:''                        // F3-2.3 NUMBER
+    },
+    /* v1.5.8 (25/05/2026): Asamblea (F1) — feedback Juanma/Danna.
+       1) Nuevo F1-3a (No. Resolución/Acta Inscripción Miembros).
+       2) Tipo/Clase pasa a dropdown con 9 opciones canónicas del Decreto 1085/2015.
+          Las 9 filas se prellenan vacías; solo 1 es obligatoria. El usuario
+          diligencia las que aplican.
+       3) Observaciones (opcional, máx 1000 caract).
+       4) Convocante (8 sub-campos condicionales según F1-4.1).
+       5) Asistentes y quórum (números + radios + uploaders condicionales + obs). */
     asamblea: {
       f1_tema: '',
+      /* v1.5.8 rev2: f1_no_acta_miembros movido a STATE.data.f1 (es F1-2.9, sección 2 Personería). */
       f1_reuniones: [
-        { tipo:'1ª Convocatoria a Asamblea', fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
-        { tipo:'2ª Convocatoria (si aplica)', fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
-        { tipo:'Asamblea Ordinaria', fechaConv:'', fechaReal:'', antelacion:'', cumple:'' }
+        { tipo:'ORDINARIA',           fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'EXTRAORDINARIA',      fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'EXT_CARACTER_ORD',    fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'SEGUNDA_CONVOCATORIA',fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'NO_PRESENCIAL',       fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'DERECHO_PROPIO',      fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'CONSTITUTIVA',        fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'UNIVERSAL',           fechaConv:'', fechaReal:'', antelacion:'', cumple:'' },
+        { tipo:'DEL_OA',              fechaConv:'', fechaReal:'', antelacion:'', cumple:'' }
       ],
-      f3_n_asistentes: '',
-      f3_cumple_quorum: '',
-      f3_archivo_cert: null
+      f1_obs_asamblea: '',                  // F1-3b.obs: Observaciones sobre la asamblea (opcional)
+      // Convocante (F1-4.x)
+      f1_tipo_convocante: '',                // F1-4.1: SELECT
+      f1_convocante_vigente: '',             // F1-4.2: RADIO (cond OA/Presidente/OC)
+      f1_no_res_convocante: '',              // F1-4.3: TEXT (cond OA/Presidente/OC)
+      f1_no_acta_designa_presidente: '',     // F1-4.4: TEXT (cond Presidente)
+      f1_no_res_comite_provisional: '',      // F1-4.5: TEXT (cond Comité Provisional)
+      f1_vigencia_comite_provisional: '',    // F1-4.6: TEXT (cond Comité Provisional)
+      f1_comite_designado_por_oa: '',        // F1-4.7: RADIO (cond Comité Provisional)
+      f1_ente_deportivo: '',                 // F1-4.8: TEXT (cond Comité Provisional)
+      // Asistentes y quórum (F1-5.x)
+      f1_num_afiliados: '',                  // F1-5.1: NUMBER
+      f1_num_asistentes: '',                 // F1-5.2: NUMBER (≤ f1_num_afiliados)
+      f1_cumplio_quorum: '',                 // F1-5.3: RADIO
+      f1_adjunta_cert_rf_fecha: '',          // F1-5.4: RADIO
+      f1_archivo_cert_rf_fecha: null,        // F1-5.4-DOC (cond Sí)
+      f1_adjunta_cert_rf_actual: '',         // F1-5.5: RADIO
+      f1_archivo_cert_rf_actual: null,       // F1-5.5-DOC (cond Sí)
+      f1_obs_asistencia: '',                 // F1-5.obs: TEXTAREA (opcional)
+      // F3 (Federación) — actualizado v1.5.8 con secciones Asamblea de Constitución + Asistentes y Quórum
+      f3_tipo_convocatoria: '',              // F3-3.1: RADIO (COMITE_PROVISIONAL | INICIATIVA_PROPIA)
+      f3_fecha_convocatoria: '',             // F3-3.2: DATE
+      f3_fecha_realizacion: '',              // F3-3.3: DATE (≥ F3-3.2)
+      f3_num_afiliados: '',                  // F3-4.1: NUMBER
+      f3_num_asistentes: '',                 // F3-4.2: NUMBER (≤ F3-4.1)
+      f3_cumplio_quorum: '',                 // F3-4.3: RADIO
+      f3_adjunta_cert_rf: '',                // F3-4.4: RADIO
+      f3_archivo_cert: null                  // F3-4.4-DOC: FILE (cond Sí)
     },
     estructura: {
       f1_fundadores: [{ nombre:'', no_res_reconocimiento:'' }],
@@ -1113,9 +1228,59 @@ const STATE = {
       f1_comision_juzgamiento: [ { display:'1°', nombre:'' }, { display:'2°', nombre:'' }, { display:'3°', nombre:'' } ],
       f1_aplica_paradeporte: '',
       f1_comision_paradeporte: [ { display:'1°', nombre:'' }, { display:'2°', nombre:'' }, { display:'3°', nombre:'' } ],
+      // v1.5.8 (25/05/2026): F1-6g.5 — Fecha de la asamblea en que se eligieron los
+      // integrantes de la Comisión de Paradeporte. DATE condicional. Feedback Juanma.
+      f1_paradeporte_fecha_asamblea: '',
+      // v1.5.8 (25/05/2026): F1-6b.x — feedback Juanma/Danna sobre OA.
+      f1_presidente_antecedentes: '',       // F1-6b.1: RADIO Sí/No (obligatorio)
+      f1_persona_discapacidad: '',          // F1-6b.2: TEXT (opcional, máx 255)
       f2_seccionales: [{ nombre_seccional:'', nombre_directivo:'' }],
       f3_afiliados: [{ nombre:'', no_res_reconocimiento:'' }],
-      f3_miembros_oa: [{ nombre:'', identificacion:'', cargo:'', acepta:'' }]
+      /* v1.5.8 (sweep matriz F3-5b): 6 columnas según XLSX —
+         nombre, cargo, identificacion, tiene_capacitacion, nombrado_por, acepta_cargo. */
+      f3_miembros_oa: [{ nombre:'', cargo:'', identificacion:'', tiene_capacitacion:'', nombrado_por:'', acepta_cargo:'' }],
+      /* v1.5.8 (25/05/2026): F3-5b.x — Federación · Órgano de Administración extra. */
+      f3_persona_discapacidad: '',           // F3-5b.1: TEXT opcional
+      f3_fecha_reunion_electiva_oa: '',      // F3-5b.2: DATE
+      f3_fecha_reunion_asignacion: '',       // F3-5b.3: DATE (≥ F3-5b.2)
+      f3_acredita_cert_residencia_oa: '',    // F3-5b.4: RADIO (Sí/No/No aplica)
+      f3_nombres_cert_residencia_oa: '',     // F3-5b.5: TEXT (cond Sí)
+      f3_archivo_cert_residencia_oa: null,   // F3-5b.5-DOC: FILE (cond Sí)
+      /* F3-5c.x — Órgano de Control · 7 columnas según matriz XLSX:
+         Cargo (DISPLAY) | nombre | identificacion | no_tarjeta_profesional |
+         acepta_cargo | antecedentes_disciplinarios | firma_revisoria. */
+      f3_revisor_fiscal: [
+        { display:'RF Principal', nombre:'', identificacion:'', no_tarjeta_profesional:'', acepta_cargo:'', antecedentes_disciplinarios:'', firma_revisoria:'' },
+        { display:'RF Suplente',  nombre:'', identificacion:'', no_tarjeta_profesional:'', acepta_cargo:'', antecedentes_disciplinarios:'', firma_revisoria:'' }
+      ],
+      f3_acredita_cert_residencia_oc: '',    // F3-5c.11: RADIO (Sí/No/No aplica)
+      f3_nombres_cert_residencia_oc: '',     // F3-5c.12: TEXT (cond Sí)
+      f3_archivo_cert_residencia_oc: null,   // F3-5c.12-DOC: FILE (cond Sí)
+      /* F3-5d.x — Comisión Disciplinaria */
+      f3_comision_disciplinaria: [
+        { display:'Asamblea M1', nombre:'', identificacion:'', acepta:'' },
+        { display:'Asamblea M2', nombre:'', identificacion:'', acepta:'' },
+        { display:'OA M3',       nombre:'', identificacion:'', acepta:'' }
+      ],
+      f3_fecha_reunion_oa_cd: ''             // F3-5d.10: DATE
+    },
+    /* v1.5.8 (25/05/2026): Sección "Información Adicional y Cierre" (sweep matriz).
+       F1 sección 7, F2 sección 4, F3 sección 6. Campos comunes + específicos por formato. */
+    cierre: {
+      // F1 (sección 7)
+      f1_adjunta_cert_conjunta:'',           // F1-7.1: RADIO
+      f1_archivo_cert_conjunta:null,         // F1-7.1-DOC (cond Sí)
+      // F3 (sección 6)
+      f3_adjunta_cert_coc:'',                // F3-6.1: RADIO
+      f3_archivo_cert_coc:null,              // F3-6.1-DOC (cond)
+      f3_adjunta_aval_paralimpico:'',        // F3-6.2: RADIO
+      f3_archivo_aval_paralimpico:null,      // F3-6.2-DOC (cond)
+      f3_adjunta_cert_conjunta_no_inv:'',    // F3-6.3: RADIO
+      f3_archivo_cert_conjunta_no_inv:null,  // F3-6.3-DOC (cond)
+      // Comunes a F1, F2, F3
+      no_radicado_doc:'',                    // F1-7.2 / F2-4.1 / F3-6.4: TEXT
+      observaciones:'',                      // F1-7.3 / F2-4.2 / F3-6.5: TEXTAREA (opcional)
+      archivos_adjuntos:[]                   // F1-7.4 / F2-4.3 / F3-6.6: FILE múltiple
     },
     documentos: {},
     aceptaRadicacion: false
@@ -1139,10 +1304,11 @@ const DOCUMENTOS_DECRETO = [
 
 // Catálogo escalable de organismos. Para agregar uno nuevo, sumar entrada acá
 // y crear sus variantes renderStep2_*/renderStep3_*/renderStep4_* correspondientes.
+/* v1.5.8 (sweep matriz XLSX): labels alineados con FR-003/FR-039/FR-047. */
 const ORGANISMOS = [
-  { id: 'liga',          label: 'Liga Deportiva Departamental',      desc: 'F1 · Personería jurídica, Asamblea con 9 tipos de reunión y comisiones.' },
-  { id: 'asociacion',    label: 'Asociación Deportiva',              desc: 'F2 · Datos de constitución, entidades seccionales y afiliación internacional.' },
-  { id: 'federacion',    label: 'Federación Deportiva Nacional',     desc: 'F3 · Convocatoria nacional, asistentes con quórum y certificaciones de Revisor Fiscal.' },
+  { id: 'liga',          label: 'Ligas o asociaciones deportivas',                    desc: 'F1 · Personería jurídica, Asamblea con 9 tipos de reunión y comisiones.' },
+  { id: 'asociacion',    label: 'Asociaciones juveniles o recreativas',   desc: 'F2 · Datos de constitución, entidades seccionales y afiliación internacional.' },
+  { id: 'federacion',    label: 'Federaciones deportivas',     desc: 'F3 · Convocatoria nacional, asistentes con quórum y certificaciones de Revisor Fiscal.' },
   // Ejemplos comentados para mostrar la extensibilidad a Juanma (NO los actives todavía;
   // necesitan su propio renderStep2_*/renderStep3_*/renderStep4_*):
   // { id: 'club',                  label: 'Club Deportivo',                          desc: 'F4 · Pendiente especificación.' },
@@ -1152,24 +1318,23 @@ const ORGANISMOS = [
   // { id: 'ente_departamental',    label: 'Ente Departamental del Deporte',          desc: 'F8 · Pendiente especificación.' },
 ];
 
-// Catálogo de trámites por organismo. ESCALABLE a los 18 trámites del catálogo IVC.
-// Para esta demo cada organismo tiene Otorgamiento + placeholders deshabilitados
-// (Próximamente) que muestran la extensibilidad sin estar funcionales.
+/* v1.5.8 (sweep matriz XLSX): opciones por organismo alineadas con matriz oficial:
+   - F1 Liga (FR-003 · Otorgamiento / Negación / Renovación / Actualización)
+   - F2 Asociación (FR-039 · Otorgamiento o Renovación · sin Negación ni Actualización)
+   - F3 Federación (FR-047 · Otorgamiento de Personería Jurídica · DISPLAY fijo, no contempla renovación) */
 const TRAMITES_POR_ORGANISMO = {
   liga: [
     { id: 'otorgamiento',  label: 'Otorgamiento de Reconocimiento Deportivo', enabled: true,  desc: 'Para organismos que solicitan por primera vez su reconocimiento.' },
+    { id: 'negacion',      label: 'Negación de Reconocimiento Deportivo',     enabled: false, desc: 'Próximamente · Cuando el organismo no cumple los requisitos.' },
     { id: 'renovacion',    label: 'Renovación de Reconocimiento Deportivo',   enabled: false, desc: 'Próximamente · Para organismos con reconocimiento vigente que requieren extender vigencia.' },
     { id: 'actualizacion', label: 'Actualización de Reconocimiento Deportivo', enabled: false, desc: 'Próximamente · Para reportar cambios en estatutos, junta directiva o estructura.' },
   ],
   asociacion: [
-    { id: 'otorgamiento',  label: 'Otorgamiento de Reconocimiento Deportivo', enabled: true,  desc: 'Para asociaciones que solicitan por primera vez su reconocimiento.' },
-    { id: 'renovacion',    label: 'Renovación de Reconocimiento Deportivo',   enabled: false, desc: 'Próximamente.' },
+    { id: 'otorgamiento',  label: 'Otorgamiento de Reconocimiento Oficial',   enabled: true,  desc: 'Para asociaciones que solicitan por primera vez su reconocimiento.' },
+    { id: 'renovacion',    label: 'Renovación de Reconocimiento Oficial',     enabled: false, desc: 'Próximamente.' },
   ],
   federacion: [
-    { id: 'otorgamiento',  label: 'Otorgamiento de Reconocimiento Deportivo', enabled: true,  desc: 'Para federaciones que solicitan por primera vez su reconocimiento.' },
-    { id: 'renovacion',    label: 'Renovación de Reconocimiento Deportivo',   enabled: false, desc: 'Próximamente.' },
-    { id: 'actualizacion', label: 'Actualización de Reconocimiento Deportivo', enabled: false, desc: 'Próximamente.' },
-    { id: 'impugnacion',   label: 'Impugnación de Acto Administrativo',        enabled: false, desc: 'Próximamente · Para impugnar decisiones del IVC.' },
+    { id: 'otorgamiento',  label: 'Otorgamiento de Personería Jurídica',      enabled: true,  desc: 'Único trámite para Federaciones Deportivas Nacionales (FR-047).' },
   ],
   // NOTA: cuando se agreguen los otros organismos (club, club_profesional, etc.)
   // se agregan sus trámites acá. El sistema soporta hasta los 18 trámites del catálogo IVC.
@@ -1346,7 +1511,7 @@ function direccionTrigger(opts) {
       <button type="button" class="naowee-textfield__input-wrap ivc-direccion-trigger" id="${id}" onclick="abrirModalDireccion()">
         ${value
           ? `<span class="ivc-direccion-trigger__value">${esc(value)}</span>`
-          : `<span class="ivc-direccion-trigger__placeholder">Click para diligenciar dirección</span>`}
+          : `<span class="ivc-direccion-trigger__placeholder">Diligencie la dirección</span>`}
         <span class="ivc-direccion-trigger__icon" aria-hidden="true">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -1491,7 +1656,7 @@ function dd(opts) {
   const onChange = opts.onChange || '';
   // Encuentra placeholder (option con v='') y opción seleccionada
   const placeholderOpt = options.find(o => o.v === '');
-  const placeholderText = placeholderOpt ? placeholderOpt.t : 'Selecciona…';
+  const placeholderText = placeholderOpt ? placeholderOpt.t : 'Seleccione…';
   const selectedOpt = options.find(o => o.v === value && o.v !== '');
   const hasValue = !!selectedOpt;
   // Filtra placeholder fuera del menú visible (DS usa el placeholder en el trigger, no como opción)
@@ -2131,7 +2296,7 @@ function uploadField(opts) {
         ? `<div class="wz-file-drop__title">Archivo cargado</div>
            <div class="wz-file-drop__name">${esc(cur.name)} · ${esc(cur.size)}</div>
            <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="event.preventDefault();event.stopPropagation();clearStateAtPath('${stateKey}');render();" style="margin-top:6px;">Quitar archivo</button>`
-        : `<div class="wz-file-drop__title">Haz clic o arrastra para cargar</div>
+        : `<div class="wz-file-drop__title">Cargar archivo (clic o arrastrar)</div>
            <div class="wz-file-drop__hint">PDF, DOC o DOCX · máx 10 MB</div>`}
       <input type="file" accept=".pdf,.doc,.docx,application/pdf" onchange="mockUpload(this, '${stateKey}')" />
     </label>
@@ -2202,7 +2367,7 @@ function renderStepper() {
 function renderStep0() {
   // Dropdown de organismo — catálogo escalable (ver const ORGANISMOS arriba)
   const orgOptions = [
-    { v:'', t:'Selecciona el tipo de organismo' },
+    { v:'', t:'Seleccione el tipo de organismo' },
     ...ORGANISMOS.map(o => ({ v: o.id, t: o.label }))
   ];
   const orgSelected = ORGANISMOS.find(o => o.id === STATE.tipoOrganismo);
@@ -2215,7 +2380,7 @@ function renderStep0() {
   // Catálogo escalable (ver TRAMITES_POR_ORGANISMO arriba).
   const tramitesDisponibles = TRAMITES_POR_ORGANISMO[STATE.tipoOrganismo] || [];
   const tramiteOptions = [
-    { v:'', t:'Selecciona el trámite' },
+    { v:'', t:'Seleccione el trámite' },
     ...tramitesDisponibles.map(t => ({
       v: t.id,
       t: t.enabled ? t.label : `${t.label} · Próximamente`,
@@ -2228,7 +2393,7 @@ function renderStep0() {
     <div style="margin-bottom:18px;">
       ${dd({
         id: 'tipoOrg',
-        label: '¿Qué tipo de organismo eres?',
+        label: '¿Cuál es el tipo de organismo?',
         required: true,
         value: STATE.tipoOrganismo,
         options: orgOptions,
@@ -2267,7 +2432,7 @@ function renderStep0() {
    ============================================================ */
 function renderStep1() {
   const d = STATE.data;
-  const orgLabel = ({ liga:'Liga Deportiva Departamental', asociacion:'Asociación Deportiva', federacion:'Federación Deportiva Nacional' })[STATE.tipoOrganismo] || '';
+  const orgLabel = ({ liga:'Ligas o asociaciones deportivas', asociacion:'Asociaciones juveniles o recreativas', federacion:'Federaciones deportivas' })[STATE.tipoOrganismo] || '';
   // v1.5.4 (25/05/2026): NIT solo aplica a Liga (feedback Juanma). Asociación y
   // Federación no tienen NIT — el teléfono se renderiza full-width en ese caso.
   const esLiga = STATE.tipoOrganismo === 'liga';
@@ -2278,7 +2443,7 @@ function renderStep1() {
     federacion: 'Ej: Federación Colombiana de Fútbol'
   })[STATE.tipoOrganismo] || 'Ej: nombre del organismo';
   return `
-    ${messageInfo('', `Estás radicando como <strong>${esc(orgLabel)}</strong>. Si te equivocaste, <a href="#" onclick="STATE.step=0;render();return false;">vuelve al paso anterior</a>.`)}
+    ${messageInfo('', `Trámite a radicar para: <strong>${esc(orgLabel)}</strong>. En caso de error, <a href="#" onclick="STATE.step=0;render();return false;">regrese al paso anterior</a>.`)}
     <h2 class="wz-section">Identificación del organismo</h2>
     ${tf({ id:'f-nombre', label:'Nombre del organismo', required:true,
             placeholder:placeholderNombre,
@@ -2304,15 +2469,23 @@ function renderStep1() {
     <!-- v1.5.7: Dirección abre modal estructurado (feedback Juanma).
          El textfield es read-only y muestra la dirección formateada. -->
     ${direccionTrigger({ id:'f-dir', value:d.direccion, required:true })}
-    <div class="wz-grid-2">
-      ${dd({ id:'f-mun', label:'Municipio', required:true,
-              value:d.municipio, options:MUNICIPIOS,
-              onChange:'STATE.data.municipio=this.value' })}
-      ${tf({ id:'f-correo', label:'Correo electrónico', required:true,
+    <!-- v1.5.8 (25/05/2026): Municipio NO aplica para Asociación según matriz XLSX.
+         F1 (Liga) y F3 (Federación) sí lo requieren. Feedback Juanma. -->
+    ${STATE.tipoOrganismo === 'asociacion'
+      ? tf({ id:'f-correo', label:'Correo electrónico', required:true,
               type:'email', placeholder:'contacto@organismo.org',
               value:d.correo, mask:'email', maxLength:80,
-              onInput:'STATE.data.correo=this.value' })}
-    </div>
+              onInput:'STATE.data.correo=this.value' })
+      : `<div class="wz-grid-2">
+          ${dd({ id:'f-mun', label:'Municipio', required:true,
+                  value:d.municipio, options:MUNICIPIOS,
+                  onChange:'STATE.data.municipio=this.value' })}
+          ${tf({ id:'f-correo', label:'Correo electrónico', required:true,
+                  type:'email', placeholder:'contacto@organismo.org',
+                  value:d.correo, mask:'email', maxLength:80,
+                  onInput:'STATE.data.correo=this.value' })}
+        </div>`
+    }
   `;
 }
 
@@ -2328,6 +2501,8 @@ function renderStep2() {
 
 function renderStep2_F1() {
   const f1 = STATE.data.f1;
+  // v1.5.8 (sweep matriz): F1-2.6/2.7/2.8 condicionales para Renovación o Actualización.
+  const esRenovacionOActualizacion = ['renovacion', 'actualizacion'].includes(STATE.tipoTramite);
   return `
     <h2 class="wz-section">Personería Jurídica</h2>
     <div class="wz-grid-2">
@@ -2343,7 +2518,7 @@ function renderStep2_F1() {
     <h2 class="wz-section">Estatutos vigentes</h2>
     <div class="wz-grid-2">
       ${datepicker({ label:'Fecha de la última Reforma Estatutaria', name:'f1_fecha_reforma',
-              required:true, value:f1.fecha_reforma,
+              required:true, max:todayISO(), value:f1.fecha_reforma,
               onChange:'STATE.data.f1.fecha_reforma=this.value' })}
       ${tf({ label:'Radicado de Estatutos vigentes en IVC', required:true,
               placeholder:'IVC-2024-000456', value:f1.radicado_estatutos,
@@ -2363,6 +2538,34 @@ function renderStep2_F1() {
               onInput:'STATE.data.f1.periodo_vigente=this.value' })}
     </div>
 
+    <!-- v1.5.8 (sweep matriz): F1-2.6 / F1-2.7 / F1-2.8 — solo Renovación/Actualización. -->
+    ${esRenovacionOActualizacion ? `
+      <h2 class="wz-section">Reconocimiento Deportivo anterior</h2>
+      ${tf({ label:'N° Resolución de Reconocimiento Deportivo anterior', required:true,
+              placeholder:'Resolución 0050 del 01/06/2020',
+              value:f1.no_res_rd_anterior, maxLength:150,
+              onInput:'STATE.data.f1.no_res_rd_anterior=this.value' })}
+      <div class="wz-grid-2" style="margin-top:14px;">
+        ${datepicker({ label:'Fecha de Notificación de la Resolución de RD anterior',
+                name:'f1_fecha_notif_rd', required:true, max:todayISO(),
+                value:f1.fecha_notif_rd,
+                onChange:'STATE.data.f1.fecha_notif_rd=this.value' })}
+        ${datepicker({ label:'Fecha de Firmeza de la Resolución de RD anterior',
+                name:'f1_fecha_firmeza_rd', required:true, max:todayISO(),
+                value:f1.fecha_firmeza_rd,
+                onChange:'STATE.data.f1.fecha_firmeza_rd=this.value' })}
+      </div>
+      <p style="font-size:11.5px;color:var(--text-secondary);margin:4px 0 0;">Fecha de Firmeza debe ser ≥ Fecha de Notificación.</p>
+    ` : ''}
+
+    <!-- v1.5.8 (sweep matriz): F1-2.9 — No. Res/Acta Inscripción Miembros (movido desde Asamblea). -->
+    <h2 class="wz-section">Inscripción de Miembros</h2>
+    ${tf({ id:'f1-no-acta-miembros', label:'N° Resolución / Acta de Inscripción de Miembros', required:true,
+            placeholder:'Ej: Resolución 0042 del 15/03/2022 — radicado IVC-2022-000123, tomo 1, pág. 12',
+            helper:'Indicar radicado, tomo y página.',
+            value:f1.f1_no_acta_miembros, maxLength:255,
+            onInput:'STATE.data.f1.f1_no_acta_miembros=this.value' })}
+
     <h2 class="wz-section">Constancia de Personería Jurídica</h2>
     <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Tiene Constancia de Personería Jurídica vigente?</label>
     ${radioYN({
@@ -2373,6 +2576,7 @@ function renderStep2_F1() {
     ${f1.tiene_constancia === 'si' ? `
       <div style="margin-top:14px;">
         ${datepicker({ label:'Fecha de la Constancia', name:'f1_fecha_constancia', required:true,
+                max:todayISO(),
                 value:f1.fecha_constancia, onChange:'STATE.data.f1.fecha_constancia=this.value' })}
       </div>
     ` : ''}
@@ -2382,8 +2586,9 @@ function renderStep2_F1() {
       ${tf({ label:'N° Resolución de Mínimos', required:true,
               placeholder:'Resolución 0123 del 01/01/2020', value:f1.no_res_minimos,
               onInput:'STATE.data.f1.no_res_minimos=this.value' })}
-      ${tf({ label:'N° de Mínimos legales', required:true, type:'number',
+      ${tf({ label:'N° de Mínimos legales', required:true,
               placeholder:'15', value:f1.n_minimos,
+              mask:'numeric', maxLength:5,
               onInput:'STATE.data.f1.n_minimos=this.value' })}
     </div>
   `;
@@ -2392,6 +2597,12 @@ function renderStep2_F1() {
 function renderStep2_F2() {
   const f2 = STATE.data.f2;
   return `
+    <!-- v1.5.8 (sweep matriz F2-0.1): sub-tipo Juvenil / Recreativa. -->
+    <h2 class="wz-section">Tipo de Asociación</h2>
+    ${dd({ id:'f2-sub-tipo', label:'¿Es una Asociación Juvenil o Recreativa?', required:true,
+            value:f2.sub_tipo, options:SUB_TIPOS_ASOCIACION,
+            onChange:'STATE.data.f2.sub_tipo=this.value' })}
+
     <h2 class="wz-section">Personería Jurídica</h2>
     <div class="wz-grid-2">
       ${tf({ label:'N° y fecha del documento de Personería Jurídica', required:true,
@@ -2481,6 +2692,12 @@ function renderStep2_F2() {
 
 function renderStep2_F3() {
   const f3 = STATE.data.f3;
+  /* v1.5.8 (25/05/2026): F3 step 2 — feedback Juanma.
+     Antes reutilizaba el step de Personería de Liga con Estatutos, Períodos,
+     Convocatoria, etc. (no aplicaba a Federación). Ahora solo:
+     - Personería Jurídica (2 campos canónicos)
+     - Constitución (F3-2.1, F3-2.2, F3-2.3 — 3 campos según matriz XLSX)
+     Los campos de Asamblea (tipo convocatoria, fechas) se movieron al step 3. */
   return `
     <h2 class="wz-section">Personería Jurídica</h2>
     <div class="wz-grid-2">
@@ -2492,39 +2709,21 @@ function renderStep2_F3() {
               onInput:'STATE.data.f3.radicado_personeria=this.value' })}
     </div>
 
-    <h2 class="wz-section">Estatutos y períodos</h2>
-    <div class="wz-grid-2">
-      ${datepicker({ label:'Fecha última Reforma Estatutaria', name:'f3_fecha_reforma',
-              required:true, value:f3.fecha_reforma,
-              onChange:'STATE.data.f3.fecha_reforma=this.value' })}
-      ${tf({ label:'Radicado de Estatutos en IVC', required:true,
-              placeholder:'IVC-2024-000456', value:f3.radicado_estatutos,
-              onInput:'STATE.data.f3.radicado_estatutos=this.value' })}
-    </div>
-    <div class="wz-grid-2">
-      ${tf({ label:'Período Estatutario Inicial', required:true,
-              placeholder:'2020–2024', value:f3.periodo_inicial,
-              onInput:'STATE.data.f3.periodo_inicial=this.value' })}
-      ${tf({ label:'Período Estatutario Vigente', required:true,
-              placeholder:'2024–2028', value:f3.periodo_vigente,
-              onInput:'STATE.data.f3.periodo_vigente=this.value' })}
-    </div>
-
-    <h2 class="wz-section">Convocatoria nacional</h2>
-    ${dd({ label:'Tipo de convocatoria', required:true, value:f3.tipo_convocatoria,
-            options:[
-              { v:'', t:'Selecciona tipo…' },
-              { v:'COMITE_PROVISIONAL', t:'Comité provisional' },
-              { v:'INICIATIVA_PROPIA',  t:'Iniciativa propia' }
-            ],
-            onChange:'STATE.data.f3.tipo_convocatoria=this.value' })}
-    <div class="wz-grid-2">
-      ${datepicker({ label:'Fecha de Convocatoria', name:'f3_fecha_convocatoria',
-              required:true, value:f3.fecha_convocatoria,
-              onChange:'STATE.data.f3.fecha_convocatoria=this.value' })}
-      ${datepicker({ label:'Fecha de Realización', name:'f3_fecha_realizacion',
-              required:true, value:f3.fecha_realizacion,
-              onChange:'STATE.data.f3.fecha_realizacion=this.value' })}
+    <h2 class="wz-section">Constitución</h2>
+    ${tf({ id:'f3-periodo-estatutario-inicial', label:'Período Estatutario Inicial', required:true,
+            placeholder:'Ej: 2024–2028',
+            value:f3.f3_periodo_estatutario_inicial, maxLength:50,
+            onInput:'STATE.data.f3.f3_periodo_estatutario_inicial=this.value' })}
+    <div class="wz-grid-2" style="margin-top:14px;">
+      ${tf({ id:'f3-no-res-minimos', label:'N° Resolución de Mínimos', required:true,
+              placeholder:'Ej: Resolución 0003 del 05/02/2020',
+              value:f3.f3_no_res_minimos, maxLength:150,
+              onInput:'STATE.data.f3.f3_no_res_minimos=this.value' })}
+      ${tf({ id:'f3-n-minimos', label:'N° de Mínimos', required:true,
+              placeholder:'Ej: 12', value:f3.f3_n_minimos,
+              mask:'numeric', maxLength:4,
+              helper:'Entero positivo. Mínimo 1.',
+              onInput:'STATE.data.f3.f3_n_minimos=this.value' })}
     </div>
   `;
 }
@@ -2533,7 +2732,7 @@ function renderStep2_F3() {
    Step 3 — Asamblea
    ============================================================ */
 function renderStep3() {
-  if (STATE.tipoOrganismo === 'asociacion') return renderSkipView('El paso de Asamblea no aplica para Asociaciones Deportivas. Continúa al siguiente paso.');
+  if (STATE.tipoOrganismo === 'asociacion') return renderSkipView('El paso de Asamblea no aplica para Asociaciones Juveniles o Recreativas. Continúe con el siguiente paso.');
   if (STATE.tipoOrganismo === 'liga')       return renderStep3_F1();
   if (STATE.tipoOrganismo === 'federacion') return renderStep3_F3();
   return '';
@@ -2551,6 +2750,13 @@ function renderSkipView(msg) {
 
 function renderStep3_F1() {
   const a = STATE.data.asamblea;
+  // v1.5.8 (25/05/2026): Convocante condicional según F1-4.1.
+  const convOA_Pres_OC = ['OA','PRESIDENTE','OC'].includes(a.f1_tipo_convocante);
+  const convPresidente = a.f1_tipo_convocante === 'PRESIDENTE';
+  const convComite = a.f1_tipo_convocante === 'COMITE_PROVISIONAL';
+  // Asistentes — uploaders condicionales
+  const adjuntaRfFecha = a.f1_adjunta_cert_rf_fecha === 'si';
+  const adjuntaRfActual = a.f1_adjunta_cert_rf_actual === 'si';
   return `
     <h2 class="wz-section">Tema u objeto de la reunión</h2>
     ${ta({ id:'tema-asamblea', label:'Tema tratado u objeto de la reunión', required:true,
@@ -2558,61 +2764,227 @@ function renderStep3_F1() {
             value:a.f1_tema, maxlength:2000, counterId:'temaCount',
             onInput:"STATE.data.asamblea.f1_tema=this.value;document.getElementById('temaCount').textContent=this.value.length" })}
 
+    <!-- v1.5.8 rev2: F1-2.9 (No. Res/Acta Inscripción Miembros) movido al step 2
+         Personería — pertenece a sección 2 del matriz, no a Asamblea. -->
+
     <h2 class="wz-section">Tipos de reunión realizados</h2>
-    ${messageInfo('', '9 tipos según Decreto 1085/2015. Solo diligencia las filas donde la reunión efectivamente se realizó.')}
     <div class="ivc-repeatable">
-      <div class="ivc-repeatable__head" style="grid-template-columns: 1.2fr 1.1fr 1.1fr 0.8fr 80px 32px;">
+      <div class="ivc-repeatable__head" style="grid-template-columns: 1.6fr 1.1fr 1.1fr 0.8fr 80px;">
         <div>Tipo / Clase</div>
         <div>Fecha Convocatoria</div>
         <div>Fecha Realización</div>
-        <div>Antelación</div>
+        <div>Fecha Antelación Estatutos</div>
         <div>¿Cumple?</div>
-        <div></div>
       </div>
       ${a.f1_reuniones.map((row, i) => `
-        <div class="ivc-repeatable__row" style="grid-template-columns: 1.2fr 1.1fr 1.1fr 0.8fr 80px 32px;">
-          <input type="text" class="ivc-mini-input" value="${escAttr(row.tipo)}" placeholder="Tipo de reunión"
-            oninput="STATE.data.asamblea.f1_reuniones[${i}].tipo=this.value" />
+        <div class="ivc-repeatable__row" style="grid-template-columns: 1.6fr 1.1fr 1.1fr 1.1fr 80px;">
+          ${ddInline({ value:row.tipo, options:TIPOS_REUNION_ASAMBLEA,
+              onChange:`STATE.data.asamblea.f1_reuniones[${i}].tipo=this.value` })}
           ${datepickerInline({ name:`f1_reuniones_${i}_fechaConv`, value:row.fechaConv, max:todayISO(),
               onChange:`STATE.data.asamblea.f1_reuniones[${i}].fechaConv=this.value` })}
           ${datepickerInline({ name:`f1_reuniones_${i}_fechaReal`, value:row.fechaReal, max:todayISO(),
               onChange:`STATE.data.asamblea.f1_reuniones[${i}].fechaReal=this.value` })}
-          <input type="text" class="ivc-mini-input" value="${escAttr(row.antelacion)}" placeholder="15 días"
-            oninput="STATE.data.asamblea.f1_reuniones[${i}].antelacion=this.value" />
-          ${ddInline({ value:row.cumple, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.asamblea.f1_reuniones[${i}].cumple=this.value` })}
-          <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small ivc-repeatable__remove" onclick="STATE.data.asamblea.f1_reuniones.splice(${i},1);render();" aria-label="Eliminar fila">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6"/></svg>
-          </button>
+          ${datepickerInline({ name:`f1_reuniones_${i}_antelacion`, value:row.antelacion, max:todayISO(),
+              onChange:`STATE.data.asamblea.f1_reuniones[${i}].antelacion=this.value` })}
+          ${ddInline({ value:row.cumple, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}],
+              onChange:`STATE.data.asamblea.f1_reuniones[${i}].cumple=this.value` })}
         </div>
       `).join('')}
-      <div class="ivc-repeatable__add">
-        <!-- v1.5.7: --mute (ghost) en lugar de --quiet (fill crema). Feedback Doug. -->
-        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="STATE.data.asamblea.f1_reuniones.push({tipo:'',fechaConv:'',fechaReal:'',antelacion:'',cumple:''});render();">+ Agregar tipo de reunión</button>
+    </div>
+
+    <!-- v1.5.8: F1-3b.obs — Observaciones (opcional). Feedback Juanma. -->
+    <!-- v1.5.8 rev1: margin-top extra para separar del repeatable de tipos.
+         Feedback Juanma: estaba pegado a la tabla. -->
+    <div style="margin-top:20px;">
+      ${ta({ id:'obs-asamblea', label:'Observaciones sobre la asamblea', required:false,
+              placeholder:'Comentarios adicionales sobre el desarrollo de la asamblea (opcional)…',
+              value:a.f1_obs_asamblea, maxlength:1000, counterId:'obsAsambleaCount',
+              onInput:"STATE.data.asamblea.f1_obs_asamblea=this.value;document.getElementById('obsAsambleaCount').textContent=this.value.length" })}
+    </div>
+
+    <!-- v1.5.8: Sección 4 · Convocante. Feedback Juanma. -->
+    <h2 class="wz-section">Convocante</h2>
+    ${dd({ id:'f1-tipo-convocante', label:'Tipo de convocante', required:true,
+            value:a.f1_tipo_convocante, options:TIPOS_CONVOCANTE,
+            onChange:'STATE.data.asamblea.f1_tipo_convocante=this.value;render();' })}
+    ${convOA_Pres_OC ? `
+      <div style="margin-top:14px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿El convocante fue elegido dentro del período estatutario vigente?</label>
+        ${radioYN({
+          name:'convVigente', value:a.f1_convocante_vigente,
+          onYes:"STATE.data.asamblea.f1_convocante_vigente='si';render();",
+          onNo:"STATE.data.asamblea.f1_convocante_vigente='no';render();"
+        })}
       </div>
+      <div style="margin-top:14px;">
+        ${tf({ id:'f1-no-res-convocante', label:'N° Resolución o Auto de Inscripción del convocante', required:true,
+                placeholder:'Ej: Auto 002 del 20/01/2023',
+                value:a.f1_no_res_convocante, maxLength:150,
+                onInput:'STATE.data.asamblea.f1_no_res_convocante=this.value' })}
+      </div>
+    ` : ''}
+    ${convPresidente ? `
+      <div style="margin-top:14px;">
+        ${tf({ id:'f1-no-acta-designa-pres', label:'N° Acta del OA que designa al Presidente para convocar', required:true,
+                placeholder:'Texto libre. Número y fecha del acta.',
+                helper:'Solo aplica cuando Presidente convoca reunión extraordinaria.',
+                value:a.f1_no_acta_designa_presidente, maxLength:150,
+                onInput:'STATE.data.asamblea.f1_no_acta_designa_presidente=this.value' })}
+      </div>
+    ` : ''}
+    ${convComite ? `
+      <div class="wz-grid-2" style="margin-top:14px;">
+        ${tf({ id:'f1-no-res-comite', label:'N° Resolución de nombramiento del Comité Provisional', required:true,
+                placeholder:'Texto libre',
+                value:a.f1_no_res_comite_provisional, maxLength:150,
+                onInput:'STATE.data.asamblea.f1_no_res_comite_provisional=this.value' })}
+        ${tf({ id:'f1-vigencia-comite', label:'Vigencia del Comité Provisional', required:true,
+                placeholder:'Ej: 01/01/2023 – 30/06/2023',
+                value:a.f1_vigencia_comite_provisional, maxLength:100,
+                onInput:'STATE.data.asamblea.f1_vigencia_comite_provisional=this.value' })}
+      </div>
+      <div style="margin-top:14px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Los miembros del Comité Provisional fueron designados por el OA de la Federación?</label>
+        ${radioYN({
+          name:'comiteOA', value:a.f1_comite_designado_por_oa,
+          onYes:"STATE.data.asamblea.f1_comite_designado_por_oa='si';render();",
+          onNo:"STATE.data.asamblea.f1_comite_designado_por_oa='no';render();"
+        })}
+      </div>
+      <div style="margin-top:14px;">
+        ${tf({ id:'f1-ente-deportivo', label:'Ente Deportivo o quien haga sus veces', required:true,
+                placeholder:"Texto libre. Escribir 'No requiere' si no aplica.",
+                value:a.f1_ente_deportivo, maxLength:255,
+                onInput:'STATE.data.asamblea.f1_ente_deportivo=this.value' })}
+      </div>
+    ` : ''}
+
+    <!-- v1.5.8: Sección 5 · Asistentes y quórum. Feedback Juanma. -->
+    <h2 class="wz-section">Asistentes y quórum</h2>
+    <div class="wz-grid-2">
+      ${tf({ id:'f1-num-afiliados', label:'Número total de afiliados', required:true,
+              placeholder:'Ej: 120', value:a.f1_num_afiliados,
+              mask:'numeric', maxLength:6,
+              onInput:'STATE.data.asamblea.f1_num_afiliados=this.value' })}
+      ${tf({ id:'f1-num-asistentes', label:'Número de afiliados asistentes a la reunión', required:true,
+              placeholder:'Ej: 78', value:a.f1_num_asistentes,
+              mask:'numeric', maxLength:6,
+              helper:'Debe ser ≤ Número total de afiliados.',
+              onInput:'STATE.data.asamblea.f1_num_asistentes=this.value' })}
+    </div>
+    <div style="margin-top:14px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se cumplió el quórum?</label>
+      ${radioYN({
+        name:'cumpleQuorum', value:a.f1_cumplio_quorum,
+        onYes:"STATE.data.asamblea.f1_cumplio_quorum='si';render();",
+        onNo:"STATE.data.asamblea.f1_cumplio_quorum='no';render();"
+      })}
+    </div>
+    <div style="margin-top:14px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se adjunta Certificación del Revisor Fiscal sobre total de afiliados a la fecha de la reunión?</label>
+      ${radioYN({
+        name:'adjuntaRfFecha', value:a.f1_adjunta_cert_rf_fecha,
+        onYes:"STATE.data.asamblea.f1_adjunta_cert_rf_fecha='si';render();",
+        onNo:"STATE.data.asamblea.f1_adjunta_cert_rf_fecha='no';render();"
+      })}
+    </div>
+    ${adjuntaRfFecha ? `
+      <div style="margin-top:12px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Certificación RF — afiliados en la fecha de la reunión</label>
+        ${uploadField({ stateKey:'data.asamblea.f1_archivo_cert_rf_fecha' })}
+      </div>
+    ` : ''}
+    <div style="margin-top:14px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se adjunta Certificado del Revisor Fiscal sobre total de afiliados en la actualidad?</label>
+      ${radioYN({
+        name:'adjuntaRfActual', value:a.f1_adjunta_cert_rf_actual,
+        onYes:"STATE.data.asamblea.f1_adjunta_cert_rf_actual='si';render();",
+        onNo:"STATE.data.asamblea.f1_adjunta_cert_rf_actual='no';render();"
+      })}
+    </div>
+    ${adjuntaRfActual ? `
+      <div style="margin-top:12px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Certificado RF — afiliados en la actualidad</label>
+        ${uploadField({ stateKey:'data.asamblea.f1_archivo_cert_rf_actual' })}
+      </div>
+    ` : ''}
+    <div style="margin-top:14px;">
+      ${ta({ id:'obs-asistencia', label:'Observaciones sobre asistencia', required:false,
+              placeholder:'Comentarios adicionales sobre asistentes o quórum (opcional)…',
+              value:a.f1_obs_asistencia, maxlength:1000, counterId:'obsAsistenciaCount',
+              onInput:"STATE.data.asamblea.f1_obs_asistencia=this.value;document.getElementById('obsAsistenciaCount').textContent=this.value.length" })}
     </div>
   `;
 }
 
 function renderStep3_F3() {
   const a = STATE.data.asamblea;
+  // v1.5.8 (25/05/2026): F3 step 3 — feedback Juanma. Dos secciones según matriz XLSX:
+  // 3 · ASAMBLEA DE CONSTITUCIÓN (F3-3.1 a F3-3.3) y 4 · ASISTENTES Y QUÓRUM (F3-4.1 a F3-4.4-DOC).
+  const adjuntaRf = a.f3_adjunta_cert_rf === 'si';
   return `
-    <h2 class="wz-section">Asistentes y quórum</h2>
-    <div class="wz-grid-2">
-      ${tf({ label:'N° de asistentes a la Asamblea Constitutiva', required:true, type:'number',
-              placeholder:'25', value:a.f3_n_asistentes,
-              onInput:'STATE.data.asamblea.f3_n_asistentes=this.value' })}
-      ${dd({ label:'¿Cumple quórum?', required:true, value:a.f3_cumple_quorum,
-              options:[
-                { v:'', t:'Selecciona…' },
-                { v:'si', t:'Sí' },
-                { v:'no', t:'No' }
-              ],
-              onChange:'STATE.data.asamblea.f3_cumple_quorum=this.value' })}
+    <!-- Sección 3 · Asamblea de Constitución (F3-3.x)
+         v1.5.8 (sweep matriz F3-3.1): radios explícitos con labels canónicos
+         del XLSX (antes era radioYN confuso con Sí/No mapeado a enum). -->
+    <h2 class="wz-section">Asamblea de Constitución</h2>
+    <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Tipo de convocatoria</label>
+    <div class="naowee-radio-group naowee-radio-group--horizontal">
+      <label class="naowee-radio${a.f3_tipo_convocatoria === 'COMITE_PROVISIONAL' ? ' naowee-radio--selected' : ''}" onclick="STATE.data.asamblea.f3_tipo_convocatoria='COMITE_PROVISIONAL';render();">
+        <span class="naowee-radio__circle"></span>
+        <span class="naowee-radio__label">Comité Provisional</span>
+      </label>
+      <label class="naowee-radio${a.f3_tipo_convocatoria === 'INICIATIVA_PROPIA' ? ' naowee-radio--selected' : ''}" onclick="STATE.data.asamblea.f3_tipo_convocatoria='INICIATIVA_PROPIA';render();">
+        <span class="naowee-radio__circle"></span>
+        <span class="naowee-radio__label">Iniciativa Propia</span>
+      </label>
     </div>
+    <div class="wz-grid-2" style="margin-top:14px;">
+      ${datepicker({ label:'Fecha de Convocatoria', name:'f3_fecha_convocatoria',
+              required:true, max:todayISO(),
+              value:a.f3_fecha_convocatoria,
+              onChange:'STATE.data.asamblea.f3_fecha_convocatoria=this.value' })}
+      ${datepicker({ label:'Fecha de Realización', name:'f3_fecha_realizacion',
+              required:true, max:todayISO(),
+              value:a.f3_fecha_realizacion,
+              onChange:'STATE.data.asamblea.f3_fecha_realizacion=this.value' })}
+    </div>
+    <p style="font-size:11.5px;color:var(--text-secondary);margin:4px 0 0;">Fecha de Realización debe ser ≥ Fecha de Convocatoria.</p>
 
-    <h2 class="wz-section">Certificación del Revisor Fiscal</h2>
-    <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Carga la certificación del Revisor Fiscal</label>
-    ${uploadField({ stateKey:'data.asamblea.f3_archivo_cert' })}
+    <!-- Sección 4 · Asistentes y Quórum (F3-4.x) -->
+    <h2 class="wz-section" style="margin-top:24px;">Asistentes y quórum</h2>
+    <div class="wz-grid-2">
+      ${tf({ id:'f3-num-afiliados', label:'Número total de afiliados', required:true,
+              placeholder:'Ej: 120', value:a.f3_num_afiliados,
+              mask:'numeric', maxLength:6,
+              onInput:'STATE.data.asamblea.f3_num_afiliados=this.value' })}
+      ${tf({ id:'f3-num-asistentes', label:'Número de afiliados asistentes', required:true,
+              placeholder:'Ej: 78', value:a.f3_num_asistentes,
+              mask:'numeric', maxLength:6,
+              helper:'Debe ser ≤ Número total de afiliados.',
+              onInput:'STATE.data.asamblea.f3_num_asistentes=this.value' })}
+    </div>
+    <div style="margin-top:14px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se cumplió el quórum?</label>
+      ${radioYN({
+        name:'f3CumpleQuorum', value:a.f3_cumplio_quorum,
+        onYes:"STATE.data.asamblea.f3_cumplio_quorum='si';render();",
+        onNo:"STATE.data.asamblea.f3_cumplio_quorum='no';render();"
+      })}
+    </div>
+    <div style="margin-top:14px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se adjunta Certificación del Revisor Fiscal sobre total de afiliados?</label>
+      ${radioYN({
+        name:'f3AdjuntaRf', value:a.f3_adjunta_cert_rf,
+        onYes:"STATE.data.asamblea.f3_adjunta_cert_rf='si';render();",
+        onNo:"STATE.data.asamblea.f3_adjunta_cert_rf='no';render();"
+      })}
+    </div>
+    ${adjuntaRf ? `
+      <div style="margin-top:12px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Certificación RF — total de afiliados</label>
+        ${uploadField({ stateKey:'data.asamblea.f3_archivo_cert' })}
+      </div>
+    ` : ''}
   `;
 }
 
@@ -2717,6 +3089,23 @@ function renderStep4_F1() {
       onRemove:(i) => `STATE.data.estructura.f1_miembros_oa.splice(${i},1);render();`
     })}
 
+    <!-- v1.5.8 (25/05/2026): F1-6b.1 + F1-6b.2 — feedback Juanma/Danna sobre OA. -->
+    <div style="margin-top:18px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿El presidente tiene antecedentes disciplinarios?</label>
+      ${radioYN({
+        name:'presAntec', value:e.f1_presidente_antecedentes,
+        onYes:"STATE.data.estructura.f1_presidente_antecedentes='si';render();",
+        onNo:"STATE.data.estructura.f1_presidente_antecedentes='no';render();"
+      })}
+    </div>
+    <div style="margin-top:14px;">
+      ${tf({ id:'f1-persona-discapacidad', label:'Nombre de la persona con discapacidad o representante del grupo poblacional', required:false,
+              placeholder:'Dejar vacío si no aplica',
+              helper:'Máx. 255 caracteres. Opcional.',
+              value:e.f1_persona_discapacidad, maxLength:255,
+              onInput:'STATE.data.estructura.f1_persona_discapacidad=this.value' })}
+    </div>
+
     <h2 class="wz-section">C. Revisor Fiscal (Órgano de Control)</h2>
     ${repeatableFixed({
       head:['Cargo', 'Nombre', 'Identificación'],
@@ -2767,8 +3156,9 @@ function renderStep4_F1() {
       `
     })}
 
-    <h2 class="wz-section">G. Paradeporte (opcional)</h2>
-    <label class="naowee-textfield__label" style="margin-bottom:8px;display:block;">¿Aplica Paradeporte?</label>
+    <!-- v1.5.8 (sweep matriz): F1-6g.1 — label corregido según XLSX. -->
+    <h2 class="wz-section">G. Comisión Especializada o de Paradeporte</h2>
+    <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se le exige al organismo contar con Comisión Especializada o de Paradeporte?</label>
     ${radioYN({
       name:'aplicaPara', value:e.f1_aplica_paradeporte,
       onYes:"STATE.data.estructura.f1_aplica_paradeporte='si';render();",
@@ -2786,6 +3176,17 @@ function renderStep4_F1() {
               oninput="STATE.data.estructura.f1_comision_paradeporte[${i}].nombre=this.value" />
           `
         })}
+      </div>
+      <!-- v1.5.8: F1-6g.5 — Fecha de la asamblea en que se eligieron los integrantes
+           de la Comisión de Paradeporte. Feedback Juanma. -->
+      <div style="margin-top:14px;">
+        ${datepicker({ label:'Fecha de la asamblea en que se eligieron los integrantes de la Comisión de Paradeporte',
+                name:'f1_paradeporte_fecha_asamblea',
+                required:true,
+                max:todayISO(),
+                value:e.f1_paradeporte_fecha_asamblea,
+                onChange:'STATE.data.estructura.f1_paradeporte_fecha_asamblea=this.value' })}
+        <span class="naowee-textfield__helper" style="font-size:11.5px;color:var(--text-secondary);margin-top:6px;display:block;">No puede ser fecha futura.</span>
       </div>
     ` : ''}
   `;
@@ -2813,6 +3214,11 @@ function renderStep4_F2() {
 
 function renderStep4_F3() {
   const e = STATE.data.estructura;
+  // v1.5.8 (25/05/2026): F3 step 4 — feedback Juanma. Agregadas las secciones
+  // F3-5b.x (OA + cert residencia + fechas), F3-5c.x (Revisor Fiscal + cert),
+  // F3-5d.x (Comisión Disciplinaria + fecha elección M3).
+  const acreditaOA = e.f3_acredita_cert_residencia_oa === 'si';
+  const acreditaOC = e.f3_acredita_cert_residencia_oc === 'si';
   return `
     <h2 class="wz-section">A. Afiliados constituyentes</h2>
     ${repeatableDynamic({
@@ -2829,23 +3235,136 @@ function renderStep4_F3() {
       onRemove:(i) => `STATE.data.estructura.f3_afiliados.splice(${i},1);render();`
     })}
 
+    <!-- v1.5.8 (sweep matriz F3-5b): 6 columnas según XLSX. -->
     <h2 class="wz-section">B. Miembros del Órgano de Administración</h2>
     ${repeatableDynamic({
-      head:['Nombre', 'Identificación', 'Cargo', '¿Acepta cargo?'],
-      cols:'1.3fr 1fr 1fr 100px 36px',
+      head:['Nombre', 'Cargo', 'Identificación', '¿Capacitación?', 'Nombrado por', '¿Acepta cargo?'],
+      cols:'1.2fr 1fr 0.9fr 100px 1fr 100px 36px',
       rows:e.f3_miembros_oa,
       cellRenderer:(r,i) => `
         <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre"
           oninput="STATE.data.estructura.f3_miembros_oa[${i}].nombre=this.value" />
-        <input type="text" class="ivc-mini-input" value="${escAttr(r.identificacion)}" placeholder="C.C."
-          oninput="STATE.data.estructura.f3_miembros_oa[${i}].identificacion=this.value" />
         <input type="text" class="ivc-mini-input" value="${escAttr(r.cargo)}" placeholder="Presidente"
           oninput="STATE.data.estructura.f3_miembros_oa[${i}].cargo=this.value" />
-        ${ddInline({ value:r.acepta, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f3_miembros_oa[${i}].acepta=this.value` })}
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.identificacion)}" placeholder="C.C."
+          oninput="STATE.data.estructura.f3_miembros_oa[${i}].identificacion=this.value" />
+        ${ddInline({ value:r.tiene_capacitacion, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f3_miembros_oa[${i}].tiene_capacitacion=this.value` })}
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombrado_por)}" placeholder="Asamblea"
+          oninput="STATE.data.estructura.f3_miembros_oa[${i}].nombrado_por=this.value" />
+        ${ddInline({ value:r.acepta_cargo, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f3_miembros_oa[${i}].acepta_cargo=this.value` })}
       `,
-      onAdd:"STATE.data.estructura.f3_miembros_oa.push({nombre:'',identificacion:'',cargo:'',acepta:''});render();",
+      onAdd:"STATE.data.estructura.f3_miembros_oa.push({nombre:'',cargo:'',identificacion:'',tiene_capacitacion:'',nombrado_por:'',acepta_cargo:''});render();",
       onRemove:(i) => `STATE.data.estructura.f3_miembros_oa.splice(${i},1);render();`
     })}
+
+    <!-- v1.5.8: F3-5b.x — Datos extra del OA (feedback Juanma) -->
+    <div style="margin-top:18px;">
+      ${tf({ id:'f3-persona-discap', label:'Nombre de la persona con discapacidad o representante del grupo poblacional', required:false,
+              placeholder:'Dejar vacío si no aplica',
+              helper:'Máx. 255 caracteres. Opcional.',
+              value:e.f3_persona_discapacidad, maxLength:255,
+              onInput:'STATE.data.estructura.f3_persona_discapacidad=this.value' })}
+    </div>
+    <div class="wz-grid-2" style="margin-top:14px;">
+      ${datepicker({ label:'Fecha de la reunión electiva del Órgano de Administración',
+              name:'f3_fecha_reunion_electiva_oa',
+              required:true, max:todayISO(),
+              value:e.f3_fecha_reunion_electiva_oa,
+              onChange:'STATE.data.estructura.f3_fecha_reunion_electiva_oa=this.value' })}
+      ${datepicker({ label:'Fecha de la reunión de asignación de cargos',
+              name:'f3_fecha_reunion_asignacion',
+              required:true, max:todayISO(),
+              value:e.f3_fecha_reunion_asignacion,
+              onChange:'STATE.data.estructura.f3_fecha_reunion_asignacion=this.value' })}
+    </div>
+    <p style="font-size:11.5px;color:var(--text-secondary);margin:4px 0 0;">Fecha de asignación de cargos debe ser ≥ Fecha de reunión electiva.</p>
+    <div style="margin-top:14px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se acredita Certificado de Residencia del OA?</label>
+      ${radioYN({
+        name:'f3CertResOA', value:e.f3_acredita_cert_residencia_oa,
+        onYes:"STATE.data.estructura.f3_acredita_cert_residencia_oa='si';render();",
+        onNo:"STATE.data.estructura.f3_acredita_cert_residencia_oa='no';render();",
+        extra:[{ v:'no_aplica', t:'No aplica', onClick:"STATE.data.estructura.f3_acredita_cert_residencia_oa='no_aplica';render();" }]
+      })}
+    </div>
+    ${acreditaOA ? `
+      <div style="margin-top:14px;">
+        ${ta({ id:'f3-nombres-cert-oa', label:'Nombres de quienes acreditan el Certificado de Residencia (OA)', required:true,
+                placeholder:'Listar nombres separados por coma',
+                value:e.f3_nombres_cert_residencia_oa, maxlength:500,
+                onInput:'STATE.data.estructura.f3_nombres_cert_residencia_oa=this.value' })}
+      </div>
+      <div style="margin-top:12px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Certificado de Residencia del OA</label>
+        ${uploadField({ stateKey:'data.estructura.f3_archivo_cert_residencia_oa' })}
+      </div>
+    ` : ''}
+
+    <!-- v1.5.8: F3-5c.x — Órgano de Control (Revisor Fiscal) -->
+    <!-- v1.5.8 (sweep matriz F3-5c): 7 columnas según XLSX, agregados
+         antecedentes_disciplinarios y firma_revisoria. -->
+    <h2 class="wz-section">C. Órgano de Control (Revisor Fiscal)</h2>
+    ${repeatableFixed({
+      head:['Cargo', 'Nombre', 'Identificación', 'N° Tarjeta Profesional', '¿Acepta cargo?', '¿Antecedentes disciplinarios?', '¿Firma revisoría?'],
+      cols:'120px 1.2fr 0.9fr 1fr 100px 110px 110px',
+      rows:e.f3_revisor_fiscal,
+      cellRenderer:(r,i) => `
+        <div class="ivc-repeatable__row-display">${esc(r.display)}</div>
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre completo"
+          oninput="STATE.data.estructura.f3_revisor_fiscal[${i}].nombre=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.identificacion)}" placeholder="C.C."
+          oninput="STATE.data.estructura.f3_revisor_fiscal[${i}].identificacion=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.no_tarjeta_profesional)}" placeholder="N° tarjeta"
+          oninput="STATE.data.estructura.f3_revisor_fiscal[${i}].no_tarjeta_profesional=this.value" />
+        ${ddInline({ value:r.acepta_cargo, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f3_revisor_fiscal[${i}].acepta_cargo=this.value` })}
+        ${ddInline({ value:r.antecedentes_disciplinarios, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f3_revisor_fiscal[${i}].antecedentes_disciplinarios=this.value` })}
+        ${ddInline({ value:r.firma_revisoria, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f3_revisor_fiscal[${i}].firma_revisoria=this.value` })}
+      `
+    })}
+    <div style="margin-top:14px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se acredita Certificado de Residencia del OC?</label>
+      ${radioYN({
+        name:'f3CertResOC', value:e.f3_acredita_cert_residencia_oc,
+        onYes:"STATE.data.estructura.f3_acredita_cert_residencia_oc='si';render();",
+        onNo:"STATE.data.estructura.f3_acredita_cert_residencia_oc='no';render();",
+        extra:[{ v:'no_aplica', t:'No aplica', onClick:"STATE.data.estructura.f3_acredita_cert_residencia_oc='no_aplica';render();" }]
+      })}
+    </div>
+    ${acreditaOC ? `
+      <div style="margin-top:14px;">
+        ${ta({ id:'f3-nombres-cert-oc', label:'Nombres de quienes acreditan el Certificado de Residencia (OC)', required:true,
+                placeholder:'Listar nombres separados por coma',
+                value:e.f3_nombres_cert_residencia_oc, maxlength:500,
+                onInput:'STATE.data.estructura.f3_nombres_cert_residencia_oc=this.value' })}
+      </div>
+      <div style="margin-top:12px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Certificado de Residencia del OC</label>
+        ${uploadField({ stateKey:'data.estructura.f3_archivo_cert_residencia_oc' })}
+      </div>
+    ` : ''}
+
+    <!-- v1.5.8: F3-5d.x — Comisión Disciplinaria -->
+    <h2 class="wz-section">D. Comisión Disciplinaria</h2>
+    ${repeatableFixed({
+      head:['Órgano electivo', 'Nombre', 'Identificación', '¿Acepta?'],
+      cols:'140px 1.4fr 1fr 100px',
+      rows:e.f3_comision_disciplinaria,
+      cellRenderer:(r,i) => `
+        <div class="ivc-repeatable__row-display">${esc(r.display)}</div>
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.nombre)}" placeholder="Nombre completo"
+          oninput="STATE.data.estructura.f3_comision_disciplinaria[${i}].nombre=this.value" />
+        <input type="text" class="ivc-mini-input" value="${escAttr(r.identificacion)}" placeholder="C.C."
+          oninput="STATE.data.estructura.f3_comision_disciplinaria[${i}].identificacion=this.value" />
+        ${ddInline({ value:r.acepta, options:[{v:'',t:'—'},{v:'si',t:'Sí'},{v:'no',t:'No'}], onChange:`STATE.data.estructura.f3_comision_disciplinaria[${i}].acepta=this.value` })}
+      `
+    })}
+    <div style="margin-top:14px;">
+      ${datepicker({ label:'Fecha de la reunión del OA para elección del Miembro 3 de la CD',
+              name:'f3_fecha_reunion_oa_cd',
+              required:true, max:todayISO(),
+              value:e.f3_fecha_reunion_oa_cd,
+              onChange:'STATE.data.estructura.f3_fecha_reunion_oa_cd=this.value' })}
+    </div>
   `;
 }
 
@@ -2853,22 +3372,119 @@ function renderStep4_F3() {
    Step 5 — Documentos
    ============================================================ */
 function renderStep5() {
+  // v1.5.8 (sweep matriz): "Información Adicional y Cierre" condicional por formato.
+  // F1 sección 7 / F2 sección 4 / F3 sección 6.
+  const c = STATE.data.cierre;
+  const esLiga = STATE.tipoOrganismo === 'liga';
+  const esFederacion = STATE.tipoOrganismo === 'federacion';
+  // Asociación (F2) no tiene los 7 documentos del Decreto 1387 — solo "Documentos adjuntos".
+  const muestraDocsDecreto = esLiga || esFederacion;
   return `
-    ${messageInfo('Documentos del Decreto 1387/1970 — Art. 2.1.1.2', 'Carga cada documento en formato PDF, DOC o DOCX. Tamaño máximo 10 MB por archivo.')}
-    ${DOCUMENTOS_DECRETO.map(doc => `
-      <div class="ivc-doc-card">
-        <div class="ivc-doc-card__head">
-          <div>
-            <h3 class="ivc-doc-card__title">${esc(doc.title)}</h3>
-            ${!doc.required ? '<p class="ivc-doc-card__desc">No es obligatorio para este trámite.</p>' : ''}
+    ${muestraDocsDecreto ? `
+      ${messageInfo('Documentos del Decreto 1387/1970 — Art. 2.1.1.2', 'Cargue cada documento en formato PDF, DOC o DOCX. Tamaño máximo 10 MB por archivo.')}
+      ${DOCUMENTOS_DECRETO.map(doc => `
+        <div class="ivc-doc-card">
+          <div class="ivc-doc-card__head">
+            <div>
+              <h3 class="ivc-doc-card__title">${esc(doc.title)}</h3>
+              ${!doc.required ? '<p class="ivc-doc-card__desc">No es obligatorio para este trámite.</p>' : ''}
+            </div>
+            ${doc.required
+              ? '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small" style="margin-left:auto;">Obligatorio</span>'
+              : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small" style="margin-left:auto;">Opcional</span>'}
           </div>
-          ${doc.required
-            ? '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small" style="margin-left:auto;">Obligatorio</span>'
-            : '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small" style="margin-left:auto;">Opcional</span>'}
+          ${uploadField({ stateKey:'data.documentos.' + doc.id })}
         </div>
-        ${uploadField({ stateKey:'data.documentos.' + doc.id })}
+      `).join('')}
+    ` : ''}
+
+    <!-- v1.5.8 (sweep matriz): Sección "Información Adicional y Cierre". -->
+    <h2 class="wz-section" style="margin-top:${muestraDocsDecreto ? '32px' : '0'};">Información adicional y cierre</h2>
+
+    ${esLiga ? `
+      <!-- F1-7.1 + F1-7.1-DOC: Certificación conjunta sobre estructura funcional -->
+      <div>
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se adjunta Certificación conjunta sobre la estructura funcional?</label>
+        ${radioYN({
+          name:'f1AdjCertConjunta', value:c.f1_adjunta_cert_conjunta,
+          onYes:"STATE.data.cierre.f1_adjunta_cert_conjunta='si';render();",
+          onNo:"STATE.data.cierre.f1_adjunta_cert_conjunta='no';render();"
+        })}
+        ${c.f1_adjunta_cert_conjunta === 'si' ? `
+          <div style="margin-top:12px;">
+            <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Certificación conjunta — estructura funcional</label>
+            ${uploadField({ stateKey:'data.cierre.f1_archivo_cert_conjunta' })}
+          </div>
+        ` : ''}
       </div>
-    `).join('')}
+    ` : ''}
+
+    ${esFederacion ? `
+      <!-- F3-6.1 + F3-6.1-DOC: Certificación del COC -->
+      <div>
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se adjunta Certificación del COC que avala la determinación técnica?</label>
+        ${radioYN({
+          name:'f3AdjCertCOC', value:c.f3_adjunta_cert_coc,
+          onYes:"STATE.data.cierre.f3_adjunta_cert_coc='si';render();",
+          onNo:"STATE.data.cierre.f3_adjunta_cert_coc='no';render();"
+        })}
+        ${c.f3_adjunta_cert_coc === 'si' ? `
+          <div style="margin-top:12px;">
+            <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Certificación del Comité Olímpico Colombiano</label>
+            ${uploadField({ stateKey:'data.cierre.f3_archivo_cert_coc' })}
+          </div>
+        ` : ''}
+      </div>
+      <!-- F3-6.2 + F3-6.2-DOC: Aval Comité Paralímpico -->
+      <div style="margin-top:16px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se adjunta Aval del Comité Paralímpico Colombiano?</label>
+        ${radioYN({
+          name:'f3AdjAvalParalimpico', value:c.f3_adjunta_aval_paralimpico,
+          onYes:"STATE.data.cierre.f3_adjunta_aval_paralimpico='si';render();",
+          onNo:"STATE.data.cierre.f3_adjunta_aval_paralimpico='no';render();"
+        })}
+        ${c.f3_adjunta_aval_paralimpico === 'si' ? `
+          <div style="margin-top:12px;">
+            <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Aval del Comité Paralímpico Colombiano</label>
+            ${uploadField({ stateKey:'data.cierre.f3_archivo_aval_paralimpico' })}
+          </div>
+        ` : ''}
+      </div>
+      <!-- F3-6.3 + F3-6.3-DOC: Certificación conjunta no cursar investigación disciplinaria/penal -->
+      <div style="margin-top:16px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Se adjunta Certificación conjunta sobre no cursar investigación disciplinaria o penal contra los dignatarios?</label>
+        ${radioYN({
+          name:'f3AdjCertConjuntaNoInv', value:c.f3_adjunta_cert_conjunta_no_inv,
+          onYes:"STATE.data.cierre.f3_adjunta_cert_conjunta_no_inv='si';render();",
+          onNo:"STATE.data.cierre.f3_adjunta_cert_conjunta_no_inv='no';render();"
+        })}
+        ${c.f3_adjunta_cert_conjunta_no_inv === 'si' ? `
+          <div style="margin-top:12px;">
+            <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar Certificación conjunta — no cursar investigación disciplinaria/penal</label>
+            ${uploadField({ stateKey:'data.cierre.f3_archivo_cert_conjunta_no_inv' })}
+          </div>
+        ` : ''}
+      </div>
+    ` : ''}
+
+    <!-- Comunes a F1/F2/F3: radicado, observaciones, cargar documentos -->
+    <div style="margin-top:18px;">
+      ${tf({ id:'cierre-no-radicado', label:'N° de radicado de la documentación adjunta', required:true,
+              placeholder:'Ej: IVC-2024-005678',
+              value:c.no_radicado_doc, maxLength:50,
+              onInput:'STATE.data.cierre.no_radicado_doc=this.value' })}
+    </div>
+    <div style="margin-top:14px;">
+      ${ta({ id:'cierre-observaciones', label:'Observaciones y documentación pendiente', required:false,
+              placeholder:"Escribir 'N/A' si no aplica…",
+              value:c.observaciones, maxlength:2000, counterId:'cierreObsCount',
+              onInput:"STATE.data.cierre.observaciones=this.value;document.getElementById('cierreObsCount').textContent=this.value.length" })}
+    </div>
+    <div style="margin-top:14px;">
+      <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar documentos adjuntos al trámite</label>
+      <p style="font-size:11.5px;color:var(--text-secondary);margin:0 0 8px;">PDF, DOC o DOCX. Múltiples archivos. Máx. 10 MB por archivo.</p>
+      ${uploadField({ stateKey:'data.cierre.archivos_adjuntos' })}
+    </div>
   `;
 }
 
@@ -2879,10 +3495,10 @@ function renderStep6() {
   if (STATE.radicado) return renderSuccess();
 
   const d = STATE.data;
-  const orgLabel = ({ liga:'Liga Deportiva Departamental', asociacion:'Asociación Deportiva', federacion:'Federación Deportiva Nacional' })[STATE.tipoOrganismo] || '';
+  const orgLabel = ({ liga:'Ligas o asociaciones deportivas', asociacion:'Asociaciones juveniles o recreativas', federacion:'Federaciones deportivas' })[STATE.tipoOrganismo] || '';
 
   return `
-    ${messageInfo('Revisa antes de radicar', 'Una vez radicado, recibirás un número único de radicado y notificaciones por correo electrónico. Tu trámite tomará hasta <strong>15 días hábiles</strong> para ser revisado por el Profesional asignado.')}
+    ${messageInfo('Revise antes de radicar', 'Una vez radicado, el sistema asignará un número único de radicado y enviará notificaciones por correo electrónico. El trámite será revisado por el Profesional asignado en un plazo máximo de <strong>15 días hábiles</strong>.')}
 
     <div class="wz-review">
       <div class="wz-review__group">
@@ -2936,9 +3552,9 @@ function renderStep6() {
 function renderSuccess() {
   const d = STATE.data;
   const orgLabel = ({
-    liga: 'Liga Deportiva Departamental',
-    asociacion: 'Asociación Deportiva',
-    federacion: 'Federación Deportiva Nacional'
+    liga: 'Ligas o asociaciones deportivas',
+    asociacion: 'Asociaciones juveniles o recreativas',
+    federacion: 'Federaciones deportivas'
   })[STATE.tipoOrganismo] || 'Organismo deportivo';
   const nombre = (d.nombre || 'Organismo deportivo').trim();
   const nit = (d.nit || '—').trim();
@@ -2962,7 +3578,7 @@ function renderSuccess() {
           </svg>
         </div>
         <h1>¡Trámite radicado con éxito!</h1>
-        <p>Tu solicitud de Otorgamiento de Reconocimiento Deportivo fue recibida por el Ministerio del Deporte. Recibirás notificaciones de cada cambio de estado en el correo registrado.</p>
+        <p>Su solicitud de Otorgamiento de Reconocimiento Deportivo fue recibida por el Ministerio del Deporte. Recibirá notificaciones de cada cambio de estado en el correo electrónico registrado.</p>
         <div class="success-stamp">Radicado · ${esc(radicado)}</div>
       </div>
 
@@ -2976,7 +3592,7 @@ function renderSuccess() {
           </span>
           <span class="naowee-message__title">Estado actual: Radicado</span>
         </div>
-        <div class="naowee-message__text">Tu trámite entró en cola de revisión. Un Profesional del IVC lo evaluará en un plazo máximo de <strong>15 días hábiles</strong> (estimado: ${esc(fechaLimite)}).</div>
+        <div class="naowee-message__text">El trámite ingresó a la cola de revisión. Un Profesional del IVC lo evaluará en un plazo máximo de <strong>15 días hábiles</strong> (estimado: ${esc(fechaLimite)}).</div>
       </div>
 
       <div class="receipt">
@@ -3063,7 +3679,7 @@ function renderSuccess() {
             </span>
             <div class="kv-row__main">
               <span class="kv-row__label">Notificaciones</span>
-              <span class="kv-row__value" style="font-size:13px;font-weight:500;">Recibirás email en cada cambio de estado</span>
+              <span class="kv-row__value" style="font-size:13px;font-weight:500;">Recibirá notificación por correo en cada cambio de estado</span>
             </div>
           </div>
         </div>
@@ -3099,12 +3715,17 @@ function spawnConfetti() {
 /* ============================================================
    Render principal
    ============================================================ */
+/* v1.5.8 (25/05/2026): tracking del último step renderizado para evitar
+   auto-scroll al tope en re-renders intra-step (ej. radio buttons que
+   condicionan sub-secciones). Solo se scrolea arriba cuando cambia el paso. */
+let __lastRenderedStep = null;
+
 function render() {
   renderStepper();
   const body = document.getElementById('wzBody');
 
   if (!isStepApplicable(STATE.step)) {
-    body.innerHTML = `<div class="wz-step-panel is-active">${renderSkipView('Este paso no aplica para tu tipo de organismo.')}</div>`;
+    body.innerHTML = `<div class="wz-step-panel is-active">${renderSkipView('Este paso no aplica para el tipo de organismo seleccionado.')}</div>`;
     setupFooter();
     return;
   }
@@ -3135,7 +3756,12 @@ function render() {
   }
 
   setupFooter();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  /* v1.5.8: solo scroll-to-top cuando CAMBIA el paso, no en re-renders
+     intra-step (radio buttons / toggles que muestran secciones condicionales). */
+  if (__lastRenderedStep !== STATE.step) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  __lastRenderedStep = STATE.step;
 }
 
 function setupFooter() {
@@ -3238,7 +3864,7 @@ function shakeFields(errors) {
 function next() {
   if (STATE.step === 0) {
     if (!STATE.tipoOrganismo || !STATE.tipoTramite) {
-      alert('Selecciona tipo de organismo y trámite para continuar.');
+      alert('Seleccione el tipo de organismo y trámite para continuar.');
       return;
     }
   }
@@ -3254,9 +3880,9 @@ function next() {
     if (typeof IVCStore !== 'undefined' && IVCStore && IVCStore.crearTramite) {
       const d = STATE.data || {};
       const orgLabelMap = {
-        liga: 'Liga Deportiva Departamental',
-        asociacion: 'Asociación Deportiva',
-        federacion: 'Federación Deportiva Nacional'
+        liga: 'Ligas o asociaciones deportivas',
+        asociacion: 'Asociaciones juveniles o recreativas',
+        federacion: 'Federaciones deportivas'
       };
       const tipoTramiteLabel = ({
         otorgamiento: 'Otorgamiento',
@@ -3581,7 +4207,7 @@ render();
    Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md
    ═══════════════════════════════════════════════════════════════════════ */
 (function mountNaoweeFooter(){
-  var IVC_VERSION = 'v1.5.7';
+  var IVC_VERSION = 'v1.5.8';
   var REPO = 'naowee-tech/naowee-ivc';
   var MODULE_NAME = 'IVC';
   if (document.querySelector('.naowee-floating-footer')) return;

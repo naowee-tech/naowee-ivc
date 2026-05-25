@@ -20,7 +20,71 @@
        Hero card (info + plazo) + naowee-tabs--animated + sticky decision footer.
        Prefijo .ivc-* para todo lo custom; sin invención .naowee-*. */
 
-    .page-inner { max-width: 1280px !important; }
+    /* v1.5.8 (25/05/2026): subido de 1280 → 1480 para igualar con bandeja
+       del Coordinador y del Profesional. Feedback Doug: aprovechar mejor el
+       ancho disponible en pantallas amplias. */
+    .page-inner { max-width: 1480px !important; }
+
+    /* v1.5.8 rev2 (25/05/2026): Alto razonable para los modales de decisión.
+       El DS canónico `.naowee-modal--scrollable` aplica `height: calc(100vh - 64px)`
+       que ocupa casi toda la pantalla. Feedback Doug: "alto considerable sin ser
+       masivamente alto". Limitamos a 85vh max y aseguramos overflow-y en el body
+       para que el footer (CTA) quede fijo y el contenido scrollee internamente. */
+    #modalCumpleOverlay .naowee-modal--scrollable,
+    #modalParcialOverlay .naowee-modal--scrollable,
+    #modalNoCumpleOverlay .naowee-modal--scrollable {
+      height: auto !important;
+      max-height: 85vh !important;
+    }
+    #modalCumpleOverlay .naowee-modal__body,
+    #modalParcialOverlay .naowee-modal__body,
+    #modalNoCumpleOverlay .naowee-modal__body {
+      overflow-y: auto;
+    }
+    /* Header y footer fijos (no shrink) para que solo el body scrollee. */
+    #modalCumpleOverlay .naowee-modal__header,
+    #modalParcialOverlay .naowee-modal__header,
+    #modalNoCumpleOverlay .naowee-modal__header,
+    #modalCumpleOverlay .naowee-modal__footer,
+    #modalParcialOverlay .naowee-modal__footer,
+    #modalNoCumpleOverlay .naowee-modal__footer {
+      flex-shrink: 0;
+    }
+
+    /* v1.5.8 (25/05/2026): override scoped al textarea dentro de los modales
+       de decisión. El DS canónico usa --naowee-color-gray-600 (#8788AB · darker)
+       para el textfield, pero acá queremos el mismo color que el dropdown
+       (--naowee-color-gray-300 · lighter) por consistencia. También
+       padding y altura adaptados al textarea (height auto, padding interno). */
+    .naowee-modal .naowee-textfield__input-wrap {
+      border-color: var(--naowee-color-gray-300, #d0d4e6);
+    }
+    .naowee-modal .naowee-textfield__input-wrap:hover {
+      border-color: var(--naowee-color-interactive-border-hover, #8788ab);
+    }
+    .naowee-modal .naowee-textfield--textarea .naowee-textfield__input-wrap {
+      height: auto;
+      padding: 10px 12px;
+      align-items: stretch;
+    }
+    .naowee-modal .naowee-textfield--textarea textarea.naowee-textfield__input {
+      min-height: 88px;
+      resize: vertical;
+      line-height: 1.5;
+      border: 0;
+      outline: none;
+      width: 100%;
+      background: transparent;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-primary);
+      padding: 0;
+    }
+    .naowee-modal .naowee-textfield__input::placeholder,
+    .naowee-modal textarea.naowee-textfield__input::placeholder {
+      color: var(--naowee-color-text-secondary, #646587);
+      font-weight: 400;
+    }
 
     /* Back button — pegado al borde superior izquierdo del page.
        v1.5.4: text-decoration: none para quitar el underline del <a>. */
@@ -439,11 +503,17 @@
        Doug: los 3 botones funcionaban como "leyenda redundante". Ahora el
        resultado se infiere del checklist y se materializa con 1 solo CTA
        "Finalizar revisión" al final del tab Documentos (inline, no fixed). */
+    /* v1.5.8 (25/05/2026): divider border-top va de borde a borde del card.
+       El .ivc-tab-panel tiene padding 24px 28px, así que el row negativo-margin
+       lateral para que el divider sobresalga y luego paga su propio padding
+       interno para alinear el contenido con el resto del panel. Feedback Doug. */
     .ivc-finalizar-row {
       display: flex;
       justify-content: flex-end;
-      padding: 18px 0 0 0;
-      margin-top: 6px;
+      align-items: center;
+      gap: 16px;
+      margin: 18px -28px 0;       /* negative-margin lateral compensa el padding del panel */
+      padding: 18px 28px 0;        /* re-paga padding interno para alinear contenido */
       border-top: 1px solid var(--border);
     }
     .ivc-finalizar-row__hint {
@@ -457,24 +527,39 @@
       flex-shrink: 0;
     }
     /* El botón se colorea según el resultado calculado del checklist */
+    /* v1.5.8 (25/05/2026): glow (box-shadow) del DS canónico --loud usa el accent
+       naranja. Override scoped por variant para que el glow matchee con el
+       color del fondo (verde/naranja/rojo). Feedback Doug. */
     .ivc-finalizar-row__btn[data-result="cumple"] {
       background: #15803d !important;
       border-color: #15803d !important;
       color: #fff !important;
     }
-    .ivc-finalizar-row__btn[data-result="cumple"]:hover { background: #166534 !important; }
+    .ivc-finalizar-row__btn[data-result="cumple"]:hover,
+    .ivc-finalizar-row__btn[data-result="cumple"]:focus-visible {
+      background: #166534 !important;
+      box-shadow: 0 8px 24px -4px rgba(21,128,61,.35) !important;  /* glow verde */
+    }
     .ivc-finalizar-row__btn[data-result="parcial"] {
       background: var(--accent) !important;
       border-color: var(--accent) !important;
       color: #fff !important;
     }
-    .ivc-finalizar-row__btn[data-result="parcial"]:hover { background: #b8350a !important; }
+    .ivc-finalizar-row__btn[data-result="parcial"]:hover,
+    .ivc-finalizar-row__btn[data-result="parcial"]:focus-visible {
+      background: #b8350a !important;
+      box-shadow: 0 8px 24px -4px rgba(215,64,9,.35) !important;   /* glow naranja */
+    }
     .ivc-finalizar-row__btn[data-result="no"] {
       background: #c0392b !important;
       border-color: #c0392b !important;
       color: #fff !important;
     }
-    .ivc-finalizar-row__btn[data-result="no"]:hover { background: #9d2f23 !important; }
+    .ivc-finalizar-row__btn[data-result="no"]:hover,
+    .ivc-finalizar-row__btn[data-result="no"]:focus-visible {
+      background: #9d2f23 !important;
+      box-shadow: 0 8px 24px -4px rgba(192,57,43,.35) !important;  /* glow rojo */
+    }
     .ivc-finalizar-row__btn svg { stroke: #fff !important; color: #fff !important; }
     .ivc-finalizar-row__btn:disabled {
       background: var(--bg-soft) !important;
@@ -572,13 +657,16 @@
       font-size: 12.5px;
     }
 
+    /* v1.5.8 (25/05/2026): igualado a los labels del tab Datos (.ivc-data-grid__label).
+       Feedback Doug: gris claro y tamaño consistente con el resto de labels del
+       workspace. Antes era 14px + text-primary (muy fuerte para "internal title"). */
     .ivc-section-title {
       margin: 24px 0 12px;
-      font-size: 14px;
+      font-size: 11px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: var(--text-secondary);
       text-transform: uppercase;
-      letter-spacing: .4px;
+      letter-spacing: .6px;
     }
     .ivc-section-title:first-child { margin-top: 0; }
 
@@ -695,9 +783,11 @@
         </div>
 
       </div>
+      <!-- v1.5.8: removido "Cancelar" (redundante con X + click overlay). Feedback Doug. -->
       <div class="naowee-modal__footer naowee-modal__footer--end">
-        <button type="button" class="naowee-btn naowee-btn--mute" id="modalCumpleCancel">Cancelar</button>
-        <button type="button" class="naowee-btn naowee-btn--loud ivc-btn-cumple" id="modalCumpleConfirm">
+        <!-- v1.5.8: removido .ivc-btn-cumple (verde) — feedback Doug: que sea naranja
+             canónico (.naowee-btn--loud del DS). -->
+        <button type="button" class="naowee-btn naowee-btn--loud" id="modalCumpleConfirm">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Confirmar y generar acto
         </button>
@@ -740,8 +830,8 @@
         <h3 class="ivc-section-title">Documentos a subsanar</h3>
         <div id="docsParcialList" style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">—</div>
       </div>
+      <!-- v1.5.8: removido "Cancelar" (redundante). Feedback Doug. -->
       <div class="naowee-modal__footer naowee-modal__footer--end">
-        <button type="button" class="naowee-btn naowee-btn--mute" id="modalParcialCancel">Cancelar</button>
         <button type="button" class="naowee-btn naowee-btn--loud" id="modalParcialConfirm">Enviar a subsanación</button>
       </div>
     </div>
@@ -820,8 +910,8 @@
         </div>
 
       </div>
+      <!-- v1.5.8: removido "Cancelar" (redundante). Feedback Doug. -->
       <div class="naowee-modal__footer naowee-modal__footer--end">
-        <button type="button" class="naowee-btn naowee-btn--mute" id="modalNoCumpleCancel">Cancelar</button>
         <button type="button" class="naowee-btn naowee-btn--loud ivc-btn-no" id="modalNoCumpleConfirm">
           Confirmar y generar acto
         </button>

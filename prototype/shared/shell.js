@@ -41,19 +41,19 @@
       { id: 'docs',     label: 'Documentos',     icon: ICONS.docs,     href: '#' }
       /* "Mi perfil" eliminado (v1.1.3) — duplicaba el access del user-pill del header */
     ],
-    /* v1.2.0 — Fase 2 Sprint 1: Coordinador habilitado (HU-3) */
+    /* v1.2.0 — Fase 2 Sprint 1: Coordinador habilitado (HU-3)
+       v1.5.8 (25/05/2026): "Trámites en validación" y "Histórico" eliminados.
+       Pasaron a ser TABS dentro de la Bandeja (patrón Naowee: un destino,
+       múltiples vistas). Feedback Doug. */
     'coordinador': [
-      { id: 'bandeja-coord', label: 'Bandeja',                icon: ICONS.bandeja,  href: 'bandeja.html', badge: '4' },
-      { id: 'en-validacion', label: 'Trámites en validación', icon: ICONS.tramites, href: '#' },
-      { id: 'historico-coord', label: 'Histórico',           icon: ICONS.docs,     href: '#' }
+      { id: 'bandeja-coord', label: 'Bandeja', icon: ICONS.bandeja, href: 'bandeja.html', badge: '4' }
     ],
     /* v1.2.0 — Fase 2 Sprint 1: Profesional habilitado (HU-4/HU-6)
        v1.5.4 (25/05/2026): bandeja-prof ahora apunta a bandeja.html (lista de
-       asignados), no a workspace.html (que es la vista de validación 1-trámite). */
+       asignados), no a workspace.html (que es la vista de validación 1-trámite).
+       v1.5.8 (25/05/2026): "En revisión" e "Histórico" eliminados → tabs en bandeja. */
     'profesional': [
-      { id: 'bandeja-prof', label: 'Mi bandeja',        icon: ICONS.bandeja,  href: 'bandeja.html', badge: '4' },
-      { id: 'revision',     label: 'En revisión',       icon: ICONS.tramites, href: '#' },
-      { id: 'historico-prof', label: 'Histórico',       icon: ICONS.docs,     href: '#' }
+      { id: 'bandeja-prof', label: 'Mi bandeja', icon: ICONS.bandeja, href: 'bandeja.html', badge: '4' }
     ],
     'director': [
       { id: 'firma',   label: 'Por firmar', icon: ICONS.tramites, href: '#' }

@@ -512,6 +512,23 @@
       margin-top: 2px;
     }
 
+    /* v1.5.8 (25/05/2026): Modal Histórico — alto fijo + scroll interno
+       (feedback Doug). Antes el modal crecía sin límite y ocupaba toda la
+       pantalla cuando había muchos eventos. */
+    #modalHistoricoOverlay .naowee-modal {
+      display: flex;
+      flex-direction: column;
+      max-height: 70vh;
+    }
+    #modalHistoricoOverlay .naowee-modal__header {
+      flex-shrink: 0;
+    }
+    #modalHistoricoOverlay .naowee-modal__body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      min-height: 0;  /* permite shrink dentro del flex */
+    }
+
     /* Datepicker hover state alineado con demo Fase 1 (futuro-proof si se
        añaden filtros de fecha — no se inyecta markup ahora porque no aplica). */
     .naowee-datepicker-field__input { cursor: pointer; }
@@ -1973,35 +1990,75 @@
       state.modalTramiteId = null;
     }
     function confirmIndividual() {
+      // v1.5.8 (25/05/2026): try/catch defensivo. Si una parte falla, el modal
+      // igual cierra y mostramos snackbar de error en lugar de quedar atrapado.
       if (!state.modalTramiteId) return;
       if (!state.profesionalIdSingle) {
         shakeElement(document.getElementById('ddProfesionalSingle'));
         return;
       }
       var profNombre = PROF_NAMES[state.profesionalIdSingle] || 'Carlos Pérez';
-      /* v1.5.0: persist via IVCStore */
-      IVCStore.asignar(state.modalTramiteId, state.profesionalIdSingle, 'Carolina Méndez (Coordinador)');
-      loadFromStore();
+      var ok = false;
+      try {
+        /* v1.5.0: persist via IVCStore */
+        var result = IVCStore.asignar(state.modalTramiteId, state.profesionalIdSingle, 'Carolina Méndez (Coordinador)');
+        if (result) ok = true;
+      } catch (e) {
+        console.error('[confirmIndividual] IVCStore.asignar:', e);
+      }
+      // Siempre cerramos el modal y refrescamos para que el usuario no quede atrapado.
+      try { loadFromStore(); } catch(e) { console.error('[confirmIndividual] loadFromStore:', e); }
       closeModalIndividual();
-      renderStats();
-      renderTabla();
-      window.IVCShell.showSnackbar('Trámite asignado a ' + profNombre + '.', 'success');
+      try { renderStats(); renderTabla(); } catch(e) { console.error('[confirmIndividual] render:', e); }
+      if (ok) {
+        try { window.IVCShell.showSnackbar('Trámite asignado a ' + profNombre + '.', 'success'); } catch(e) {}
+      } else {
+        try { window.IVCShell.showSnackbar('No se pudo asignar el trámite.', 'negative'); } catch(e) {}
+      }
     }
 
-    /* GAP #11 — Modal histórico */
+    /* GAP #11 — Modal histórico
+       v1.5.8 (25/05/2026): tolerante a dos shapes de eventos.
+       - Mock local (buildHistoricoMock): { titulo, meta, actor }
+       - IVCStore (asignar, actualizarEstado): { accion, fecha, hora, actor }
+       Feedback Doug: antes mostraba "undefined" para los eventos creados por el store. */
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+      });
+    }
+
+    function normalizeEvento(ev) {
+      var titulo = ev.titulo || ev.accion || '—';
+      var meta;
+      if (ev.meta) {
+        meta = ev.meta;
+      } else if (ev.fecha && ev.hora) {
+        meta = ev.fecha + ' · ' + ev.hora;
+      } else if (ev.fecha) {
+        meta = ev.fecha;
+      } else {
+        meta = '';
+      }
+      var actor = ev.actor || '';
+      return { titulo: titulo, meta: meta, actor: actor };
+    }
+
     function openModalHistorico(tramiteId) {
       var t = state.tramites.find(function (x) { return x.id === tramiteId; });
       if (!t) return;
       document.getElementById('modalHistoricoSub').textContent = t.id + ' · ' + t.organismo;
       var ol = document.getElementById('histTimeline');
-      ol.innerHTML = t.historico.map(function (ev, idx) {
-        var isLast = idx === t.historico.length - 1;
-        var muted = isLast ? '' : ' ivc-timeline__item--muted';
+      var eventos = (t.historico || []).slice().reverse();  // último arriba (más reciente primero)
+      ol.innerHTML = eventos.map(function (raw, idx) {
+        var ev = normalizeEvento(raw);
+        var isFirst = idx === 0;  // el más reciente es el destacado (no muted)
+        var muted = isFirst ? '' : ' ivc-timeline__item--muted';
         return '<li class="ivc-timeline__item' + muted + '">' +
           '<span class="ivc-timeline__dot"></span>' +
-          '<span class="ivc-timeline__title">' + ev.titulo + '</span>' +
-          '<span class="ivc-timeline__meta">' + ev.meta + '</span>' +
-          '<span class="ivc-timeline__actor">' + ev.actor + '</span>' +
+          '<span class="ivc-timeline__title">' + escHtml(ev.titulo) + '</span>' +
+          (ev.meta ? '<span class="ivc-timeline__meta">' + escHtml(ev.meta) + '</span>' : '') +
+          (ev.actor ? '<span class="ivc-timeline__actor">' + escHtml(ev.actor) + '</span>' : '') +
         '</li>';
       }).join('');
       document.getElementById('modalHistoricoOverlay').classList.add('open');
