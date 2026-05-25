@@ -291,11 +291,12 @@
     justify-content: flex-end;
     gap: 12px;
   }
-  /* File drop (canónico v2.0.3) */
+  /* File drop (canónico v2.0.3)
+     v1.5.7 (25/05/2026): padding e icono más sutiles (feedback Doug). */
   .wz-file-drop {
     display: flex; flex-direction: column;
-    align-items: center; gap: 8px;
-    padding: 24px 18px;
+    align-items: center; gap: 6px;
+    padding: 18px 18px;
     border: 1.5px dashed var(--border-dark);
     border-radius: 12px;
     background: #fafbff;
@@ -309,12 +310,105 @@
     border-color: #15803d;
     background: #f0faf2;
   }
-  .wz-file-drop__icon { color: var(--text-secondary); }
+  .wz-file-drop__icon { color: var(--text-secondary); display: inline-flex; }
   .wz-file-drop.is-filled .wz-file-drop__icon { color: #15803d; }
-  .wz-file-drop__title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
-  .wz-file-drop__hint { font-size: 12px; color: var(--text-secondary); text-align: center; }
+  .wz-file-drop__title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .wz-file-drop__hint { font-size: 11.5px; color: var(--text-secondary); text-align: center; }
   .wz-file-drop__name { font-size: 12.5px; font-weight: 600; color: #15803d; margin-top: 4px; }
   .wz-file-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  /* ── v1.5.7 (25/05/2026): override scoped para igualar textfield al dropdown ──
+     El DS canónico Naowee tiene inconsistencia interna: textfield usa
+     --naowee-color-gray-600 (#8788AB · darker) y dropdown usa
+     --naowee-color-gray-300 (#D0D4E6 · lighter). Feedback Doug: que se vean
+     idénticos. Aplicamos el color del dropdown al textfield. */
+  .wz-card .naowee-textfield__input-wrap,
+  .ivc-modal .naowee-textfield__input-wrap {
+    border-color: var(--naowee-color-gray-300, #d0d4e6);
+  }
+  .wz-card .naowee-textfield__input-wrap:hover,
+  .ivc-modal .naowee-textfield__input-wrap:hover {
+    border-color: var(--naowee-color-interactive-border-hover, #8788ab);
+  }
+  /* Placeholder del textfield igualado al del dropdown (text-secondary, regular). */
+  .wz-card .naowee-textfield__input::placeholder,
+  .ivc-modal .naowee-textfield__input::placeholder {
+    color: var(--naowee-color-text-secondary, #646587);
+    font-weight: 400;
+  }
+
+  /* ── v1.5.7: Trigger de Dirección (estilo igual al textfield wrap canónico) ── */
+  .ivc-direccion-trigger {
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .ivc-direccion-trigger:hover {
+    border-color: var(--naowee-color-interactive-border-hover, #8788ab) !important;
+  }
+  .ivc-direccion-trigger__placeholder {
+    color: var(--naowee-color-text-secondary, #646587);
+    font-weight: 400;
+    flex: 1;
+  }
+  .ivc-direccion-trigger__value {
+    color: var(--text-primary);
+    flex: 1;
+  }
+  .ivc-direccion-trigger__icon {
+    color: var(--naowee-color-text-secondary, #646587);
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+  .ivc-direccion-trigger:hover .ivc-direccion-trigger__icon { color: var(--accent); }
+
+  /* ── v1.5.7: Modal de Dirección (markup canónico DS Naowee) ── */
+  .ivc-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  .ivc-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
+  .ivc-modal {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%; max-width: 720px;
+    max-height: 90vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    transform: scale(.96);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+  }
+  .ivc-modal-overlay.is-open .ivc-modal { transform: scale(1); }
+  .ivc-modal__header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 26px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ivc-modal__header h2 { margin: 0; font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  /* v1.5.8: el dismiss usa la clase canónica DS .naowee-modal__dismiss
+     (estados hover ya provistos por el DS — no hace falta override). */
+  .ivc-modal__body {
+    padding: 22px 26px;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+    gap: 14px;
+  }
+  .ivc-modal__footer {
+    padding: 16px 26px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+  /* El dropdown usa portal (escapa al body) — no necesitamos overflow:visible. */
 
   /* Cards de documento (lista de cargas paso 6) */
   .ivc-doc-card {
@@ -440,20 +534,32 @@
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: .3px;
+    /* v1.5.7: redondear top corners para no romper el border-radius del wrapper.
+       Feedback Doug: las cajas parecían "romperse" en las esquinas. */
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
   }
   .ivc-repeatable__row + .ivc-repeatable__row { border-top: 1px dashed var(--border); }
+  /* v1.5.7 (25/05/2026): mini inputs alineados al DS canónico Naowee.
+     Antes: radius 6, height 36, padding 0 10, font 13.
+     Ahora: radius 8 (= --radius-md), height 40, padding 0 12, font 14 (= --text-base).
+     Feedback Doug: parecían hardcodeados, diferentes al resto del DS. */
   .ivc-repeatable__row input.ivc-mini-input,
   .ivc-repeatable__row select.ivc-mini-input {
     width: 100%;
-    height: 36px;
-    padding: 0 10px;
+    height: 40px;
+    padding: 0 12px;
     border: 1px solid var(--border-dark);
-    border-radius: 6px;
+    border-radius: var(--radius-md, 8px);
     font-family: inherit;
-    font-size: 13px;
+    font-size: var(--text-base, 14px);
     color: var(--text-primary);
     background: #fff;
     transition: border-color .15s, box-shadow .15s;
+  }
+  .ivc-repeatable__row input.ivc-mini-input::placeholder {
+    color: var(--text-secondary);
+    font-weight: 400;
   }
   .ivc-repeatable__row input.ivc-mini-input:focus,
   .ivc-repeatable__row select.ivc-mini-input:focus {
@@ -462,13 +568,15 @@
     box-shadow: 0 0 0 3px rgba(215,64,9,.15);
   }
   /* FIX #5 (23/05/2026): datepicker canónico en filas repeatable.
-     Usa la variante --small del DS (height 32-36px) ajustada para encajar en
-     la altura visual del ivc-mini-input (36px). */
+     Usa la variante --small del DS ajustada para encajar en
+     la altura visual del ivc-mini-input.
+     v1.5.7: subido a 40px / radius 8 / padding 0 12 para matchear el mini-input
+     alineado al DS canónico. Feedback Doug. */
   .ivc-repeatable__row .naowee-datepicker-field { width: 100%; }
   .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__input {
-    height: 36px;
-    padding: 0 8px;
-    border-radius: 6px;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: var(--radius-md, 8px);
     border-color: var(--border-dark);
   }
   .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__icon,
@@ -504,6 +612,22 @@
     background: #fafbff;
     /* FIX #7: CTA "+ Agregar fila" alineado a la izquierda (Doug 23/05/2026) */
     text-align: left;
+    /* v1.5.7: redondear bottom corners para no romper el border-radius del wrapper. */
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+  }
+  /* v1.5.7: el botón "+ Agregar fila" usa --mute (ghost) en lugar de --quiet
+     (que pintaba background crema). Feedback Doug. Aplica scoped al CTA del
+     wrapper repeatable para no afectar otros --quiet del formulario. */
+  .ivc-repeatable__add .naowee-btn--mute {
+    background: transparent;
+    color: var(--accent);
+    padding-left: 0;
+    padding-right: 12px;
+  }
+  .ivc-repeatable__add .naowee-btn--mute:hover {
+    background: var(--accent-bg, #fff3e6);
+    padding-left: 12px;
   }
 
   /* Resumen final (paso 7) */
@@ -818,12 +942,34 @@
 
     <!-- Footer -->
     <div class="wz-footer">
-      <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--large" id="btnBack">← Anterior</button>
+      <!-- v1.5.7: btnBack pasa a --mute (ghost transparent + hover sutil) en
+           lugar de --quiet (fill naranja claro). Feedback Doug. -->
+      <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" id="btnBack">← Anterior</button>
       <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnNext">Continuar →</button>
     </div>
 
   </article>
 </main>
+
+<!-- v1.5.7 (25/05/2026): Modal de Dirección estructurado (feedback Juanma).
+     Patrón: SUID — campos separados para reducir ambigüedad. -->
+<div class="ivc-modal-overlay" id="ivcDireccionModal" role="dialog" aria-modal="true" aria-labelledby="ivcDireccionTitle" onclick="if(event.target===this)cerrarModalDireccion()">
+  <div class="ivc-modal">
+    <header class="ivc-modal__header">
+      <h2 id="ivcDireccionTitle">Dirección</h2>
+      <!-- v1.5.8 (25/05/2026): dismiss canónico DS (.naowee-modal__dismiss).
+           Feedback Doug: estados de interactividad correctos del DS. -->
+      <button type="button" class="naowee-modal__dismiss" onclick="cerrarModalDireccion()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </header>
+    <div class="ivc-modal__body" id="ivcDireccionBody"></div>
+    <!-- v1.5.8: removido "Cancelar" (feedback Doug: redundante con X + click en overlay). -->
+    <footer class="ivc-modal__footer">
+      <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="btnGuardarDireccion" disabled onclick="guardarDireccion()">Guardar</button>
+    </footer>
+  </div>
+</div>
 
 <!-- v1.5.0 (25/05/2026): IVCStore — source of truth para demo end-to-end.
      Path relativo: cuando el archivo vive en /naowee-ivc/prototype/usuario-externo/
@@ -846,6 +992,32 @@ const STEPS = [
   { label: 'Documentos', short: 'Documentos' },
   { label: 'Confirmación', short: 'Confirmación' }
 ];
+
+/* v1.5.7 (25/05/2026): Stepper dinámico según tipo de organismo (feedback Juanma).
+   Antes el stepper siempre mostraba los 7 pasos y la lógica de next()/prev()
+   "saltaba" el paso de Asamblea para Asociaciones, generando el salto visual
+   3 → 5 que confundía al usuario. Ahora el stepper itera solo sobre los
+   pasos aplicables y la numeración "Paso N de M" usa el índice visual continuo.
+
+   STATE.step sigue siendo el índice ABSOLUTO del array STEPS (0-6) para no
+   romper la lógica interna ni los switch(STATE.step) — solo cambia cómo se
+   PRESENTA. Para agregar un nuevo organismo, basta con sumar una entrada acá. */
+const STEPS_POR_ORGANISMO = {
+  liga:       [0, 1, 2, 3, 4, 5, 6],         // 7 pasos · todos aplican
+  asociacion: [0, 1, 2,    4, 5, 6],         // 6 pasos · sin Asamblea (idx 3)
+  federacion: [0, 1, 2, 3, 4, 5, 6],         // 7 pasos · todos aplican
+};
+
+function pasosAplicables() {
+  // Antes de que el usuario elija organismo (step 0), mostramos el set completo
+  // para que vea la cantidad máxima posible. Una vez elegido, se reduce.
+  if (!STATE.tipoOrganismo) return STEPS.map((_, i) => i);
+  return STEPS_POR_ORGANISMO[STATE.tipoOrganismo] || STEPS.map((_, i) => i);
+}
+
+function indiceVisual(stepIdx) {
+  return pasosAplicables().indexOf(stepIdx);
+}
 
 const MUNICIPIOS = [
   { v:'', t:'Selecciona un municipio…' },
@@ -1012,8 +1184,9 @@ function todayISO() { return new Date().toISOString().slice(0,10); }
 function dispValue(v) { return v && String(v).trim() ? esc(v) : '<span style="color:var(--text-secondary);font-style:italic">(no diligenciado)</span>'; }
 
 function isStepApplicable(idx) {
-  if (idx === 3 && STATE.tipoOrganismo === 'asociacion') return false;
-  return true;
+  // v1.5.7: ahora derivado de STEPS_POR_ORGANISMO. Para agregar excepciones
+  // por organismo, editar el mapa arriba — no esta función.
+  return pasosAplicables().includes(idx);
 }
 
 function fileSizeFmt(n) {
@@ -1051,6 +1224,35 @@ function mockUpload(input, statePath) {
    ============================================================ */
 
 // Textfield canónico .naowee-textfield
+/* v1.5.7 (25/05/2026): Máscaras de entrada por tipo de campo (feedback Juanma).
+   - opts.mask: 'tel' (solo dígitos, +, espacios), 'numeric' (solo dígitos),
+                'money' (numérico con miles), 'email' (sin spaces), 'alpha' (sin números).
+   - opts.maxLength: cap del input.
+   Se aplica vía función de saneo en cada input. Se ejecuta ANTES del onInput
+   del caller para que el STATE solo reciba el valor saneado. */
+function applyMask(maskType, raw) {
+  if (!raw) return '';
+  switch (maskType) {
+    case 'tel':
+      // Permite dígitos, +, espacios, paréntesis y guiones (formato colombiano).
+      return String(raw).replace(/[^0-9+\-()\s]/g, '');
+    case 'numeric':
+      return String(raw).replace(/[^0-9]/g, '');
+    case 'money':
+      // Solo dígitos. El formato con puntos se aplica en display, no en input.
+      // (Si quisiéramos format-on-type, dispararía conflicts con caret position.)
+      return String(raw).replace(/[^0-9]/g, '');
+    case 'email':
+      // Permitimos solo caracteres válidos de email. No spaces.
+      return String(raw).replace(/\s/g, '').toLowerCase();
+    case 'alpha':
+      // Letras (incluye acentos y ñ) + espacios. Sin dígitos.
+      return String(raw).replace(/[0-9]/g, '');
+    default:
+      return String(raw);
+  }
+}
+
 function tf(opts) {
   const id = opts.id || ('tf-' + Math.random().toString(36).slice(2,8));
   const label = opts.label || '';
@@ -1059,19 +1261,189 @@ function tf(opts) {
   const placeholder = opts.placeholder || '';
   const type = opts.type || 'text';
   const onInput = opts.onInput || '';
+  const mask = opts.mask || '';
+  const maxLength = opts.maxLength || '';
   const helper = opts.helper || '';
   const error = opts.error || '';
   const variant = error ? ' naowee-textfield--error' : '';
+  // Si hay mask, envolvemos el onInput original para sanear el valor primero.
+  const inputHandler = mask
+    ? `this.value=applyMask('${mask}',this.value);${onInput}`
+    : onInput;
+  // inputmode mejora el teclado en mobile y la accesibilidad.
+  const inputMode = mask === 'tel' ? ' inputmode="tel"'
+                  : mask === 'numeric' || mask === 'money' ? ' inputmode="numeric"'
+                  : mask === 'email' ? ' inputmode="email"' : '';
+  const maxAttr = maxLength ? ` maxlength="${maxLength}"` : '';
   return `
     <div class="naowee-textfield${variant}" data-tf-id="${id}">
       <label class="naowee-textfield__label${required ? ' naowee-textfield__label--required' : ''}" for="${id}">${esc(label)}</label>
       <div class="naowee-textfield__input-wrap">
-        <input class="naowee-textfield__input" id="${id}" type="${type}" placeholder="${escAttr(placeholder)}" value="${escAttr(value)}" oninput="${onInput}" />
+        <input class="naowee-textfield__input" id="${id}" type="${type}"${inputMode}${maxAttr} placeholder="${escAttr(placeholder)}" value="${escAttr(value)}" oninput="${inputHandler}" />
       </div>
       ${helper ? `<span class="naowee-textfield__helper" style="font-size:11.5px;color:var(--text-secondary);margin-top:6px;display:block;">${esc(helper)}</span>` : ''}
       ${error ? helperNegative(error) : ''}
     </div>
   `;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   v1.5.7 (25/05/2026): Modal de Dirección estructurado (feedback Juanma).
+   Reemplaza el textfield libre por un trigger que abre un modal con campos
+   separados: Tipo de vía + Número + Letra + BIS + Cruce + Casa + Info.
+   Se inspira en el patrón del SUID (imagen compartida por Juanma).
+   ═══════════════════════════════════════════════════════════════════ */
+
+const TIPOS_VIA = [
+  { v:'',         t:'Seleccionar' },
+  { v:'calle',    t:'Calle' },
+  { v:'carrera',  t:'Carrera' },
+  { v:'diagonal', t:'Diagonal' },
+  { v:'avenida',  t:'Avenida' },
+  { v:'transversal', t:'Transversal' },
+  { v:'autopista',   t:'Autopista' }
+];
+
+const LETRAS_VIA = [
+  { v:'', t:'Ninguna' },
+  ...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('').map(L => ({ v:L, t:L }))
+];
+
+function ensureDireccionStruct() {
+  if (!STATE.data.direccionEstructurada) {
+    STATE.data.direccionEstructurada = {
+      tipoVia:'', numero:'', letra:'', bis:false,
+      numeroCruce:'', letraCruce:'',
+      numeroCasa:'', info:''
+    };
+  }
+  return STATE.data.direccionEstructurada;
+}
+
+function formatearDireccion(d) {
+  if (!d) return '';
+  const tipoLabel = (TIPOS_VIA.find(t => t.v === d.tipoVia) || {}).t || '';
+  if (!tipoLabel || !d.numero) return '';
+  let s = `${tipoLabel} ${d.numero}`;
+  if (d.letra) s += d.letra;
+  if (d.bis) s += ' Bis';
+  if (d.numeroCruce) {
+    s += ` # ${d.numeroCruce}`;
+    if (d.letraCruce) s += d.letraCruce;
+  }
+  if (d.numeroCasa) s += `-${d.numeroCasa}`;
+  if (d.info) s += `, ${d.info}`;
+  return s;
+}
+
+function direccionTrigger(opts) {
+  const id = opts.id || 'f-dir-trigger';
+  const required = !!opts.required;
+  const value = opts.value || '';
+  return `
+    <div class="naowee-textfield" data-tf-id="${id}">
+      <label class="naowee-textfield__label${required ? ' naowee-textfield__label--required' : ''}" for="${id}">Dirección</label>
+      <button type="button" class="naowee-textfield__input-wrap ivc-direccion-trigger" id="${id}" onclick="abrirModalDireccion()">
+        ${value
+          ? `<span class="ivc-direccion-trigger__value">${esc(value)}</span>`
+          : `<span class="ivc-direccion-trigger__placeholder">Click para diligenciar dirección</span>`}
+        <span class="ivc-direccion-trigger__icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  `;
+}
+
+function abrirModalDireccion() {
+  ensureDireccionStruct();
+  document.getElementById('ivcDireccionModal').classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+  renderModalDireccionBody();
+}
+
+function cerrarModalDireccion() {
+  document.getElementById('ivcDireccionModal').classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+
+function guardarDireccion() {
+  const d = ensureDireccionStruct();
+  // Validar mínimos: tipo de vía + número
+  if (!d.tipoVia || !d.numero) {
+    // El botón Guardar ya está disabled, pero por defensa:
+    return;
+  }
+  STATE.data.direccion = formatearDireccion(d);
+  cerrarModalDireccion();
+  render();
+}
+
+function renderModalDireccionBody() {
+  const d = ensureDireccionStruct();
+  const body = document.getElementById('ivcDireccionBody');
+  if (!body) return;
+  body.innerHTML = `
+    <div class="wz-grid-2" style="gap:14px;">
+      ${dd({ id:'dir-tipo', label:'Tipo de vía', required:true,
+              value:d.tipoVia, options:TIPOS_VIA,
+              onChange:'STATE.data.direccionEstructurada.tipoVia=this.value;refrescarBtnGuardarDireccion();' })}
+      ${tf({ id:'dir-num', label:'Número', required:true,
+              placeholder:'Ej: 45', value:d.numero,
+              mask:'numeric', maxLength:5,
+              onInput:'STATE.data.direccionEstructurada.numero=this.value;refrescarBtnGuardarDireccion();' })}
+    </div>
+    <div class="wz-grid-2" style="gap:14px;align-items:end;">
+      ${dd({ id:'dir-letra', label:'Letra', required:false,
+              value:d.letra, options:LETRAS_VIA,
+              onChange:'STATE.data.direccionEstructurada.letra=this.value;' })}
+      <!-- v1.5.8: checkbox BIS con markup canónico DS Naowee (.naowee-checkbox
+           + .naowee-checkbox__box + svg dentro). Modifier --checked se toggle vía JS.
+           Feedback Doug: el checkbox anterior estaba inventado. -->
+      <label class="naowee-checkbox ${d.bis ? 'naowee-checkbox--checked' : ''}" style="margin-bottom:14px;">
+        <input type="checkbox" ${d.bis ? 'checked' : ''}
+          style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;"
+          onchange="STATE.data.direccionEstructurada.bis=this.checked;this.closest('.naowee-checkbox').classList.toggle('naowee-checkbox--checked',this.checked);" />
+        <span class="naowee-checkbox__box" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 6.5 11.5 13 5"/></svg>
+        </span>
+        <span class="naowee-checkbox__label">BIS</span>
+      </label>
+    </div>
+    <div class="wz-grid-2" style="gap:14px;">
+      ${tf({ id:'dir-numcruce', label:'Número de cruce',
+              placeholder:'Ej: 45', value:d.numeroCruce,
+              mask:'numeric', maxLength:5,
+              onInput:'STATE.data.direccionEstructurada.numeroCruce=this.value;' })}
+      ${dd({ id:'dir-letracruce', label:'Letra de cruce',
+              value:d.letraCruce, options:LETRAS_VIA,
+              onChange:'STATE.data.direccionEstructurada.letraCruce=this.value;' })}
+    </div>
+    <div class="wz-grid-2" style="gap:14px;">
+      ${tf({ id:'dir-numcasa', label:'Número de casa',
+              placeholder:'Ej: 18', value:d.numeroCasa,
+              mask:'numeric', maxLength:5,
+              onInput:'STATE.data.direccionEstructurada.numeroCasa=this.value;' })}
+      ${tf({ id:'dir-info', label:'Información adicional',
+              placeholder:'Ej: Edificio, km, finca, apto…', value:d.info,
+              maxLength:60,
+              onInput:'STATE.data.direccionEstructurada.info=this.value;' })}
+    </div>
+  `;
+  refrescarBtnGuardarDireccion();
+  // Re-init dropdowns dentro del modal
+  if (window.initDropdowns) window.initDropdowns();
+}
+
+function refrescarBtnGuardarDireccion() {
+  const d = ensureDireccionStruct();
+  const btn = document.getElementById('btnGuardarDireccion');
+  if (!btn) return;
+  const valido = !!(d.tipoVia && d.numero);
+  btn.disabled = !valido;
 }
 
 // Textarea (usa .naowee-textfield--textarea)
@@ -1742,6 +2114,8 @@ function checkbox(opts) {
 }
 
 // File drop (canónico wz-file-drop)
+// v1.5.7 (25/05/2026): Icono más sutil (20px, stroke 1.5) — antes 32px / 2.
+// Feedback Doug: era demasiado grande respecto al resto del DS.
 function uploadField(opts) {
   const stateKey = opts.stateKey;
   const cur = getStateAtPath(stateKey);
@@ -1750,8 +2124,8 @@ function uploadField(opts) {
     <label class="wz-file-drop${filled ? ' is-filled' : ''}">
       <span class="wz-file-drop__icon">
         ${filled
-          ? '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>'
-          : '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'}
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'}
       </span>
       ${filled
         ? `<div class="wz-file-drop__title">Archivo cargado</div>
@@ -1786,30 +2160,38 @@ function messageInfo(title, body) {
    ============================================================ */
 function renderStepper() {
   const wrap = document.getElementById('stepperDesktop');
+  // v1.5.7: itera solo los pasos aplicables al tipo de organismo y usa el
+  // índice VISUAL para la numeración (no el índice absoluto del array STEPS).
+  const aplicables = pasosAplicables();
+  const visualActual = indiceVisual(STATE.step);
   let html = '';
-  STEPS.forEach((s, i) => {
+  aplicables.forEach((stepIdx, visualIdx) => {
+    const s = STEPS[stepIdx];
     let stateCls = '';
-    if (i < STATE.step) stateCls = 'naowee-stepper__step--done';
-    else if (i === STATE.step) stateCls = 'naowee-stepper__step--active';
+    if (visualActual >= 0 && visualIdx < visualActual) stateCls = 'naowee-stepper__step--done';
+    else if (visualIdx === visualActual) stateCls = 'naowee-stepper__step--active';
 
-    const numberHtml = i < STATE.step
+    const numberHtml = (visualActual >= 0 && visualIdx < visualActual)
       ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-      : (i + 1);
+      : (visualIdx + 1);
 
+    // Solo permitimos ir hacia atrás (no saltar adelante). Click en step ya completado.
+    const clickable = (visualActual >= 0 && visualIdx < visualActual);
     html += `
-      <div class="naowee-stepper__step ${stateCls}" role="listitem"${i < STATE.step ? ` onclick="STATE.step=${i};render();"` : ''}>
+      <div class="naowee-stepper__step ${stateCls}" role="listitem"${clickable ? ` onclick="STATE.step=${stepIdx};render();"` : ''}>
         <span class="naowee-stepper__number">${numberHtml}</span>
         <span class="naowee-stepper__label">${esc(s.label)}</span>
       </div>
     `;
-    if (i < STEPS.length - 1) {
-      html += `<div class="naowee-stepper__connector${i < STATE.step ? ' naowee-stepper__connector--done' : ''}"></div>`;
+    if (visualIdx < aplicables.length - 1) {
+      const connectorDone = (visualActual >= 0 && visualIdx < visualActual);
+      html += `<div class="naowee-stepper__connector${connectorDone ? ' naowee-stepper__connector--done' : ''}"></div>`;
     }
   });
   wrap.innerHTML = html;
 
   document.getElementById('stepperMobile').innerHTML = `
-    Paso ${STATE.step + 1} de ${STEPS.length}
+    Paso ${(visualActual >= 0 ? visualActual : 0) + 1} de ${aplicables.length}
     <small>${esc(STEPS[STATE.step].label)}</small>
   `;
 }
@@ -1905,27 +2287,31 @@ function renderStep1() {
       ? `<div class="wz-grid-2">
           ${tf({ id:'f-nit', label:'NIT', required:true,
                   placeholder:'800123456-7', value:d.nit,
+                  mask:'tel', maxLength:13,
                   onInput:'STATE.data.nit=this.value' })}
           ${tf({ id:'f-tel', label:'Teléfono de contacto', required:true,
                   type:'tel', placeholder:'+57 300 123 4567',
-                  value:d.telefono, onInput:'STATE.data.telefono=this.value' })}
+                  value:d.telefono, mask:'tel', maxLength:18,
+                  onInput:'STATE.data.telefono=this.value' })}
         </div>`
       : tf({ id:'f-tel', label:'Teléfono de contacto', required:true,
               type:'tel', placeholder:'+57 300 123 4567',
-              value:d.telefono, onInput:'STATE.data.telefono=this.value' })
+              value:d.telefono, mask:'tel', maxLength:18,
+              onInput:'STATE.data.telefono=this.value' })
     }
 
     <h2 class="wz-section">Domicilio</h2>
-    ${tf({ id:'f-dir', label:'Dirección', required:true,
-            placeholder:'Calle 50 # 20-30', value:d.direccion,
-            onInput:'STATE.data.direccion=this.value' })}
+    <!-- v1.5.7: Dirección abre modal estructurado (feedback Juanma).
+         El textfield es read-only y muestra la dirección formateada. -->
+    ${direccionTrigger({ id:'f-dir', value:d.direccion, required:true })}
     <div class="wz-grid-2">
       ${dd({ id:'f-mun', label:'Municipio', required:true,
               value:d.municipio, options:MUNICIPIOS,
               onChange:'STATE.data.municipio=this.value' })}
       ${tf({ id:'f-correo', label:'Correo electrónico', required:true,
               type:'email', placeholder:'contacto@organismo.org',
-              value:d.correo, onInput:'STATE.data.correo=this.value' })}
+              value:d.correo, mask:'email', maxLength:80,
+              onInput:'STATE.data.correo=this.value' })}
     </div>
   `;
 }
@@ -2200,7 +2586,8 @@ function renderStep3_F1() {
         </div>
       `).join('')}
       <div class="ivc-repeatable__add">
-        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="STATE.data.asamblea.f1_reuniones.push({tipo:'',fechaConv:'',fechaReal:'',antelacion:'',cumple:''});render();">+ Agregar tipo de reunión</button>
+        <!-- v1.5.7: --mute (ghost) en lugar de --quiet (fill crema). Feedback Doug. -->
+        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="STATE.data.asamblea.f1_reuniones.push({tipo:'',fechaConv:'',fechaReal:'',antelacion:'',cumple:''});render();">+ Agregar tipo de reunión</button>
       </div>
     </div>
   `;
@@ -2262,7 +2649,8 @@ function repeatableDynamic(opts) {
         </div>
       `).join('')}
       <div class="ivc-repeatable__add">
-        <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" onclick="${onAdd}">+ Agregar fila</button>
+        <!-- v1.5.7: --mute (ghost) en lugar de --quiet (fill crema). Feedback Doug. -->
+        <button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="${onAdd}">+ Agregar fila</button>
       </div>
     </div>
   `;
@@ -3193,7 +3581,7 @@ render();
    Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md
    ═══════════════════════════════════════════════════════════════════════ */
 (function mountNaoweeFooter(){
-  var IVC_VERSION = 'v1.5.6';
+  var IVC_VERSION = 'v1.5.7';
   var REPO = 'naowee-tech/naowee-ivc';
   var MODULE_NAME = 'IVC';
   if (document.querySelector('.naowee-floating-footer')) return;

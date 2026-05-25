@@ -6,6 +6,104 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.7] — 2026-05-25
+
+> 🎛️ **Refinamiento profundo de Fase 1: stepper dinámico, máscaras de entrada, modal de Dirección estructurado, alineación 100% con DS Naowee.**
+
+### Added — Modal de Dirección estructurado (feedback Juanma)
+
+Patrón inspirado en el SUID. El textfield "Dirección" libre se reemplaza por un **trigger** (botón con estilo de textfield) que abre un modal con campos separados:
+
+- **Tipo de vía** (dropdown · Calle, Carrera, Diagonal, Avenida, Transversal, Autopista) — requerido
+- **Número** (mask numeric, maxLength 5) — requerido
+- **Letra** (dropdown · Ninguna, A–Z incluyendo Ñ)
+- **BIS** (checkbox canónico DS)
+- **Número de cruce** (mask numeric)
+- **Letra de cruce** (dropdown)
+- **Número de casa** (mask numeric)
+- **Información adicional** (texto libre, maxLength 60)
+
+El botón **Guardar** se mantiene disabled hasta tener `tipoVia + numero`. Al guardar, formatea automáticamente a string display (ej. `"Calle 50B Bis # 20-30, Apto 301"`) y persiste en `STATE.data.direccion` + estructurado en `STATE.data.direccionEstructurada`. Dismiss canónico DS (`.naowee-modal__dismiss`). Sin botón Cancelar redundante.
+
+### Added — Sistema de máscaras de entrada (feedback Juanma)
+
+Nuevo helper `applyMask(maskType, raw)` en el helper `tf()`. Soporta:
+
+| Mask | Comportamiento |
+|---|---|
+| `tel` | Solo dígitos, `+`, `-`, `()`, espacios |
+| `numeric` | Solo dígitos |
+| `money` | Solo dígitos (display con miles a futuro) |
+| `email` | Sin espacios, forzado lowercase |
+| `alpha` | Sin números |
+
+Aplicado a:
+- **NIT** → `mask:'tel'`, maxLength 13
+- **Teléfono** → `mask:'tel'`, maxLength 18
+- **Correo** → `mask:'email'`, maxLength 80
+- **Todos los campos numéricos del modal Dirección** → `mask:'numeric'`
+
+`inputmode` también se setea para teclados mobile correctos (tel / numeric / email).
+
+### Added — Stepper dinámico según tipo de organismo (feedback Juanma)
+
+Antes el stepper mostraba siempre 7 pasos y la lógica de `next()/prev()` "saltaba" el paso de Asamblea para Asociaciones, generando el salto visual 3 → 5 que confundía al usuario. Ahora:
+
+| Organismo | Pasos visibles | Total |
+|---|---|---|
+| Liga Deportiva Departamental | 1-7 completos | 7 |
+| **Asociación Deportiva** | **1-6 (sin Asamblea)** | **6** |
+| Federación Deportiva Nacional | 1-7 completos | 7 |
+
+Implementación: nuevo mapa `STEPS_POR_ORGANISMO` + helpers `pasosAplicables()` e `indiceVisual()`. `STATE.step` sigue siendo el índice absoluto del array `STEPS` (no rompe lógica interna). Solo cambia la presentación. Escalable: para nuevos organismos basta editar el mapa.
+
+### Fixed — Textfield + dropdown ahora idénticos visualmente (feedback Doug)
+
+El DS Naowee tiene inconsistencia interna: `.naowee-textfield__input-wrap` usa `--naowee-color-gray-600 (#8788AB)` para el borde, mientras `.naowee-dropdown__trigger` usa `--naowee-color-gray-300 (#D0D4E6)`. Override scoped en `.wz-card` y `.ivc-modal` para que ambos usen el borde lighter del dropdown. También se igualó el color y peso del placeholder.
+
+### Fixed — Bordes "rotos" del repeatable (feedback Doug)
+
+Los wrappers `.ivc-repeatable__head` y `.ivc-repeatable__add` tenían background distinto al del wrapper exterior pero sin matchear el `border-radius`. Se agregaron `border-top-left/right-radius: 12px` al head y `border-bottom-left/right-radius: 12px` al add.
+
+### Fixed — Mini-inputs alineados al DS canónico (feedback Doug)
+
+| Atributo | Antes | Ahora |
+|---|---|---|
+| `border-radius` | 6px | **8px** (`--radius-md`) |
+| `height` | 36px | **40px** |
+| `padding` | 0 10px | **0 12px** |
+| `font-size` | 13px | **14px** (`--text-base`) |
+| `placeholder color/weight` | — | `--text-secondary` / 400 |
+
+Mismo ajuste para el datepicker `--small` dentro de filas repeatable (40px / radius 8 / padding 12).
+
+### Fixed — File uploader más sutil (feedback Doug)
+
+| Atributo | Antes | Ahora |
+|---|---|---|
+| Icono | 32×32, stroke 2 | **20×20, stroke 1.5** |
+| Padding | 24×18 | **18×18** |
+| Title | 13.5px | **13px** |
+| Hint | 12px | **11.5px** |
+
+Aplica en todas las pantallas que usan el componente `uploadField()`.
+
+### Changed — Botón "Anterior" y "+ Agregar fila" → ghost real (feedback Doug)
+
+`.naowee-btn--quiet` (fill crema accent) pasa a `.naowee-btn--mute` (transparent idle + hover sutil). Aplica al btn `← Anterior` del wizard footer y a los `+ Agregar fila` / `+ Agregar tipo de reunión` de los repeatables. Override scoped del `--mute` dentro de `.ivc-repeatable__add` para hover con `--accent-bg` y padding-left animado.
+
+### Changed — Checkbox canónico DS (feedback Doug)
+
+Reemplazado el markup inventado (`__indicator` + `__input`) por el canónico DS Naowee:
+- `<label class="naowee-checkbox">`
+- `<input type="checkbox" visually-hidden>`
+- `<span class="naowee-checkbox__box">` con SVG dentro
+- `<span class="naowee-checkbox__label">`
+
+El modifier `--checked` se toggle en el wrapper vía JS al cambiar el input. Hereda todos los estados canónicos: hover, checked, checked+hover, active scale.
+
+---
+
 ## [ivc-v1.5.6] — 2026-05-25
 
 > 📎 **Asociación Deportiva (F2): uploaders condicionales de inventario / afiliación + 2 campos faltantes de Inscripción de Miembros (feedback Juanma).**
