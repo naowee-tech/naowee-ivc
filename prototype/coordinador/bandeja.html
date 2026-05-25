@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="../shared/tokens.css">
   <link rel="stylesheet" href="../shared/components.css">
   <link rel="stylesheet" href="../shared/shell.css">
-  <link rel="stylesheet" href="../shared/version-pill.css">
+  <link rel="stylesheet" href="../shared/naowee-footer.css">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -36,12 +36,20 @@
       color: var(--text-secondary);
       font-weight: 500;
     }
+    /* v1.5.0: aprovechar más ancho horizontal. El .page-inner canónico
+       tiene max-width:1200px. Para bandeja (tabla con 9 cols) ampliamos. */
+    .page-inner { max-width: 1480px !important; }
+
     .stat-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
     }
     @media (max-width: 900px) { .stat-grid { grid-template-columns: 1fr; } }
+    @media (min-width: 901px) and (max-width: 1200px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-grid > :first-child { grid-column: span 2; }
+    }
 
     /* Toolbar dentro del card de tabla — searchbox + filters + bulk button.
        Todo en un solo row horizontal (Doug 23/05/2026: sin wrap).
@@ -139,24 +147,26 @@
     .row-plazo--caution  { color: var(--accent, #d74009); }
     .row-plazo--negative { color: #c0392b; }
 
-    /* v1.4.6+v1.4.8 (23/05/2026): tooltip portal pattern — el tooltip se
-       recortaba por el overflow del .naowee-table-card. Solución: position:fixed
-       con JS que calcula coords desde el bounding rect del trigger al hover.
-       v1.4.8: forzar opacity y display porque el DS canónico mantiene opacity:0
-       en estado idle y como el __content ya no es hijo del trigger en el body,
-       el selector `.naowee-tooltip:hover .__content` no aplica. */
-    .naowee-tooltip__content.is-portaled {
-      position: fixed !important;
-      bottom: auto !important;
-      top: auto !important;
-      left: auto !important;
-      right: auto !important;
-      transform: none !important;
-      z-index: 99999 !important;
+    /* v1.4.8 rev2: tooltip SIN portal — usar el DS canónico nativo, pero
+       garantizando que ningún padre lo clipea. Forzar overflow:visible en
+       containers, y z-index alto en el __content para que vuele encima de
+       todo. Este enfoque es más robusto que el portal pattern (que tenía
+       race conditions con mouseout). */
+    .naowee-table-card,
+    .naowee-table-card__body,
+    .row-actions,
+    .row-actions .naowee-tooltip {
+      overflow: visible !important;
+    }
+    .naowee-tooltip__content {
+      z-index: 9999 !important;
+    }
+    /* El DS canónico ya hace hover→opacity:1; reforzar por si algún padre
+       fuerza opacity:0 en su contexto (defensive). */
+    .naowee-tooltip:hover .naowee-tooltip__content,
+    .naowee-tooltip:focus-within .naowee-tooltip__content {
       opacity: 1 !important;
-      pointer-events: none !important;
-      display: inline-block !important;
-      visibility: visible !important;
+      pointer-events: none;
     }
 
     /* v1.4.6: reducir espacio entre el CTA del header y el divider del toolbar.
@@ -623,7 +633,11 @@
   <script src="../shared/data.js"></script>
   <script src="../shared/shell.js"></script>
   <script src="../shared/demo-tour.js"></script>
-  <script src="../shared/version-pill.js" defer></script>
+  <script src="../shared/ivc-store.js"></script>
+
+  <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
+       Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
+  <script src="../shared/naowee-footer.js" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -661,14 +675,27 @@
 
       window.IVCShell.init({ title: null, activeNav: 'bandeja-coord' });
 
-      /* Clonar mock data → state local (immutable, no muta el constant del data.js) */
-      /* Enriquecemos con plazo (dias restantes) y un histórico mock por trámite */
-      state.tramites = window.IVCData.TRAMITES_BANDEJA.map(function (t, idx) {
-        return Object.assign({}, t, {
-          plazoDias: computePlazoMock(idx, t.estado),
-          historico: buildHistoricoMock(t)
+      /* v1.5.0 (25/05/2026): SOURCE OF TRUTH = IVCStore (localStorage).
+         Antes leía TRAMITES_BANDEJA hardcoded de data.js; ahora lee de
+         IVCStore para que los trámites creados desde formulario-fase-1
+         aparezcan acá en vivo. */
+      IVCStore.init();
+      function loadFromStore() {
+        state.tramites = IVCStore.getTramites({ area: 'aficionado' });
+        /* Plazo desde el campo del store, pero recomputamos como fallback
+           si no viene (compatibilidad con seed antiguo) */
+        state.tramites.forEach(function (t, idx) {
+          if (typeof t.plazoDias !== 'number') t.plazoDias = computePlazoMock(idx, t.estado);
+          if (!t.historico) t.historico = buildHistoricoMock(t);
         });
-      });
+      }
+      loadFromStore();
+
+      /* Live updates: si el formulario crea uno mientras esta tab está
+         abierta, o si otra tab cambia el store, refrescamos. */
+      IVCStore.on('tramite:creado',        function(){ loadFromStore(); renderStats(); renderTabla(); });
+      IVCStore.on('tramite:asignado',      function(){ loadFromStore(); renderStats(); renderTabla(); });
+      IVCStore.on('store:changed-external',function(){ loadFromStore(); renderStats(); renderTabla(); });
 
       renderStats();
       renderTabla();
@@ -676,7 +703,8 @@
       wireSelection();
       wireModales();
       setupNaoweeDropdownController();
-      setupTooltipPortal();
+      /* v1.4.8 rev2: tooltips ahora usan DS canónico nativo (sin portal).
+         Ver CSS de .naowee-table-card { overflow: visible } arriba. */
 
       window.IVCTour.mount({ pageId: 'coordinador/bandeja.html' });
 
@@ -872,76 +900,64 @@
        Solución: al hover, mover el __content al body con position:fixed
        y calcular coords desde el bounding rect del trigger.
        ═════════════════════════════════════════════════════════════════════ */
+    /* v1.4.8 rev: event delegation directo en document. Funciona sin
+       importar cuántas veces se re-renderice la tabla — el listener vive
+       en document y los matches dinámicos por closest('.naowee-tooltip').
+       Trackea el trigger/content activos para devolver el content al DOM
+       original al cerrar (importante: el `:hover` del DS no aplica al
+       content portaled, por eso forzamos opacity:1 en el CSS .is-portaled). */
     function setupTooltipPortal(){
-      var portalWrap = null;
+      var activeTrigger = null;
+      var activeContent = null;
 
-      function position(triggerEl, contentEl, prefBottom) {
-        var rect = triggerEl.getBoundingClientRect();
-        var cw = contentEl.offsetWidth;
-        var ch = contentEl.offsetHeight;
+      function position(trigger, content, prefBottom) {
+        var rect = trigger.getBoundingClientRect();
+        var cw = content.offsetWidth || 200;
+        var ch = content.offsetHeight || 28;
         var margin = 8;
         var left = rect.left + (rect.width / 2) - (cw / 2);
-        /* clamp horizontal al viewport */
         if (left + cw > window.innerWidth - margin) left = window.innerWidth - cw - margin;
         if (left < margin) left = margin;
-        var top = prefBottom
-          ? rect.bottom + 6
-          : rect.top - ch - 6;
-        /* si arriba no cabe, ir abajo */
+        var top = prefBottom ? rect.bottom + 6 : rect.top - ch - 6;
         if (!prefBottom && top < margin) top = rect.bottom + 6;
-        contentEl.style.left = left + 'px';
-        contentEl.style.top = top + 'px';
+        content.style.left = left + 'px';
+        content.style.top  = top + 'px';
+      }
+
+      function hideActive() {
+        if (!activeContent || !activeTrigger) return;
+        activeContent.classList.remove('is-portaled');
+        activeContent.style.removeProperty('left');
+        activeContent.style.removeProperty('top');
+        try { activeTrigger.appendChild(activeContent); } catch(e) {}
+        activeTrigger = null;
+        activeContent = null;
       }
 
       document.addEventListener('mouseover', function(ev){
         var trigger = ev.target.closest('.naowee-tooltip');
         if (!trigger) return;
-        var content = trigger.querySelector(':scope > .naowee-tooltip__content');
-        if (!content || content.classList.contains('is-portaled')) return;
-
-        /* Cache original placement (--bottom or default top) */
+        if (trigger === activeTrigger) return;        /* ya está abierto */
+        hideActive();                                  /* cierra el anterior */
+        var content = trigger.querySelector('.naowee-tooltip__content');
+        if (!content) return;
         var prefBottom = trigger.classList.contains('naowee-tooltip--bottom');
-
-        /* Mover al body con position:fixed */
-        content.classList.add('is-portaled');
-        content.dataset.parentTooltipId = trigger.dataset.tipId || (trigger.dataset.tipId = 'tip-' + Math.random().toString(36).slice(2,9));
         document.body.appendChild(content);
-        /* Forzar opacity 1 (el hover del DS canónico no aplica porque content ya no es hijo del trigger) */
-        content.style.opacity = '1';
+        content.classList.add('is-portaled');
         position(trigger, content, prefBottom);
+        activeTrigger = trigger;
+        activeContent = content;
       });
 
       document.addEventListener('mouseout', function(ev){
-        var trigger = ev.target.closest('.naowee-tooltip');
-        if (!trigger) return;
-        /* Si el mouseout no salió del trigger (sino hacia un hijo), ignorar */
-        if (trigger.contains(ev.relatedTarget)) return;
-        var tipId = trigger.dataset.tipId;
-        if (!tipId) return;
-        var content = document.body.querySelector(':scope > .naowee-tooltip__content[data-parent-tooltip-id="' + tipId + '"]');
-        if (!content) return;
-        content.style.opacity = '0';
-        /* Devolver al trigger original */
-        content.classList.remove('is-portaled');
-        content.style.removeProperty('left');
-        content.style.removeProperty('top');
-        trigger.appendChild(content);
+        if (!activeTrigger) return;
+        /* solo cerrar si el mouse salió del trigger hacia algo que no es el trigger ni sus hijos */
+        if (activeTrigger.contains(ev.relatedTarget)) return;
+        hideActive();
       });
 
-      /* Cerrar tooltip al scroll del page para evitar tooltips huérfanos */
-      window.addEventListener('scroll', function(){
-        document.querySelectorAll('body > .naowee-tooltip__content.is-portaled').forEach(function(c){
-          c.style.opacity = '0';
-          var tipId = c.dataset.parentTooltipId;
-          var trigger = tipId && document.querySelector('.naowee-tooltip[data-tip-id="' + tipId + '"]');
-          if (trigger) {
-            c.classList.remove('is-portaled');
-            c.style.removeProperty('left');
-            c.style.removeProperty('top');
-            trigger.appendChild(c);
-          }
-        });
-      }, true);
+      window.addEventListener('scroll', hideActive, true);
+      window.addEventListener('resize', hideActive);
     }
 
     /* ═════════════════════════════════════════════════════════════════════
@@ -1391,19 +1407,11 @@
       }
 
       var profNombre = PROF_NAMES[state.profesionalIdMasivo] || 'Carlos Pérez';
-      state.tramites = state.tramites.map(function (t) {
-        if (!state.seleccionados[t.id]) return t;
-        return Object.assign({}, t, {
-          estado: 'Asignada',
-          profesionalId: state.profesionalIdMasivo,
-          profesionalNombre: profNombre,
-          historico: t.historico.concat([{
-            titulo: 'Asignada a ' + profNombre,
-            meta: new Date().toISOString().slice(0,10) + ' · ' + new Date().toTimeString().slice(0,5),
-            actor: 'Carolina Méndez (Coordinador)'
-          }])
-        });
+      /* v1.5.0: persist via IVCStore — el workspace del Profesional verá esto */
+      Object.keys(state.seleccionados).forEach(function(tramiteId){
+        IVCStore.asignar(tramiteId, state.profesionalIdMasivo, 'Carolina Méndez (Coordinador)');
       });
+      loadFromStore();
       state.seleccionados = {};
       closeModalMasivo();
       renderStats();
@@ -1430,19 +1438,9 @@
         return;
       }
       var profNombre = PROF_NAMES[state.profesionalIdSingle] || 'Carlos Pérez';
-      state.tramites = state.tramites.map(function (t) {
-        if (t.id !== state.modalTramiteId) return t;
-        return Object.assign({}, t, {
-          estado: 'Asignada',
-          profesionalId: state.profesionalIdSingle,
-          profesionalNombre: profNombre,
-          historico: t.historico.concat([{
-            titulo: 'Asignada a ' + profNombre,
-            meta: new Date().toISOString().slice(0,10) + ' · ' + new Date().toTimeString().slice(0,5),
-            actor: 'Carolina Méndez (Coordinador)'
-          }])
-        });
-      });
+      /* v1.5.0: persist via IVCStore */
+      IVCStore.asignar(state.modalTramiteId, state.profesionalIdSingle, 'Carolina Méndez (Coordinador)');
+      loadFromStore();
       closeModalIndividual();
       renderStats();
       renderTabla();

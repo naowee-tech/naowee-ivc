@@ -28,6 +28,45 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.0] — 2026-05-25
+
+> 🔗 **Arquitectura end-to-end: store compartido + bandeja conectada al formulario.**
+
+### Added — Arquitectura
+- **`prototype/shared/ivc-store.js`** — source of truth. localStorage namespaced `ivc:`. API completa: `crearTramite`, `asignar`, `actualizarEstado`, `getTramites(filtros)`, `misAsignaciones(profesionalId)`, `getProfesionales(area)`. Event emitter: `tramite:creado`, `tramite:asignado`, `tramite:estado-cambiado`, `store:changed-external` (cross-tab via storage event). Seed inicial con 12 trámites mock + 4 profesionales.
+- **`docs/PLAN-END-TO-END.md`** — plan completo de la arquitectura demo end-to-end: schema, API pública, flujo cross-roles, plan de releases v1.5.x.
+
+### Changed — Bandeja Coord conectada al store
+- `bandeja.html` ya no lee de `TRAMITES_BANDEJA` hardcoded; ahora carga de `IVCStore.getTramites({ area: 'aficionado' })` en `loadFromStore()`.
+- Asignación individual y masiva persisten al store (`IVCStore.asignar(id, profId, actor)`) — antes solo mutaban el state local.
+- Listeners reactivos: `tramite:creado` / `tramite:asignado` / `store:changed-external` → re-renderiza stats + tabla. Si el Usuario Externo crea un trámite en otra tab, el Coordinador lo ve aparecer en vivo (cross-tab).
+
+### Changed — Formulario Fase 1 conectado al store
+- Al confirmar el paso 6 (Documentos), en lugar de generar un radicado random, llama `IVCStore.crearTramite({...})` que:
+  - Asigna un ID consecutivo (`IVC-2026-NNN`) desde un contador persistido
+  - Crea el histórico inicial con 2 entradas (`Radicado` + `Remisión automática a Deporte Aficionado`)
+  - Estado inicial: `No asignada`
+  - Persiste en localStorage y emite `tramite:creado`
+- Fallback: si el store no carga (demo standalone aislado), genera radicado random como antes.
+
+### Changed — Bandeja: ancho aprovechado
+- `.page-inner { max-width: 1480px !important }` (override page-scoped del 1200px canónico de `shell.css`). La tabla con 9 columnas respira mejor.
+- Stat grid intermedio en tablet (901-1200px): 2 columnas con el primer card span 2.
+
+### Cómo usar localmente
+Para ver el flujo end-to-end en `file://`, abrir AMBAS pantallas desde el mismo directorio raíz `/Users/dvargas/Desktop/naowee-ivc/prototype/`:
+- Formulario: `prototype/usuario-externo/formulario-fase-1.html`
+- Bandeja: `prototype/coordinador/bandeja.html`
+
+Mismo origin = comparten localStorage. El demo standalone en `/Users/dvargas/Desktop/IVC/` queda como prototipo aislado (sin persistencia).
+
+### Pendiente (v1.5.x)
+- v1.5.1 — Refactor workspace Profesional: `misAsignaciones(profId)`
+- v1.5.2 — Responsive audit cross-pantallas (mobile cards, tablet column hiding)
+- v1.5.3 — Botón "Reset demo" en menú admin
+
+---
+
 ## [ivc-v1.4.7] — 2026-05-23
 
 > 🎯 **Stepper Fase 1: pulse no se corta + connectors no pisan labels.**

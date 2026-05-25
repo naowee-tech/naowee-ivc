@@ -351,12 +351,27 @@ a { color: inherit; text-decoration: none; }
 .page-inner { display: flex; flex-direction: column; gap: 20px; max-width: 1200px; margin: 0 auto; }
 .page-fade-in { animation: fadeInUp .4s var(--ease-in-out) backwards; }
 
-/* ═══ Demo role switcher (pill flotante — solo sandbox) ═══ */
+/* ═══ Demo role switcher (pill flotante — solo sandbox)
+   v1.4.9 (2026-05-23): movido de right:20px a left:50%+transform para
+   centrar horizontalmente. El footer flotante canónico (naowee-floating-footer)
+   ahora ocupa bottom-right; el demo-switcher vive al centro inferior y
+   no se superponen. */
 .demo-role-switcher {
   position: fixed;
   bottom: 14px;
-  right: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: var(--z-demo-switcher);
+}
+/* Panel del switcher: alinearlo al centro del toggle (que vive en left:50%)
+   en lugar de heredar `right:0` que era para bottom-right. Componemos
+   translateX(-50%) con el translateY de idle/open. */
+.demo-role-switcher__panel {
+  left: 50%; right: auto;
+  transform: translateX(-50%) translateY(6px);  /* idle */
+}
+.demo-role-switcher.is-open .demo-role-switcher__panel {
+  transform: translateX(-50%) translateY(0);    /* open */
 }
 .demo-role-switcher__toggle {
   display: inline-flex; align-items: center; gap: 8px;

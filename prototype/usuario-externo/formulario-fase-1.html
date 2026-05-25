@@ -825,6 +825,13 @@
   </article>
 </main>
 
+<!-- v1.5.0 (25/05/2026): IVCStore — source of truth para demo end-to-end.
+     Path relativo: cuando el archivo vive en /naowee-ivc/prototype/usuario-externo/
+     resuelve a ../shared/ivc-store.js. Si falla (demo standalone en /IVC/),
+     el formulario funciona sin persistencia a bandeja. Para end-to-end
+     local, abrir ambos desde /Users/dvargas/Desktop/naowee-ivc/prototype/. -->
+<script src="../shared/ivc-store.js"
+        onerror="console.warn('[IVC] Store no cargado — modo standalone (sin persistencia a bandeja)');"></script>
 <script>
 /* ============================================================
    IVC Demo Fase 1 — JS de orquestación
@@ -2766,7 +2773,34 @@ function next() {
   }
 
   if (STATE.step === 6) {
-    STATE.radicado = 'IVC-2026-' + String(Math.floor(10000 + Math.random() * 89999));
+    /* v1.5.0 (25/05/2026): persistir al IVCStore para que aparezca en la
+       bandeja del Coordinador (deporte aficionado por default). Si el store
+       no está cargado (fallback standalone sin shared/), generar random. */
+    if (typeof IVCStore !== 'undefined' && IVCStore && IVCStore.crearTramite) {
+      const d = STATE.data || {};
+      const orgLabelMap = {
+        liga: 'Liga Deportiva Departamental',
+        asociacion: 'Asociación Deportiva',
+        federacion: 'Federación Deportiva Nacional'
+      };
+      const tipoTramiteLabel = ({
+        otorgamiento: 'Otorgamiento',
+        renovacion:   'Renovación',
+        actualizacion: 'Actualización'
+      })[STATE.tipoTramite] || 'Otorgamiento';
+      const nuevo = IVCStore.crearTramite({
+        organismo: (d.nombre || orgLabelMap[STATE.tipoOrganismo] || 'Organismo deportivo').trim(),
+        nit:       (d.nit || '—').trim(),
+        tipoOrganismo: STATE.tipoOrganismo || 'liga',
+        tipoTramite:   tipoTramiteLabel,
+        area: 'aficionado',
+        datos: d,
+        documentos: STATE.docs || {}
+      });
+      STATE.radicado = nuevo.id;
+    } else {
+      STATE.radicado = 'IVC-2026-' + String(Math.floor(10000 + Math.random() * 89999));
+    }
     render();
     return;
   }
@@ -3066,46 +3100,66 @@ document.getElementById('btnBack').addEventListener('click', prev);
 render();
 
 /* ═══════════════════════════════════════════════════════════════════════
-   v1.4.8 (2026-05-23): Pill de versionamiento (inline porque este demo
-   es standalone, no usa shared/). Patrón canónico: clase .ivc-version-pill
-   compartida con bandeja.html via shared/version-pill.css.
+   v1.4.9 (2026-05-23): Footer flotante canónico (patrón Project v2.0.3).
+   Inline porque este demo es standalone, no carga shared/. CSS+JS portados
+   verbatim de shared/naowee-footer.{css,js}.
+   Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md
    ═══════════════════════════════════════════════════════════════════════ */
-(function mountIvcVersionPill(){
-  var IVC_VERSION = 'v1.4.8';
-  var RELEASE_URL = 'https://github.com/naowee-tech/naowee-ivc/releases/tag/ivc-' + IVC_VERSION;
-  if (document.getElementById('ivcVersionPill')) return;
-  /* Inyectar el CSS del pill inline (este demo no carga shared/version-pill.css) */
+(function mountNaoweeFooter(){
+  var IVC_VERSION = 'v1.5.0';
+  var REPO = 'naowee-tech/naowee-ivc';
+  var MODULE_NAME = 'IVC';
+  if (document.querySelector('.naowee-floating-footer')) return;
   var style = document.createElement('style');
   style.textContent =
-    '.ivc-version-pill{position:fixed;right:18px;bottom:18px;z-index:998;' +
-    'font-family:"Inter",sans-serif;font-feature-settings:"tnum";pointer-events:none}' +
-    '.ivc-version-pill__btn{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;' +
-    'padding:6px 12px;background:#fff;border:1px solid #e7e9f3;border-radius:9999px;' +
-    'text-decoration:none;color:#646587;font-size:11.5px;font-weight:500;' +
-    'box-shadow:0 2px 8px rgba(20,20,40,.06),0 1px 2px rgba(20,20,40,.04);' +
-    'transition:border-color .15s,color .15s,box-shadow .15s,transform .12s;cursor:pointer}' +
-    '.ivc-version-pill__btn:hover,.ivc-version-pill__btn:focus-visible{border-color:#ffbf75;' +
-    'color:#d74009;box-shadow:0 4px 12px rgba(215,64,9,.15),0 1px 3px rgba(215,64,9,.08);' +
-    'outline:none;transform:translateY(-1px)}' +
-    '.ivc-version-pill__brand{letter-spacing:.3px;font-weight:600;color:inherit}' +
-    '.ivc-version-pill__num{font-weight:700;color:#d74009;font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:11px}' +
-    '.ivc-version-pill__btn:hover .ivc-version-pill__num{color:#b8350a}' +
-    '@media(max-width:640px){.ivc-version-pill{right:12px;bottom:12px}' +
-    '.ivc-version-pill__btn{padding:5px 10px;font-size:10.5px}.ivc-version-pill__num{font-size:10.5px}}' +
-    '@media print{.ivc-version-pill{display:none}}';
+    '.naowee-floating-footer{position:fixed;bottom:14px;right:20px;z-index:50;display:inline-flex;align-items:center;gap:10px;padding:8px 14px;background:#fff;border:1px solid #e7e9f3;border-radius:9999px;box-shadow:0 4px 12px rgba(40,40,52,.06);font-family:Inter,sans-serif;font-size:11.5px;color:#646587;pointer-events:auto;transform:translateY(0);transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .25s ease}' +
+    '.naowee-floating-footer.is-hidden{opacity:0;transform:translateY(140%);pointer-events:none}' +
+    '@media(prefers-reduced-motion:reduce){.naowee-floating-footer{transition:opacity .2s ease}.naowee-floating-footer.is-hidden{transform:none}}' +
+    '.naowee-floating-footer__logo{height:18px;width:auto;display:block}' +
+    '.naowee-floating-footer__sep{width:1px;height:14px;background:#e7e9f3;flex-shrink:0}' +
+    '.naowee-floating-footer__text{font-weight:500;line-height:1}' +
+    '.naowee-floating-footer__text strong{color:#282834;font-weight:700}' +
+    '.naowee-floating-footer__version{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:11px;font-weight:500;line-height:1;color:#646587;background:transparent;border:0;text-decoration:none;padding:4px 8px;border-radius:6px;transition:background .12s,color .12s}' +
+    '.naowee-floating-footer__version strong{color:#d74009;font-weight:700;font-family:JetBrains Mono,ui-monospace,monospace}' +
+    '.naowee-floating-footer__version:hover{background:#fff3e6;color:#d74009}' +
+    '@media(max-width:640px){.naowee-floating-footer{bottom:8px;right:8px;padding:6px 10px;font-size:10.5px}.naowee-floating-footer__logo{height:14px}.naowee-floating-footer__sep{height:10px}}' +
+    '@media print{.naowee-floating-footer{display:none}}';
   document.head.appendChild(style);
-  var wrap = document.createElement('div');
-  wrap.id = 'ivcVersionPill';
-  wrap.className = 'ivc-version-pill';
-  wrap.dataset.version = IVC_VERSION;
-  wrap.innerHTML =
-    '<a class="ivc-version-pill__btn" href="' + RELEASE_URL + '" target="_blank" rel="noopener" ' +
-       'title="Naowee IVC — Ver release notes en GitHub" ' +
-       'aria-label="Versión del prototipo: ' + IVC_VERSION + '">' +
-      '<span class="ivc-version-pill__brand">IVC</span>' +
-      '<strong class="ivc-version-pill__num">' + IVC_VERSION + '</strong>' +
+  var RELEASE_URL = 'https://github.com/' + REPO + '/releases/tag/ivc-' + IVC_VERSION;
+  var YEAR = new Date().getFullYear();
+  /* Logo desde el archivo SVG real (mismo asset que bandeja.html usa via
+     ../shared/logos/naowee.svg). Path relativo desde demo-fase-1-formulario.html
+     resuelve a /Users/dvargas/Desktop/IVC/logos/naowee.svg en file://
+     y a /naowee-ivc/prototype/usuario-externo/logos/naowee.svg en Pages. */
+  var LOGO_SRC = 'logos/naowee.svg';
+  var footer = document.createElement('div');
+  footer.className = 'naowee-floating-footer';
+  footer.setAttribute('role', 'contentinfo');
+  footer.setAttribute('aria-label', 'Pie de página Naowee');
+  footer.innerHTML =
+    '<img src="' + LOGO_SRC + '" alt="Naowee" class="naowee-floating-footer__logo" onerror="this.style.display=\'none\'"/>' +
+    '<div class="naowee-floating-footer__sep"></div>' +
+    '<span class="naowee-floating-footer__text">Todos los derechos reservados <strong>&copy; ' + YEAR + '</strong></span>' +
+    '<div class="naowee-floating-footer__sep"></div>' +
+    '<a class="naowee-floating-footer__version" href="' + RELEASE_URL + '" target="_blank" rel="noopener" ' +
+       'title="' + MODULE_NAME + ' ' + IVC_VERSION + ' — Ver release notes en GitHub">' +
+      MODULE_NAME + ' <strong>' + IVC_VERSION + '</strong>' +
     '</a>';
-  document.body.appendChild(wrap);
+  document.body.appendChild(footer);
+  /* Scroll-hide animado (patrón Project v2.0.3) */
+  var lastY = window.scrollY, ticking = false;
+  function update(){
+    var y = window.scrollY, dy = y - lastY;
+    if (Math.abs(dy) > 4) {
+      if (dy > 0 && y > 60) footer.classList.add('is-hidden');
+      else footer.classList.remove('is-hidden');
+      lastY = y;
+    }
+    ticking = false;
+  }
+  window.addEventListener('scroll', function(){
+    if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+  }, { passive: true });
 })();
 </script>
 
