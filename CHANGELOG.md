@@ -6,6 +6,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.4] — 2026-05-25
+
+> 🪪 **NIT condicional: solo se muestra/valida cuando el organismo es Liga (feedback Juanma).**
+
+### Changed — `formulario-fase-1.html` (radicación pública)
+
+Aplicado en las **dos copias** del formulario (`prototype/usuario-externo/formulario-fase-1.html` del repo + `IVC/demo-fase-1-formulario.html` standalone):
+
+- **Paso 1 · Identificación**: el campo NIT solo se renderiza cuando `STATE.tipoOrganismo === 'liga'`. Para Asociación y Federación, el teléfono pasa a renderizarse a ancho completo (sin grid de 2 columnas vacía).
+- **Validación**: NIT se agrega al array de `required` solo si el organismo es Liga. Para Asociación/Federación ya no bloquea el envío del paso 1.
+- **Paso final · Revisión**: la fila "NIT" del summary se omite cuando no es Liga.
+- **Pantalla de éxito · Comprobante de radicación**: la meta del organismo omite `NIT XXX · ` cuando no es Liga (queda solo el label del tipo de organismo).
+
+**Por qué:** Juanma confirmó que solo las Ligas Deportivas Departamentales tienen NIT como persona jurídica con esa figura tributaria. Asociaciones y Federaciones no manejan NIT en el trámite de Otorgamiento de Reconocimiento Deportivo. Antes el campo aparecía para los 3 organismos y bloqueaba el envío si quedaba vacío.
+
+---
+
 ## [ivc-v1.5.3] — 2026-05-25
 
 > 🧩 **Profesional end-to-end (bandeja + workspace canónico) + modal asignación masiva refactor + limpieza de perfiles.**

@@ -1843,20 +1843,28 @@ function renderStep0() {
 function renderStep1() {
   const d = STATE.data;
   const orgLabel = ({ liga:'Liga Deportiva Departamental', asociacion:'Asociación Deportiva', federacion:'Federación Deportiva Nacional' })[STATE.tipoOrganismo] || '';
+  // v1.5.4 (25/05/2026): NIT solo aplica a Liga (feedback Juanma). Asociación y
+  // Federación no tienen NIT — el teléfono se renderiza full-width en ese caso.
+  const esLiga = STATE.tipoOrganismo === 'liga';
   return `
     ${messageInfo('', `Estás radicando como <strong>${esc(orgLabel)}</strong>. Si te equivocaste, <a href="#" onclick="STATE.step=0;render();return false;">vuelve al paso anterior</a>.`)}
     <h2 class="wz-section">Identificación del organismo</h2>
     ${tf({ id:'f-nombre', label:'Nombre del organismo', required:true,
             placeholder:'Ej: Liga de Atletismo de Antioquia',
             value:d.nombre, onInput:'STATE.data.nombre=this.value' })}
-    <div class="wz-grid-2">
-      ${tf({ id:'f-nit', label:'NIT', required:true,
-              placeholder:'800123456-7', value:d.nit,
-              onInput:'STATE.data.nit=this.value' })}
-      ${tf({ id:'f-tel', label:'Teléfono de contacto', required:true,
+    ${esLiga
+      ? `<div class="wz-grid-2">
+          ${tf({ id:'f-nit', label:'NIT', required:true,
+                  placeholder:'800123456-7', value:d.nit,
+                  onInput:'STATE.data.nit=this.value' })}
+          ${tf({ id:'f-tel', label:'Teléfono de contacto', required:true,
+                  type:'tel', placeholder:'+57 300 123 4567',
+                  value:d.telefono, onInput:'STATE.data.telefono=this.value' })}
+        </div>`
+      : tf({ id:'f-tel', label:'Teléfono de contacto', required:true,
               type:'tel', placeholder:'+57 300 123 4567',
-              value:d.telefono, onInput:'STATE.data.telefono=this.value' })}
-    </div>
+              value:d.telefono, onInput:'STATE.data.telefono=this.value' })
+    }
 
     <h2 class="wz-section">Domicilio</h2>
     ${tf({ id:'f-dir', label:'Dirección', required:true,
@@ -2420,7 +2428,7 @@ function renderStep6() {
       <div class="wz-review__group">
         <div class="wz-review__group-title">Datos generales</div>
         <div class="wz-review__row"><div class="wz-review__label">Nombre</div><div class="wz-review__value">${dispValue(d.nombre)}</div></div>
-        <div class="wz-review__row"><div class="wz-review__label">NIT</div><div class="wz-review__value">${dispValue(d.nit)}</div></div>
+        ${STATE.tipoOrganismo === 'liga' ? `<div class="wz-review__row"><div class="wz-review__label">NIT</div><div class="wz-review__value">${dispValue(d.nit)}</div></div>` : ''}
         <div class="wz-review__row"><div class="wz-review__label">Dirección</div><div class="wz-review__value">${dispValue(d.direccion)}</div></div>
         <div class="wz-review__row"><div class="wz-review__label">Municipio</div><div class="wz-review__value">${dispValue(d.municipio)}</div></div>
         <div class="wz-review__row"><div class="wz-review__label">Teléfono</div><div class="wz-review__value">${dispValue(d.telefono)}</div></div>
@@ -2514,7 +2522,7 @@ function renderSuccess() {
           <div class="receipt__ava">${esc(initials)}</div>
           <div class="receipt__person">
             <div class="receipt__person-name">${esc(nombre)}</div>
-            <div class="receipt__person-meta">NIT ${esc(nit)} · ${esc(orgLabel)}</div>
+            <div class="receipt__person-meta">${STATE.tipoOrganismo === 'liga' ? `NIT ${esc(nit)} · ` : ''}${esc(orgLabel)}</div>
           </div>
         </div>
         <div class="receipt__details">
@@ -2695,9 +2703,10 @@ function setupFooter() {
    ============================================================ */
 function validateStep1() {
   const errors = [];
+  // v1.5.4: NIT solo es obligatorio para Liga (feedback Juanma).
   const required = [
     { key:'nombre',    sel:'#f-nombre' },
-    { key:'nit',       sel:'#f-nit' },
+    ...(STATE.tipoOrganismo === 'liga' ? [{ key:'nit', sel:'#f-nit' }] : []),
     { key:'telefono',  sel:'#f-tel' },
     { key:'direccion', sel:'#f-dir' },
     { key:'municipio', sel:'#f-mun' },
@@ -3106,7 +3115,7 @@ render();
    Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md
    ═══════════════════════════════════════════════════════════════════════ */
 (function mountNaoweeFooter(){
-  var IVC_VERSION = 'v1.5.3';
+  var IVC_VERSION = 'v1.5.4';
   var REPO = 'naowee-tech/naowee-ivc';
   var MODULE_NAME = 'IVC';
   if (document.querySelector('.naowee-floating-footer')) return;
