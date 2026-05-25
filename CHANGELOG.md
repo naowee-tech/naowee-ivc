@@ -6,6 +6,40 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.5.6] — 2026-05-25
+
+> 📎 **Asociación Deportiva (F2): uploaders condicionales de inventario / afiliación + 2 campos faltantes de Inscripción de Miembros (feedback Juanma).**
+
+### Added — Nueva sección "Inscripción de Miembros" (F2-2.5 + F2-2.5a)
+
+En el paso 2 del flujo de Asociación Deportiva, entre "Constitución / Elección del OA" e "Inventario y afiliación internacional":
+
+- **N° Resolución de Inscripción de Miembros** (texto libre, requerido) — `F2-2.5`.
+- **Radicado de la Resolución de Inscripción de Miembros en IVC** (texto libre, requerido) — `F2-2.5a`.
+
+Ambos provienen del XLSX MÓDULO IVC oficial y faltaban en el formulario.
+
+### Fixed — File uploaders condicionales para inventario y afiliación
+
+Al responder **"Sí"** en cada uno de los radios:
+
+- **¿Cuenta con inventario de bienes?** → ahora aparece el `uploadField` para cargar el inventario.
+- **¿Cuenta con documentos de afiliación internacional?** → ahora aparece el `uploadField` para cargar el documento. "No" y "No aplica" no requieren archivo (sin cambio).
+
+Antes el radio se quedaba en "Sí" sin posibilidad de adjuntar nada — el organismo no podía cumplir el requisito documental. Se reutiliza el componente canónico `uploadField()` (mismo que ya usaba `f3_archivo_cert` en F3 Asamblea).
+
+### Changed — `STATE.data.f2`
+
+Cuatro campos nuevos:
+- `no_inscripcion_miembros` (string)
+- `radicado_inscripcion_miembros` (string)
+- `archivo_inventario` (file object | null)
+- `archivo_afiliacion` (file object | null)
+
+Aplicado en las dos copias del formulario (`prototype/usuario-externo/formulario-fase-1.html` del repo + `IVC/demo-fase-1-formulario.html` standalone).
+
+---
+
 ## [ivc-v1.5.5] — 2026-05-25
 
 > 🪪 **Nombre y NIT del organismo se autopopulan con un ejemplo realista del tipo elegido (Liga / Asociación / Federación).**

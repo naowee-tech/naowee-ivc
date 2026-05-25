@@ -909,7 +909,10 @@ const STATE = {
     telefono: '',
     correo: '',
     f1: { no_res_personeria:'', radicado_personeria:'', fecha_reforma:'', radicado_estatutos:'', no_res_estatutos:'', periodo_inicial:'', periodo_vigente:'', tiene_constancia:'', fecha_constancia:'', no_res_minimos:'', n_minimos:'' },
-    f2: { no_personeria:'', radicado_personeria:'', fecha_estatutos:'', radicado_estatutos:'', no_acta_sede:'', radicado_acta_sede:'', no_acta_constitucion:'', radicado_acta_constitucion:'', tiene_inventario:'', tiene_afiliacion:'' },
+    /* v1.5.6 (25/05/2026): Asociación (F2) — feedback Juanma:
+       1) Faltaban 2 campos F2-2.5 / F2-2.5a (Inscripción de Miembros, texto libre).
+       2) Al decir "Sí" en inventario o afiliación no aparecía el uploader del archivo. */
+    f2: { no_personeria:'', radicado_personeria:'', fecha_estatutos:'', radicado_estatutos:'', no_acta_sede:'', radicado_acta_sede:'', no_acta_constitucion:'', radicado_acta_constitucion:'', no_inscripcion_miembros:'', radicado_inscripcion_miembros:'', tiene_inventario:'', archivo_inventario:null, tiene_afiliacion:'', archivo_afiliacion:null },
     f3: { no_res_personeria:'', radicado_personeria:'', fecha_reforma:'', radicado_estatutos:'', no_res_estatutos:'', periodo_inicial:'', periodo_vigente:'', tipo_convocatoria:'', fecha_convocatoria:'', fecha_realizacion:'' },
     asamblea: {
       f1_tema: '',
@@ -2043,6 +2046,20 @@ function renderStep2_F2() {
               onInput:'STATE.data.f2.radicado_acta_constitucion=this.value' })}
     </div>
 
+    <!-- v1.5.6 (25/05/2026): Inscripción de Miembros (F2-2.5 + F2-2.5a). Feedback
+         Juanma: ambos campos son texto libre y faltaban en el formulario. -->
+    <h2 class="wz-section">Inscripción de Miembros</h2>
+    <div class="wz-grid-2">
+      ${tf({ label:'N° Resolución de Inscripción de Miembros', required:true,
+              placeholder:'Resolución 0042 del 15/03/2022',
+              value:f2.no_inscripcion_miembros,
+              onInput:'STATE.data.f2.no_inscripcion_miembros=this.value' })}
+      ${tf({ label:'Radicado de la Resolución de Inscripción de Miembros en IVC', required:true,
+              placeholder:'IVC-2022-000210',
+              value:f2.radicado_inscripcion_miembros,
+              onInput:'STATE.data.f2.radicado_inscripcion_miembros=this.value' })}
+    </div>
+
     <h2 class="wz-section">Inventario y afiliación internacional</h2>
     <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">¿Cuenta con inventario de bienes?</label>
     ${radioYN({
@@ -2050,6 +2067,13 @@ function renderStep2_F2() {
       onYes:"STATE.data.f2.tiene_inventario='si';render();",
       onNo:"STATE.data.f2.tiene_inventario='no';render();"
     })}
+    <!-- v1.5.6: uploader del inventario aparece solo al decir "Sí". Feedback Juanma. -->
+    ${f2.tiene_inventario === 'si' ? `
+      <div style="margin-top:12px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar inventario de bienes</label>
+        ${uploadField({ stateKey:'data.f2.archivo_inventario' })}
+      </div>
+    ` : ''}
 
     <label class="naowee-textfield__label naowee-textfield__label--required" style="margin:14px 0 8px;display:block;">¿Cuenta con documentos de afiliación internacional?</label>
     ${radioYN({
@@ -2058,6 +2082,14 @@ function renderStep2_F2() {
       onNo:"STATE.data.f2.tiene_afiliacion='no';render();",
       extra:[{ v:'no_aplica', t:'No aplica', onClick:"STATE.data.f2.tiene_afiliacion='no_aplica';render();" }]
     })}
+    <!-- v1.5.6: uploader del documento de afiliación aparece solo al decir "Sí".
+         "No aplica" y "No" no requieren archivo. Feedback Juanma. -->
+    ${f2.tiene_afiliacion === 'si' ? `
+      <div style="margin-top:12px;">
+        <label class="naowee-textfield__label naowee-textfield__label--required" style="margin-bottom:8px;display:block;">Cargar documento de afiliación internacional</label>
+        ${uploadField({ stateKey:'data.f2.archivo_afiliacion' })}
+      </div>
+    ` : ''}
   `;
 }
 
@@ -3161,7 +3193,7 @@ render();
    Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md
    ═══════════════════════════════════════════════════════════════════════ */
 (function mountNaoweeFooter(){
-  var IVC_VERSION = 'v1.5.5';
+  var IVC_VERSION = 'v1.5.6';
   var REPO = 'naowee-tech/naowee-ivc';
   var MODULE_NAME = 'IVC';
   if (document.querySelector('.naowee-floating-footer')) return;
