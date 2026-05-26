@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.2">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.2">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.12.2">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.2">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.3">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.3">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.3">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.3">
 
   <style>
     /* ═══════════════════════════════════════════════════════════════════
@@ -525,6 +525,14 @@
     .naowee-table tbody tr.row-clickable:hover {
       background: #f0f2f8 !important;
     }
+    /* v1.12.3: defensive — bloquear cualquier overlay del demo-tour si
+       accidentalmente se inyecta (actos.html NO carga demo-tour.js pero
+       el shell o cross-tab puede inyectarla). */
+    .demo-tour-overlay,
+    .demo-tour-overlay::before,
+    .demo-tour-spotlight {
+      pointer-events: none !important;
+    }
     /* v1.12.1: action button "Revisar acto →" — forzar hover canónico
        del naowee-btn--mute (peach naranja). El onclick="event.stopPropagation()"
        en el <a> no debería matar el hover CSS, pero por defensividad
@@ -646,10 +654,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.12.2"></script>
-  <script src="../shared/shell.js?v=1.12.2"></script>
-  <script src="../shared/ivc-store.js?v=1.12.2"></script>
-  <script src="../shared/naowee-footer.js?v=1.12.2" defer></script>
+  <script src="../shared/data.js?v=1.12.3"></script>
+  <script src="../shared/shell.js?v=1.12.3"></script>
+  <script src="../shared/ivc-store.js?v=1.12.3"></script>
+  <script src="../shared/naowee-footer.js?v=1.12.3" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════

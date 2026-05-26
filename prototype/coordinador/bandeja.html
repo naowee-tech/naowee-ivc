@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.2">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.2">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.12.2">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.2">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.3">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.3">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.3">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.3">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -198,6 +198,15 @@
       background: var(--orange-bg, #fff3e6) !important;
       color: var(--accent, #d74009) !important;
     }
+    /* v1.12.3: defensive — si el demo-tour overlay aparece (no debería tras
+       setTourClosed(true) en este page), forzar pointer-events:none global
+       para que NUNCA bloquee clicks de tooltips/buttons de la tabla. */
+    .demo-tour-overlay,
+    .demo-tour-overlay::before,
+    .demo-tour-spotlight {
+      pointer-events: none !important;
+    }
+    /* v1.12.3: solo el tooltip del tour interactúa (cuando esté activo). */
     .row-checkbox-cell { width: 36px; padding-left: 18px; }
 
     /* Footer count info — minimal, page-scoped */
@@ -1253,14 +1262,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.12.2"></script>
-  <script src="../shared/shell.js?v=1.12.2"></script>
-  <script src="../shared/demo-tour.js?v=1.12.2"></script>
-  <script src="../shared/ivc-store.js?v=1.12.2"></script>
+  <script src="../shared/data.js?v=1.12.3"></script>
+  <script src="../shared/shell.js?v=1.12.3"></script>
+  <script src="../shared/demo-tour.js?v=1.12.3"></script>
+  <script src="../shared/ivc-store.js?v=1.12.3"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.12.2" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.12.3" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1340,7 +1349,17 @@
       /* v1.4.8 rev2: tooltips ahora usan DS canónico nativo (sin portal).
          Ver CSS de .naowee-table-card { overflow: visible } arriba. */
 
-      window.IVCTour.mount({ pageId: 'coordinador/bandeja.html' });
+      /* v1.12.3: tour deshabilitado por default en la bandeja del Coordinador.
+         El step 5 'bandeja-coordinador' del demo-tour.js activaba overlay con
+         spotlight + tooltip que interfería con los hover/tooltips de los
+         action icons + tabs. Doug reportó "pareciera que el tour guiado
+         estuviera molestando". Si el usuario quiere ver el tour, puede
+         hacer click en "Reiniciar tour" desde el demo-switcher. */
+      if (window.IVCData && window.IVCData.setTourClosed) {
+        window.IVCData.setTourClosed(true);
+      }
+      /* window.IVCTour.mount({ pageId: 'coordinador/bandeja.html' });
+         ↑ comentado en v1.12.3 — re-activable manualmente desde restart-tour. */
 
       /* Actualizar bulk button con disabled estado inicial */
       updateBulkButton();
