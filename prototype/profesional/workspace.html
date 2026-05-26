@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.3">
-  <link rel="stylesheet" href="../shared/components.css?v=1.11.3">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.11.3">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.3">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.4">
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
        Hero card (info + plazo) + naowee-tabs--animated + sticky decision footer.
@@ -1086,10 +1086,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.11.3"></script>
-  <script src="../shared/shell.js?v=1.11.3"></script>
-  <script src="../shared/ivc-store.js?v=1.11.3"></script>
-  <script src="../shared/naowee-footer.js?v=1.11.3" defer></script>
+  <script src="../shared/data.js?v=1.11.4"></script>
+  <script src="../shared/shell.js?v=1.11.4"></script>
+  <script src="../shared/ivc-store.js?v=1.11.4"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.4" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1186,7 +1186,10 @@
       var e = state.tramite && state.tramite.estado;
       return e === 'Cumple' || e === 'NoCumple' || e === 'Parcial' ||
              e === 'PendienteCOO' || e === 'PendienteFirma' || e === 'Firmado' ||
-             e === 'NotifElectronica' || e === 'NotifOficinas' || e === 'Vigente';
+             e === 'NotifElectronica' || e === 'NotifOficinas' || e === 'Vigente' ||
+             /* v1.11.4: estados del flujo de recursos también bloquean. */
+             e === 'PendienteRecursos' || e === 'PendienteRecursoTipo' ||
+             e === 'EnApelacion'       || e === 'EnReposicion';
     }
     function applyLockState() {
       document.body.classList.toggle('ivc-tramite-locked', isTramiteFinalizado());
@@ -1214,7 +1217,12 @@
         Firmado:          { variant: 'positive', icon: iconCheck, title: 'Acto firmado por el Director IVC',      sub: 'El acto administrativo fue firmado electrónicamente. Sistema procediendo con la notificación al organismo.' },
         NotifElectronica: { variant: 'positive', icon: iconCheck, title: 'Notificación electrónica al organismo', sub: 'El acto firmado fue enviado al organismo por canal electrónico. Esperando respuesta sobre renuncia a términos.' },
         NotifOficinas:    { variant: 'caution',  icon: iconWarn,  title: 'Notificación en oficinas (5 días hábiles)', sub: 'El organismo fue alertado para asistir a las oficinas del IVC. Notificación queda en manos de Atención al Usuario / GIT Comunicaciones.' },
-        Vigente:          { variant: 'positive', icon: iconCheck, title: 'Trámite vigente · CERRADO',             sub: 'El organismo renunció a términos. Acto administrativo vigente desde el día siguiente. Trámite cerrado satisfactoriamente.' },
+        Vigente:          { variant: 'positive', icon: iconCheck, title: 'Trámite vigente · CERRADO',             sub: 'Acto administrativo vigente. Organismo inscrito en el Registro Nacional Deportivo. Trámite cerrado satisfactoriamente.' },
+        /* v1.11.4: estados del flujo de recursos. */
+        PendienteRecursos:    { variant: 'caution',  icon: iconWarn,  title: 'Términos legales corriendo (10 días)', sub: 'El organismo no renunció a términos. Dispone de 10 días hábiles para interponer recursos. Si no, el acto entrará en vigencia el día 11 (D+11).' },
+        PendienteRecursoTipo: { variant: 'caution',  icon: iconWarn,  title: 'Organismo eligiendo tipo de recurso',  sub: 'El organismo indicó que interpone recursos. Está seleccionando entre Apelación (área jurídica) o Reposición (nuevo trámite).' },
+        EnApelacion:          { variant: 'caution',  icon: iconWarn,  title: 'Apelación · pendiente pronunciamiento jurídico', sub: 'El recurso de apelación fue remitido al área jurídica del Ministerio. Trámite suspendido a la espera del fallo jurídico.' },
+        EnReposicion:         { variant: 'positive', icon: iconCheck, title: 'Trámite cerrado por Reposición',       sub: 'El organismo interpuso reposición. Se creó un nuevo trámite hijo con FK al original. Este trámite queda cerrado en favor del nuevo radicado.' },
         Cumple:           { variant: 'positive', icon: iconCheck, title: 'Trámite cerrado · CUMPLE',              sub: 'Acto administrativo de Otorgamiento aprobado por el Coordinador IVC. Pendiente firma del Director IVC.' },
         Parcial:          { variant: 'caution',  icon: iconWarn,  title: 'Trámite devuelto · CUMPLIMIENTO PARCIAL', sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando radique la subsanación.' },
         NoCumple:         { variant: 'negative', icon: iconError, title: 'Trámite cerrado · NO CUMPLE',           sub: 'Acto de no cumplimiento generado. El trámite quedó cerrado en firme y no admite subsanación.' }
@@ -2049,7 +2057,12 @@
       if (estado === 'Firmado')          return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Firmado</span>';
       if (estado === 'NotifElectronica') return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Notif. electrónica</span>';
       if (estado === 'NotifOficinas')    return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Notif. en oficinas</span>';
-      if (estado === 'Vigente')          return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Vigente</span>';
+      if (estado === 'Vigente')             return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Vigente</span>';
+      /* v1.11.4: estados del flujo de recursos. */
+      if (estado === 'PendienteRecursos')   return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Términos legales corriendo</span>';
+      if (estado === 'PendienteRecursoTipo') return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Eligiendo recurso</span>';
+      if (estado === 'EnApelacion')         return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">En apelación</span>';
+      if (estado === 'EnReposicion')        return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">Reposición · cerrado</span>';
       if (estado === 'Cumple')      return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Cumple</span>';
       if (estado === 'NoCumple')    return '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet">No cumple</span>';
       if (estado === 'Parcial')     return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Parcial</span>';

@@ -452,6 +452,58 @@
       return t;
     },
 
+    /* v1.11.4: crear trámite por REPOSICIÓN — clona los datos básicos del
+       trámite padre (organismo, NIT, tipoOrganismo, datos diligenciados,
+       documentos) y crea un trámite nuevo con tipoTramite='Reposición' y
+       tramite_parent apuntando al original. El nuevo trámite arranca en
+       'No asignada' (vuelve al ciclo de remisión automática del Coordinador).
+       El padre debe ser marcado con estado 'EnReposicion' por el caller. */
+    crearReposicion: function (parentId, actor) {
+      var s = this.init();
+      var padre = s.tramites.find(function (x) { return x.id === parentId; });
+      if (!padre) return null;
+
+      s.ultimoRadicado = (s.ultimoRadicado || 0) + 1;
+      var pad = String(s.ultimoRadicado).padStart(3, '0');
+      var id = 'IVC-' + new Date().getFullYear() + '-' + pad;
+      var now = new Date();
+      var iso = now.toISOString().slice(0, 10);
+      var hora = now.toTimeString().slice(0, 5);
+
+      var nuevo = {
+        id: id,
+        organismo: padre.organismo,
+        nit: padre.nit,
+        tipoOrganismo: padre.tipoOrganismo,
+        tipoTramite: 'Reposición',
+        area: padre.area || 'aficionado',
+        fechaRadicacion: iso,
+        plazoDias: 15,
+        estado: 'No asignada',
+        profesionalId: null,
+        profesionalNombre: null,
+        /* v1.11.4: FK al trámite original. La página pública / bandejas pueden
+           seguir el link para mostrar el historial completo (parent + child). */
+        tramite_parent: parentId,
+        historico: [
+          { fecha: iso, hora: hora, actor: actor || padre.organismo,
+            accion: 'Reposición radicada · trámite hijo del ' + parentId,
+            estado: 'No asignada' },
+          { fecha: iso, hora: hora, actor: 'Sistema',
+            accion: 'Remisión automática a Deporte ' + (padre.area === 'profesional' ? 'Profesional' : 'Aficionado'),
+            estado: 'No asignada' }
+        ],
+        /* Clonar datos diligenciados + documentos para que el Profesional
+           tenga el contexto completo al revalidar. */
+        documentos: padre.documentos ? JSON.parse(JSON.stringify(padre.documentos)) : {},
+        datos: padre.datos ? JSON.parse(JSON.stringify(padre.datos)) : {}
+      };
+      s.tramites.unshift(nuevo);
+      write(s);
+      emit('tramite:creado', nuevo);
+      return nuevo;
+    },
+
     actualizarEstado: function (tramiteId, estado, actor, observacion) {
       var s = this.init();
       var t = s.tramites.find(function (x) { return x.id === tramiteId; });

@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-helper, .naowee-tooltip. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.3">
-  <link rel="stylesheet" href="../shared/components.css?v=1.11.3">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.11.3">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.3">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.4">
   <style>
     /* Page-local: paridad con coordinador/bandeja.html. Sin invención de
        clases .naowee-*; solo prefijo .ivc-* y patrón page-title-block local. */
@@ -350,10 +350,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.11.3"></script>
-  <script src="../shared/shell.js?v=1.11.3"></script>
-  <script src="../shared/ivc-store.js?v=1.11.3"></script>
-  <script src="../shared/naowee-footer.js?v=1.11.3" defer></script>
+  <script src="../shared/data.js?v=1.11.4"></script>
+  <script src="../shared/shell.js?v=1.11.4"></script>
+  <script src="../shared/ivc-store.js?v=1.11.4"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.4" defer></script>
   <script>
     /* Profesional activo: por simplicidad del demo, fijo a Carlos Pérez.
        Si en el futuro se identifica via session/auth, reemplazar acá. */
@@ -383,12 +383,17 @@
          Si el usuario quiere ver el journey completo, puede acceder al
          workspace específico (que mantiene la cenefa view-only). */
       var ESTADOS_DOWNSTREAM = [
-        'PendienteCOO',    /* en aprobación del Coord */
-        'PendienteFirma',  /* aprobado COO, en cola Director */
-        'Firmado',         /* firmado por Director */
-        'NotifElectronica',/* notificación enviada al portal */
-        'NotifOficinas',   /* esperando asistencia del organismo */
-        'Vigente'          /* terminal positivo final */
+        'PendienteCOO',          /* en aprobación del Coord */
+        'PendienteFirma',        /* aprobado COO, en cola Director */
+        'Firmado',               /* firmado por Director */
+        'NotifElectronica',      /* notificación enviada al portal */
+        'NotifOficinas',         /* esperando asistencia del organismo */
+        'Vigente',               /* terminal positivo final */
+        /* v1.11.4: estados del flujo de recursos también downstream. */
+        'PendienteRecursos',
+        'PendienteRecursoTipo',
+        'EnApelacion',
+        'EnReposicion'
       ];
 
       function loadFromStore() {
@@ -425,7 +430,8 @@
 
     function refresh() {
       /* v1.11.1: mismo filtro de estados downstream que el load inicial. */
-      var DOWNSTREAM = ['PendienteCOO', 'PendienteFirma', 'Firmado', 'NotifElectronica', 'NotifOficinas', 'Vigente'];
+      var DOWNSTREAM = ['PendienteCOO', 'PendienteFirma', 'Firmado', 'NotifElectronica', 'NotifOficinas', 'Vigente',
+                        'PendienteRecursos', 'PendienteRecursoTipo', 'EnApelacion', 'EnReposicion'];
       var loadFromStore = function () {
         var todas = IVCStore.misAsignaciones(PROFESIONAL_ACTIVO_ID) || [];
         state.tramites = todas.filter(function (t) {

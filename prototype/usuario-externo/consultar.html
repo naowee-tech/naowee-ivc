@@ -24,9 +24,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.3">
-  <link rel="stylesheet" href="../shared/components.css?v=1.11.3">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.3">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.4">
 
   <style>
     * { box-sizing: border-box; }
@@ -589,6 +589,106 @@
       }
     }
 
+    /* v1.11.4: CTA elegir tipo de recurso — 2 opciones tipo card. */
+    .recurso-tipo-cta {
+      padding: 28px 32px;
+      background: linear-gradient(135deg, #f7f0ff 0%, #fff 100%);
+      border: 2px solid #7c3aed;
+      border-radius: var(--radius-xl, 20px);
+      margin: 0 0 24px;
+    }
+    .recurso-tipo-cta__head {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    .recurso-tipo-cta__icon {
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: #7c3aed;
+      color: #fff;
+      padding: 10px;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+    .recurso-tipo-cta__title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 6px;
+      line-height: 1.3;
+    }
+    .recurso-tipo-cta__sub {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.55;
+    }
+    .recurso-tipo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 700px) {
+      .recurso-tipo-grid { grid-template-columns: 1fr; }
+    }
+    .recurso-tipo-option {
+      display: flex; flex-direction: column;
+      gap: 10px;
+      padding: 20px 18px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: border-color .15s, background .15s, transform .08s;
+    }
+    .recurso-tipo-option:hover {
+      border-color: #7c3aed;
+      background: #fafbff;
+      transform: translateY(-1px);
+    }
+    .recurso-tipo-option:active { transform: translateY(0); }
+    .recurso-tipo-option__icon {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: #f7f0ff;
+      color: #7c3aed;
+    }
+    .recurso-tipo-option__title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .recurso-tipo-option__desc {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .recurso-tipo-option__chip {
+      align-self: flex-start;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--bg-soft, #f5f6fa);
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+    .recurso-tipo-option__chip--purple {
+      background: #f7f0ff;
+      color: #7c3aed;
+    }
+    .recurso-tipo-option__chip--orange {
+      background: var(--orange-bg, #fff3e6);
+      color: var(--accent, #d74009);
+    }
+
     /* v1.9.0: Modal subsanación — file uploader canónico (patrón .wz-file-drop
        del formulario) + textarea canónico DS + helper--negative para overflow. */
     .subsanar-doc-list {
@@ -795,8 +895,8 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.11.3"></script>
-  <script src="../shared/ivc-store.js?v=1.11.3"></script>
+  <script src="../shared/data.js?v=1.11.4"></script>
+  <script src="../shared/ivc-store.js?v=1.11.4"></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -966,17 +1066,19 @@
         : 'hábiles restantes';
 
       /* v1.11.0: estados "terminal" para mostrar resultado de la validación.
-         Incluyen los post-firma del Director (Firmado, NotifElectronica, Vigente)
-         que renderizan el acto firmado + bloque de renuncia a términos cuando aplica. */
+         v1.11.4: añadidos estados del flujo de recursos. Todos muestran el
+         acto firmado en el bloque resultado. */
       var isTerminal = (
         t.estado === 'Cumple'   || t.estado === 'NoCumple'         || t.estado === 'Parcial' ||
-        t.estado === 'Firmado'  || t.estado === 'NotifElectronica' || t.estado === 'Vigente'
+        t.estado === 'Firmado'  || t.estado === 'NotifElectronica' || t.estado === 'Vigente' ||
+        t.estado === 'PendienteRecursos'   || t.estado === 'PendienteRecursoTipo' ||
+        t.estado === 'EnApelacion'         || t.estado === 'EnReposicion'
       );
       var canSubsanar = (t.estado === 'Parcial');
-      /* v1.11.0: la pregunta de renuncia a términos sólo aparece cuando el
-         Director eligió notificación electrónica. La oficinas-flow espera a
-         Atención al Usuario o GIT Comunicaciones (v1.11.1). */
       var canResponderRenuncia = (t.estado === 'NotifElectronica');
+      /* v1.11.4: CTAs del flujo de recursos según estado intermedio. */
+      var canResponderRecursos  = (t.estado === 'PendienteRecursos');
+      var canElegirRecursoTipo  = (t.estado === 'PendienteRecursoTipo');
 
       /* v1.8.9: caution siempre visible al cargar — dismiss sólo afecta la
          vista actual (no persiste). Antes usaba sessionStorage y confundía
@@ -1018,6 +1120,14 @@
                Pregunta al organismo si renuncia a términos. Sí → Vigente D+1. */
             (canResponderRenuncia ? renderCTARenuncia(t) : '') +
 
+            /* v1.11.4: CTA RECURSOS — solo cuando state es PendienteRecursos.
+               Después de No-renuncia, pregunta si interpone recursos. Sí → elegir tipo. No → Vigente D+11. */
+            (canResponderRecursos ? renderCTARecursos(t) : '') +
+
+            /* v1.11.4: CTA tipo de recurso — solo cuando state es PendienteRecursoTipo.
+               Bifurca en Apelación (→ Jurídica) o Reposición (→ nuevo trámite hijo). */
+            (canElegirRecursoTipo ? renderCTAElegirRecurso(t) : '') +
+
             /* HISTÓRICO */
             renderHistorico(t) +
 
@@ -1053,7 +1163,12 @@
         Cumple:           { variant: 'positive', icon: MSG_ICON_CHECK, title: 'CUMPLE',                       desc: 'Su trámite fue aprobado. El acto administrativo de Otorgamiento está pendiente de firma por el Director IVC.', file: 'acto-otorgamiento-' + t.id + '.pdf' },
         Firmado:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'ACTO FIRMADO',                 desc: 'Su acto administrativo fue firmado electrónicamente por el Director del IVC. Se procederá con la notificación.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
         NotifElectronica: { variant: 'positive', icon: MSG_ICON_CHECK, title: 'NOTIFICADO ELECTRÓNICAMENTE',  desc: 'Su acto administrativo firmado fue enviado por canal electrónico. Por favor responda si renuncia a los términos para que su acto entre en vigencia el día siguiente.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
-        Vigente:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'TRÁMITE VIGENTE',              desc: 'Su acto administrativo está vigente desde el día siguiente a la notificación. El organismo ha sido inscrito en el Registro Nacional Deportivo.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        Vigente:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'TRÁMITE VIGENTE',              desc: 'Su acto administrativo está vigente. El organismo ha sido inscrito en el Registro Nacional Deportivo. Notificación de cierre enviada.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        /* v1.11.4: estados intermedios del flujo de recursos. */
+        PendienteRecursos:    { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'TÉRMINOS LEGALES CORRIENDO', desc: 'No renunció a términos. Tiene 10 días hábiles para interponer recursos (Apelación o Reposición). Si no interpone, su acto entrará en vigencia el día 11.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        PendienteRecursoTipo: { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'ELIJA TIPO DE RECURSO',      desc: 'Indicó que interpone recursos. Seleccione la vía: Apelación (revisión jurídica) o Reposición (nuevo trámite hijo).', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        EnApelacion:          { variant: 'informative', icon: MSG_ICON_CHECK, title: 'APELACIÓN EN ÁREA JURÍDICA', desc: 'Su recurso de apelación fue remitido al área jurídica del Ministerio. Recibirá notificación del fallo jurídico una vez se pronuncien sobre el recurso.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        EnReposicion:         { variant: 'informative', icon: MSG_ICON_CHECK, title: 'REPOSICIÓN INTERPUESTA',     desc: 'Su recurso de reposición creó un nuevo trámite hijo que vuelve al ciclo de revisión del IVC. Este trámite original quedó cerrado en favor del nuevo radicado.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
         Parcial:          { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'CUMPLIMIENTO PARCIAL',         desc: 'Su trámite presenta observaciones subsanables. Tiene 30 días hábiles desde la notificación para radicar la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
         /* v1.9.8: NoCumple es terminal en firme — al menos un documento fue
            marcado como No Cumple. No admite subsanación; el organismo puede
@@ -1218,16 +1333,116 @@
         IVCStore.actualizarEstado(t.id, 'Vigente', actorOrg, 'Organismo renunció a términos. Acto administrativo vigente desde el día siguiente (D+1).');
         _showSnackbar('Renuncia registrada. Su trámite quedó vigente desde el día siguiente.', 'success');
       } else {
-        /* v1.11.0: por scope, marcamos "No renuncia" en el historico pero el
-           flujo de recursos (apelación/reposición) se cierra en v1.11.1+. */
-        IVCStore.actualizarEstado(t.id, 'NotifElectronica', actorOrg, 'Organismo NO renunció a términos. Los términos legales continúan corriendo. Pendiente flujo de recursos (Apelación / Reposición).');
-        _showSnackbar('Respuesta registrada. Los términos legales continúan corriendo. Próximamente podrá interponer recursos.', 'success');
+        /* v1.11.4: NO renuncia → estado PendienteRecursos. Portal pregunta
+           ¿Interpone recursos? (Sí/No). Si No → Vigente D+11. Si Sí → tipo. */
+        IVCStore.actualizarEstado(t.id, 'PendienteRecursos', actorOrg,
+          'Organismo NO renunció a términos. Términos legales continúan corriendo (10 días hábiles). Puede interponer recursos.');
+        _showSnackbar('Respuesta registrada. Los términos legales continúan corriendo. Indique si interpone recursos.', 'success');
       }
       setTimeout(function () {
         IVCState.tramite = IVCStore.getTramite(t.id);
         route();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 400);
+    };
+
+    /* v1.11.4: CTA RECURSOS — aparece tras No-renuncia (state PendienteRecursos).
+       Pregunta si el organismo interpone recursos. Sí → elegir tipo. No → Vigente D+11. */
+    function renderCTARecursos(t) {
+      return '<div class="renuncia-cta">' +
+        '<div class="renuncia-cta__head">' +
+          '<svg class="renuncia-cta__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          '<div>' +
+            '<h3 class="renuncia-cta__title">¿Interpone recursos?</h3>' +
+            '<p class="renuncia-cta__sub">Como no renunció a términos, dispone de 10 días hábiles para interponer recursos contra este acto. Si no interpone recursos, su acto entrará en vigencia el día 11 (D+11). Si interpone, podrá elegir entre Apelación o Reposición.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="renuncia-cta__actions">' +
+          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="_responderRecursos(\'no\')">No interpongo · Vigencia D+11</button>' +
+          '<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="_responderRecursos(\'si\')">Sí, interpongo recursos</button>' +
+        '</div>' +
+      '</div>';
+    }
+    window._responderRecursos = function (resp) {
+      var t = IVCState.tramite;
+      if (!t) return;
+      var actorOrg = (t.organismo || 'Organismo') + ' (Organismo externo)';
+      if (resp === 'si') {
+        IVCStore.actualizarEstado(t.id, 'PendienteRecursoTipo', actorOrg,
+          'Organismo interpone recursos. Debe elegir entre Apelación (revisión por área jurídica) o Reposición (nuevo trámite con FK al original).');
+        _showSnackbar('Recursos solicitados. Indique el tipo: Apelación o Reposición.', 'success');
+      } else {
+        IVCStore.actualizarEstado(t.id, 'Vigente', actorOrg,
+          'Organismo no interpuso recursos. Acto administrativo vigente desde el día 11 (D+11). Notificación de cierre enviada por correo.');
+        _showSnackbar('Trámite cerrado. Su acto entrará en vigencia el día 11.', 'success');
+      }
+      setTimeout(function () {
+        IVCState.tramite = IVCStore.getTramite(t.id);
+        route();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 400);
+    };
+
+    /* v1.11.4: CTA elegir tipo de recurso (state PendienteRecursoTipo).
+       2 opciones tipo card: Apelación (a Jurídica) · Reposición (nuevo trámite). */
+    function renderCTAElegirRecurso(t) {
+      return '<div class="recurso-tipo-cta">' +
+        '<div class="recurso-tipo-cta__head">' +
+          '<svg class="recurso-tipo-cta__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          '<div>' +
+            '<h3 class="recurso-tipo-cta__title">Elija el tipo de recurso</h3>' +
+            '<p class="recurso-tipo-cta__sub">Su solicitud de recursos requiere especificar la vía. Una vez seleccionada, no se podrá cambiar.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="recurso-tipo-grid">' +
+          '<button type="button" class="recurso-tipo-option" onclick="_elegirRecursoTipo(\'apelacion\')">' +
+            '<span class="recurso-tipo-option__icon">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>' +
+            '</span>' +
+            '<div class="recurso-tipo-option__title">Apelación</div>' +
+            '<div class="recurso-tipo-option__desc">Su recurso será remitido al área jurídica del Ministerio para revisión y resolución. El trámite original queda suspendido a la espera del fallo jurídico.</div>' +
+            '<span class="recurso-tipo-option__chip recurso-tipo-option__chip--purple">→ Área jurídica</span>' +
+          '</button>' +
+          '<button type="button" class="recurso-tipo-option" onclick="_elegirRecursoTipo(\'reposicion\')">' +
+            '<span class="recurso-tipo-option__icon">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>' +
+            '</span>' +
+            '<div class="recurso-tipo-option__title">Reposición</div>' +
+            '<div class="recurso-tipo-option__desc">Se crea un nuevo trámite hijo del actual con toda la trazabilidad heredada del padre. El nuevo trámite vuelve al ciclo de remisión automática y revisión del IVC desde el comienzo.</div>' +
+            '<span class="recurso-tipo-option__chip recurso-tipo-option__chip--orange">→ Nuevo trámite</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }
+    window._elegirRecursoTipo = function (tipo) {
+      var t = IVCState.tramite;
+      if (!t) return;
+      var actorOrg = (t.organismo || 'Organismo') + ' (Organismo externo)';
+      if (tipo === 'apelacion') {
+        IVCStore.actualizarEstado(t.id, 'EnApelacion', actorOrg,
+          'Recurso de Apelación interpuesto. Remitido al área jurídica del Ministerio para revisión y fallo. Trámite original suspendido a la espera del pronunciamiento jurídico.');
+        _showSnackbar('Apelación radicada. Remitida al área jurídica del Ministerio.', 'success');
+        setTimeout(function () {
+          IVCState.tramite = IVCStore.getTramite(t.id);
+          route();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 400);
+      } else if (tipo === 'reposicion') {
+        /* Crear nuevo trámite hijo + marcar el padre como EnReposicion. */
+        var hijo = IVCStore.crearReposicion(t.id, actorOrg);
+        if (!hijo) {
+          _showSnackbar('No se pudo crear la reposición. Inténtelo de nuevo.', 'success');
+          return;
+        }
+        IVCStore.actualizarEstado(t.id, 'EnReposicion', actorOrg,
+          'Recurso de Reposición interpuesto. Se creó el trámite hijo ' + hijo.id + ' con toda la trazabilidad del trámite original. El nuevo trámite vuelve al ciclo de revisión del IVC.');
+        _showSnackbar('Reposición radicada. Su nuevo trámite es ' + hijo.id + '.', 'success');
+        setTimeout(function () {
+          IVCState.tramite = IVCStore.getTramite(t.id);
+          route();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 400);
+      }
     };
 
     /* ─── Histórico timeline ─────────────────────────────────────────── */
