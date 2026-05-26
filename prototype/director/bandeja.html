@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.2">
-  <link rel="stylesheet" href="../shared/components.css?v=1.11.2">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.11.2">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.2">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.3">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.3">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.3">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.3">
 
   <style>
     /* ═══════════════════════════════════════════════════════════════════
@@ -571,6 +571,103 @@
       color: #1a1a1a;
     }
 
+    /* v1.11.3: Modal MANDATORIO de carga de firma — aparece al primer login
+       del Director si no hay preset en localStorage. Bloqueante: sin X, sin
+       click overlay para cerrar, sin ESC. La única manera de continuar es
+       subir una firma válida y guardarla. */
+    .firma-required-modal {
+      width: 95vw; max-width: 620px;
+      display: flex; flex-direction: column;
+      max-height: 88vh;
+    }
+    /* Mientras el modal mandatorio está abierto, el resto del shell queda
+       pintado en gris detrás del overlay (overlay del DS ya pinta black 50%,
+       acá solo evitamos cualquier interacción residual). */
+    body.firma-required-locked .shell { pointer-events: none; }
+    body.firma-required-locked #modalFirmaRequiredOverlay { pointer-events: all; }
+
+    .firma-required-modal__intro {
+      padding: 18px 24px 0;
+    }
+    .firma-required-modal__hello {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 14px;
+    }
+    .firma-required-modal__avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--accent, #d74009);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .firma-required-modal__hello-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .firma-required-modal__hello-role {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Drop zone idéntico al de /director/perfil.html para coherencia. */
+    .firma-drop {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+      padding: 32px 24px;
+      border: 1.5px dashed var(--border-dark, #d0d4e6);
+      border-radius: 12px;
+      background: #fafbff;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      position: relative;
+      min-height: 180px;
+      justify-content: center;
+      text-align: center;
+    }
+    .firma-drop:hover {
+      border-color: var(--accent, #d74009);
+      background: #fff8f4;
+    }
+    .firma-drop.is-dragover {
+      border-color: var(--accent, #d74009);
+      background: var(--orange-bg, #fff3e6);
+    }
+    .firma-drop.is-error {
+      border-color: #c01818;
+      background: #fff0ee;
+      border-style: solid;
+    }
+    .firma-drop__icon {
+      width: 48px; height: 48px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: var(--orange-bg, #fff3e6);
+      color: var(--accent, #d74009);
+    }
+    .firma-drop__title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .firma-drop__hint {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-width: 380px;
+    }
+    .firma-drop input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+    }
+    /* helper canónico DS — visible solo cuando hay error */
+    .naowee-helper[hidden] { display: none !important; }
+
     /* ── Modal post-firma: ¿Cómo notificar? — opciones tipo card ────── */
     .notif-options {
       display: grid;
@@ -638,6 +735,76 @@
   <template id="page-content">
     <div class="page-inner" id="pageInner"></div>
   </template>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       v1.11.3 — Modal MANDATORIO: cargar firma electrónica al primer login
+       Aparece automáticamente si el Director no tiene firma preset en
+       localStorage. Bloqueante: sin X, sin click overlay, sin ESC.
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="naowee-modal-overlay" id="modalFirmaRequiredOverlay" role="dialog" aria-modal="true" aria-labelledby="modalFirmaRequiredTitle">
+    <div class="naowee-modal firma-required-modal">
+      <div class="naowee-modal__header" style="padding: 20px 24px;">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title" id="modalFirmaRequiredTitle">Cargue su firma electrónica</h2>
+          <p class="naowee-modal__subtitle">Antes de continuar, suba su firma manuscrita escaneada. Es obligatoria para firmar actos administrativos.</p>
+        </div>
+        <!-- Sin botón dismiss — modal bloqueante -->
+      </div>
+
+      <div class="naowee-modal__body" style="overflow-y: auto;">
+
+        <!-- Saludo personal con avatar del Director -->
+        <div class="firma-required-modal__intro">
+          <div class="firma-required-modal__hello">
+            <div class="firma-required-modal__avatar" id="firmaReqAvatar">MR</div>
+            <div>
+              <div class="firma-required-modal__hello-name" id="firmaReqName">María Helena Ramos</div>
+              <div class="firma-required-modal__hello-role">Director · Deporte Aficionado</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 0 24px 8px;">
+          <div class="naowee-message naowee-message--caution" style="margin-bottom: 16px;">
+            <div class="naowee-message__header">
+              <span class="naowee-message__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </span>
+              <span class="naowee-message__title">Firma obligatoria para continuar</span>
+            </div>
+            <div class="naowee-message__text">
+              Sin la firma electrónica cargada no podrá firmar actos administrativos. Esta carga es una sola vez — la firma se aplicará automáticamente en cada firma futura. Puede reemplazarla luego desde <strong>Mi firma</strong>.
+            </div>
+          </div>
+
+          <label class="firma-drop" id="firmaReqDropZone" for="firmaReqFileInput">
+            <span class="firma-drop__icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </span>
+            <div class="firma-drop__title">Cargar firma electrónica</div>
+            <div class="firma-drop__hint">Arrastre la imagen aquí o haga click para seleccionar.<br>Formatos: PNG o JPG · máx. 2 MB · fondo transparente recomendado.</div>
+            <input type="file" id="firmaReqFileInput" accept="image/png,image/jpeg" />
+          </label>
+
+          <div class="naowee-helper naowee-helper--negative" id="firmaReqError" hidden style="margin-top: 10px;">
+            <span class="naowee-helper__badge">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </span>
+            <span class="naowee-helper__text"></span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="naowee-modal__footer naowee-modal__footer--end" style="padding: 16px 24px;">
+        <button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" id="firmaReqGuardar" disabled>Guardar firma y continuar</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════
        Modal: Confirmar firma electrónica
@@ -720,10 +887,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.11.2"></script>
-  <script src="../shared/shell.js?v=1.11.2"></script>
-  <script src="../shared/ivc-store.js?v=1.11.2"></script>
-  <script src="../shared/naowee-footer.js?v=1.11.2" defer></script>
+  <script src="../shared/data.js?v=1.11.3"></script>
+  <script src="../shared/shell.js?v=1.11.3"></script>
+  <script src="../shared/ivc-store.js?v=1.11.3"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.3" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -770,6 +937,14 @@
 
       wireModalFirma();
       wireModalNotif();
+      wireModalFirmaRequired();
+
+      /* v1.11.3: gate de entrada — si el Director no tiene firma preset
+         cargada, abrir el modal mandatorio antes de renderizar la bandeja. */
+      if (!_hasFirmaPreset()) {
+        openModalFirmaRequired();
+      }
+
       route();
     });
 
@@ -1237,6 +1412,147 @@
       document.getElementById('firmaConfirmImage').src = firma.dataUrl;
       document.getElementById('modalFirmaOverlay').classList.add('open');
     };
+
+    /* ═══════════════════════════════════════════════════════════════════
+       v1.11.3 — Modal MANDATORIO: cargar firma electrónica al primer login
+       ═══════════════════════════════════════════════════════════════════ */
+    var pendingFirmaFile = null;
+    var pendingFirmaDataUrl = null;
+
+    function openModalFirmaRequired() {
+      var overlay = document.getElementById('modalFirmaRequiredOverlay');
+      if (!overlay) return;
+
+      /* Personalizar saludo con el nombre real del Director desde IVCData. */
+      var perfilDir = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['director']) || {};
+      var avatarEl = document.getElementById('firmaReqAvatar');
+      var nameEl = document.getElementById('firmaReqName');
+      if (avatarEl && perfilDir.avatar) avatarEl.textContent = perfilDir.avatar;
+      if (nameEl && perfilDir.nombre) nameEl.textContent = perfilDir.nombre;
+
+      /* Bloquear interacción con el resto del shell mientras el modal está abierto. */
+      document.body.classList.add('firma-required-locked');
+      overlay.classList.add('open');
+
+      /* ESC no debe cerrar — agregamos handler global temporal. */
+      function blockKeydown(ev) { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); } }
+      window.__firmaReqBlockKey = blockKeydown;
+      window.addEventListener('keydown', blockKeydown, true);
+
+      /* Click en overlay tampoco cierra. */
+      overlay.addEventListener('click', function (ev) { if (ev.target === overlay) ev.stopPropagation(); }, true);
+    }
+
+    function closeModalFirmaRequired() {
+      var overlay = document.getElementById('modalFirmaRequiredOverlay');
+      if (!overlay) return;
+      overlay.classList.remove('open');
+      document.body.classList.remove('firma-required-locked');
+      if (window.__firmaReqBlockKey) {
+        window.removeEventListener('keydown', window.__firmaReqBlockKey, true);
+        window.__firmaReqBlockKey = null;
+      }
+    }
+
+    function wireModalFirmaRequired() {
+      var dropZone = document.getElementById('firmaReqDropZone');
+      var input = document.getElementById('firmaReqFileInput');
+      var errEl = document.getElementById('firmaReqError');
+      var errTxt = errEl.querySelector('.naowee-helper__text');
+      var btnGuardar = document.getElementById('firmaReqGuardar');
+      var MAX_BYTES = 2 * 1024 * 1024;  /* 2 MB — coherente con perfil.html */
+
+      function setError(msg) {
+        errTxt.textContent = msg;
+        errEl.hidden = false;
+        dropZone.classList.add('is-error');
+      }
+      function clearError() {
+        errEl.hidden = true;
+        dropZone.classList.remove('is-error');
+      }
+
+      function loadFile(file) {
+        clearError();
+        if (!file) return;
+        if (!/^image\/(png|jpe?g)$/i.test(file.type)) {
+          setError('Solo se permiten imágenes PNG o JPG. Archivo recibido: ' + (file.type || 'desconocido'));
+          input.value = '';
+          btnGuardar.disabled = true;
+          return;
+        }
+        if (file.size > MAX_BYTES) {
+          var mb = (file.size / (1024 * 1024)).toFixed(1);
+          setError('La imagen pesa ' + mb + ' MB. El máximo permitido es 2 MB.');
+          input.value = '';
+          btnGuardar.disabled = true;
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          pendingFirmaFile = file;
+          pendingFirmaDataUrl = e.target.result;
+
+          /* Cambiar visual del drop zone a "loaded" state mostrando preview inline */
+          dropZone.innerHTML =
+            '<img src="' + e.target.result + '" alt="Preview" style="max-width:280px;max-height:120px;object-fit:contain;border-radius:6px;">' +
+            '<div class="firma-drop__title" style="color: var(--green, #1f8923); margin-top: 8px;">Firma cargada · revise el preview antes de guardar</div>' +
+            '<div class="firma-drop__hint">' + escHtml(file.name) + ' · ' + _fmtSize(file.size) + '</div>' +
+            '<input type="file" id="firmaReqFileInput" accept="image/png,image/jpeg" />';
+          /* Rebind el nuevo input */
+          input = document.getElementById('firmaReqFileInput');
+          input.addEventListener('change', function (ev) { loadFile(ev.target.files && ev.target.files[0]); });
+
+          btnGuardar.disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      input.addEventListener('change', function (ev) {
+        loadFile(ev.target.files && ev.target.files[0]);
+      });
+
+      dropZone.addEventListener('dragover', function (ev) {
+        ev.preventDefault();
+        dropZone.classList.add('is-dragover');
+      });
+      dropZone.addEventListener('dragleave', function () {
+        dropZone.classList.remove('is-dragover');
+      });
+      dropZone.addEventListener('drop', function (ev) {
+        ev.preventDefault();
+        dropZone.classList.remove('is-dragover');
+        var file = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+        if (file) loadFile(file);
+      });
+
+      btnGuardar.addEventListener('click', function () {
+        if (!pendingFirmaFile || !pendingFirmaDataUrl) return;
+        try {
+          localStorage.setItem(FIRMA_KEY, JSON.stringify({
+            dataUrl: pendingFirmaDataUrl,
+            name: pendingFirmaFile.name,
+            size: pendingFirmaFile.size,
+            savedAt: new Date().toISOString()
+          }));
+        } catch (e) {
+          setError('No se pudo guardar la firma en su sesión. Por favor inténtelo de nuevo.');
+          return;
+        }
+        pendingFirmaFile = null;
+        pendingFirmaDataUrl = null;
+        closeModalFirmaRequired();
+        _showSnackbar('Firma guardada. Ahora puede firmar actos administrativos.', 'success');
+        /* Re-render de la bandeja para refrescar el stat card "Firma electrónica". */
+        route();
+      });
+    }
+
+    function _fmtSize(bytes) {
+      if (!bytes) return '—';
+      var kb = bytes / 1024;
+      return kb < 1024 ? kb.toFixed(0) + ' KB' : (kb / 1024).toFixed(2) + ' MB';
+    }
 
     function wireModalFirma() {
       var overlay = document.getElementById('modalFirmaOverlay');
