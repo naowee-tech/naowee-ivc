@@ -366,11 +366,16 @@
           return;
         }
         window.IVCData.setPerfil(next);
-        /* v1.2.0 — landing por perfil */
+        /* v1.2.0 — landing por perfil
+           v1.11.2: agregada entrada 'director' → /director/bandeja.html. Antes
+           faltaba: el switcher escribía el perfil pero no navegaba → la página
+           se quedaba en /coordinador/* mostrando aún a Carolina Méndez.
+           Síntoma: "primero no switecha al perfil" (Doug, 2026-05-26). */
         var landings = {
           'usuario-externo': 'usuario-externo/dashboard.html',
           'coordinador':     'coordinador/bandeja.html',
-          'profesional':     'profesional/bandeja.html'
+          'profesional':     'profesional/bandeja.html',
+          'director':        'director/bandeja.html'
         };
         var landing = landings[next];
         if (landing) {
