@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.0">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.1">
 
   <style>
     /* ═══════════════════════════════════════════════════════════════════
@@ -512,15 +512,28 @@
     }
 
     /* ── Table row click affordance (vista lista) ──────────────────── */
-    /* v1.10.5: hover en #fafbfd canónico — mirror de components.css L762
-       `.naowee-table-card .naowee-table tbody tr:hover`. El --bg-soft que
-       usaba antes (#f5f6fa) era una shade más oscura, demasiado contrastado. */
+    /* v1.12.1: hover bumpeado a #f0f2f8 — el #fafbfd canónico era demasiado
+       sutil (casi blanco) y Doug reportó "no hace hover tampoco". Este tono
+       es ligeramente más visible pero sigue siendo gris neutral (no peach).
+       Forzamos con !important para vencer la regla canónica de components.css
+       L762 que pone #fafbfd con specificity (0,3,3). */
     .naowee-table tbody tr.row-clickable {
       cursor: pointer;
       transition: background var(--duration-fast, .12s) var(--ease-in-out, ease);
     }
+    .naowee-table-card .naowee-table tbody tr.row-clickable:hover,
     .naowee-table tbody tr.row-clickable:hover {
-      background: #fafbfd;
+      background: #f0f2f8 !important;
+    }
+    /* v1.12.1: action button "Revisar acto →" — forzar hover canónico
+       del naowee-btn--mute (peach naranja). El onclick="event.stopPropagation()"
+       en el <a> no debería matar el hover CSS, pero por defensividad
+       hacemos override explícito. */
+    .naowee-table tbody tr a.naowee-btn--mute:hover,
+    .naowee-table tbody tr a.naowee-btn--mute:focus-visible {
+      background: var(--orange-bg, #fff3e6) !important;
+      color: var(--accent, #d74009) !important;
+      text-decoration: none !important;
     }
     /* v1.10.4: padding inferior del card cuando contiene tabla, para que el
        hover state de la última row no toque el border del container. */
@@ -633,10 +646,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.12.0"></script>
-  <script src="../shared/shell.js?v=1.12.0"></script>
-  <script src="../shared/ivc-store.js?v=1.12.0"></script>
-  <script src="../shared/naowee-footer.js?v=1.12.0" defer></script>
+  <script src="../shared/data.js?v=1.12.1"></script>
+  <script src="../shared/shell.js?v=1.12.1"></script>
+  <script src="../shared/ivc-store.js?v=1.12.1"></script>
+  <script src="../shared/naowee-footer.js?v=1.12.1" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════

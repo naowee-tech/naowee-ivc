@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.0">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.1">
 
   <style>
     /* ═══════════════════════════════════════════════════════════════════
@@ -445,7 +445,16 @@
       cursor: pointer;
       transition: background var(--duration-fast, .12s) var(--ease-in-out, ease);
     }
-    .naowee-table tbody tr.row-clickable:hover { background: #fafbfd; }
+    /* v1.12.1: hover bumpeado a #f0f2f8 (más visible que el #fafbfd canónico)
+       + !important para vencer la regla de components.css L762. */
+    .naowee-table-card .naowee-table tbody tr.row-clickable:hover,
+    .naowee-table tbody tr.row-clickable:hover { background: #f0f2f8 !important; }
+    .naowee-table tbody tr a.naowee-btn--mute:hover,
+    .naowee-table tbody tr a.naowee-btn--mute:focus-visible {
+      background: var(--orange-bg, #fff3e6) !important;
+      color: var(--accent, #d74009) !important;
+      text-decoration: none !important;
+    }
     .naowee-table-card > div:last-child { padding-bottom: 8px; }
 
     /* ── Tabs in-card ───────────────────────────────────────────────── */
@@ -894,10 +903,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.12.0"></script>
-  <script src="../shared/shell.js?v=1.12.0"></script>
-  <script src="../shared/ivc-store.js?v=1.12.0"></script>
-  <script src="../shared/naowee-footer.js?v=1.12.0" defer></script>
+  <script src="../shared/data.js?v=1.12.1"></script>
+  <script src="../shared/shell.js?v=1.12.1"></script>
+  <script src="../shared/ivc-store.js?v=1.12.1"></script>
+  <script src="../shared/naowee-footer.js?v=1.12.1" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════

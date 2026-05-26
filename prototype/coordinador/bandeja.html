@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.12.0">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.0">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.1">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -189,6 +189,14 @@
       gap: 6px;
       justify-content: flex-end;
       align-items: center;
+    }
+    /* v1.12.1: forzar hover canónico de los icon buttons (--mute --icon)
+       — peach naranja del DS Naowee. Override defensivo por si algún padre
+       está pisando el hover. Doug reportó "las acciones no se les hace hover". */
+    .row-actions .naowee-btn--mute:hover,
+    .row-actions .naowee-btn--mute:focus-visible {
+      background: var(--orange-bg, #fff3e6) !important;
+      color: var(--accent, #d74009) !important;
     }
     .row-checkbox-cell { width: 36px; padding-left: 18px; }
 
@@ -1245,14 +1253,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.12.0"></script>
-  <script src="../shared/shell.js?v=1.12.0"></script>
-  <script src="../shared/demo-tour.js?v=1.12.0"></script>
-  <script src="../shared/ivc-store.js?v=1.12.0"></script>
+  <script src="../shared/data.js?v=1.12.1"></script>
+  <script src="../shared/shell.js?v=1.12.1"></script>
+  <script src="../shared/demo-tour.js?v=1.12.1"></script>
+  <script src="../shared/ivc-store.js?v=1.12.1"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.12.0" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.12.1" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
