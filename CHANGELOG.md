@@ -6,6 +6,79 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.8.4] — 2026-05-26
+
+> 🌐 **Flujo end-to-end Coordinador ⇄ Profesional ⇄ Organismo externo: workspace lock post-veredicto, pantalla pública INS-014 (`/consultar.html?rad=…`), radicación de subsanación con sync cross-tab. Modal "Ver detalle" rediseñado con `.naowee-message` canónico DS + actor pill + file links minimal + accordion. Tabs DS canónicos del playground.**
+
+### Pantalla pública del organismo (`usuario-externo/consultar.html`) — INS-014
+
+#### Added
+- **Nueva pantalla pública de consulta** sin login, URL pattern `/consultar.html?rad=IVC-2026-XXX`. Renderiza 4 estados:
+  - **Landing** (sin rad): input + samples + helper text.
+  - **Not Found** (rad inválido): empty state con código del rad buscado + botón "Intentar de nuevo".
+  - **En trámite** (No asignada / Asignada / En validación): hero + `.naowee-message` con estado actual + timeline histórico.
+  - **Veredicto emitido** (Cumple / NoCumple / Parcial): hero + `.naowee-message` canónico + grid (profesional avatar + fecha + acto PDF descargable) + lista de docs a subsanar + CTA + timeline.
+- **Modal de subsanación**: solo muestra docs marcados "no cumple" / "obs" con la observación del profesional readonly. Upload zone por documento (mock con `<input type="file">`). Textarea opcional para comentarios. Al radicar: `IVCStore.actualizarEstado(t.id, 'En validación', actor, …)` → cross-tab sync notifica al workspace del Profesional automáticamente.
+- **Disclaimer del riesgo INS-014** visible al abrir el detalle: *"Esta es una consulta pública por número de radicado. Próximamente activaremos verificación por correo electrónico."*
+
+### Profesional · Workspace (`profesional/workspace.html`)
+
+#### Added
+- **Lock automático** del workspace cuando el trámite alcanza un estado terminal (Cumple/NoCumple/Parcial). Deshabilita los toggles de cumple/no-cumple por documento + textareas de observaciones + esconde el botón "Finalizar revisión". CSS scoped: `.ivc-tramite-locked .ivc-ra-toggle__btn { pointer-events: none; opacity: 0.4; }`.
+- **Banner contextual** post-veredicto con 3 variantes (verde Cumple / naranja Parcial / rojo NoCumple) que incluye el actor + fecha y dos acciones para Parcial/NoCumple:
+  - **"Ver portal del organismo →"**: abre `consultar.html?rad={tramiteId}` en nueva tab.
+  - **"Reabrir (mock)"**: dispara `reabrirPorSubsanacion()` — simula que el organismo radicó subsanación → estado vuelve a "En validación" → lock se quita.
+
+#### Changed
+- **Tabs canónicos del DS** (mirror del playground en `naowee-design-system/playground.html` línea 702-713). Estructura literal: `<div class="naowee-tabs" style="width:100%">` con `<button class="naowee-tab">` hijos. Removidos todos los overrides hardcodeados de `--animated` + `__indicator`. Override mínimo:
+  - `.naowee-tab::after { border-radius: 0 }` para el indicator plano del selected.
+  - `padding: 12px 24px 0` interno del `.naowee-tabs` (no del wrap) para que el divider del border-bottom llegue edge-to-edge del card.
+  - Removido `border-top` del `.ivc-tab-panel` (causaba doble divider sin el `__indicator` span del patrón animated).
+- **Causa raíz del gap + cream pill blanco eating border**: `shared/components.css` L159 tenía la definición vieja del patrón pill-segmented de `.naowee-tabs` (`padding: 4px` + `background: var(--bg)` + `border-radius`). Override completo en el scope local del workspace: `padding: 0`, `background: transparent`, `border-radius: 0`, `gap: 0`.
+
+### Coordinador · Bandeja (`coordinador/bandeja.html`) · Modal Ver detalle
+
+#### Changed
+- **Componente `.naowee-message` canónico DS** para el veredicto en tab Cierre (en lugar del banner custom). Mapping:
+  - `Cumple` → `--positive` (verde + check icon)
+  - `Parcial` → `--caution` (naranja + warning icon)
+  - `NoCumple` → `--negative` (rojo + X icon)
+- **Actor pill** para el profesional: avatar circular con iniciales (`_initials()`) + nombre + rol abajo. Reemplaza el plain text "Carlos Pérez (Profesional)".
+- **File links minimal** (en lugar de cards con bg): `<a class="ivc-file-link">` con nombre + tamaño + icono download naranja + `title="Descargar"`. Aplicado a todos los archivos del modal (inventario, cert. RF, expediente, acto administrativo). Mock `_mockDownload()` dispara snackbar.
+- **Estructura tab → simple list para F2 Seccionales**: `<ul class="ivc-simple-list">` con row dividers sutiles (en lugar de tabla pesada con header).
+- **Acordeón canónico DS** `.naowee-accordion` con label "Ver más / Ver menos" en naranja accent + chevron orange que rota 180° al abrir. Mapping de overrides scoped a `#modalDetalleBody`:
+  - `__action`: `color: var(--accent)` (DS default era `--text-link-idle`)
+  - `__chevron`: `color: var(--accent)` (DS default era `--icon-secondary` gris)
+  - `__title`: 11px gris claro `#9a9db0` letterspaced
+  - `__body max-height` open: 4000px (DS default 500px recortaba tablas grandes)
+- **Empty states a nivel TAB** cuando todo está vacío. Antes mostraba 6-7 accordions cada uno con "No se diligenció…"; ahora un solo mensaje centrado.
+- **Tipografía limpia**: sub-block titles NO uppercase, field labels NO uppercase + lowercase regular weight. Sólo el accordion title (section marker) mantiene uppercase.
+- **Row gap aumentado**: `.ivc-data-grid { gap: 24px 32px }` (era 16px) — más aire entre filas.
+- **Resultado de la Validación · Cierre**: sección nueva que aparece cuando state es terminal. Muestra el veredicto + acto administrativo PDF descargable + lista de documentos validados con badge por documento (Cumple/No cumple/Observación) + observación del profesional + border-left de color.
+
+#### Fixed
+- **Bug crítico tooltip "Ver detalle" quedaba colgado** al abrir el modal. El patrón tooltip-portal movía `.naowee-tooltip__content` al body en `mouseover`; al clickear el ojo + abrir modal, el overlay tapaba el trigger y `mouseout` nunca disparaba. Fix: click handler en fase de captura sobre cualquier `.naowee-tooltip` → `hideActive()` antes que el handler del botón.
+- **Modal width forzado a `width: 95vw; max-width: 1100px`**. El DS `.naowee-modal` solo daba `max-width` (techo), no `width` (ancho real). Antes el modal se sizeaba al contenido (~480px).
+- **Altura flexible**: `min-height: 280px; max-height: 70vh; height: auto`. Antes `height: 65vh` fijo dejaba enorme espacio en blanco en tabs cortas.
+
+### Datos mock (`shared/ivc-store.js`)
+
+#### Added
+- **Factory `_mockDatos(tipoOrg, organismo, nit)`** con todos los campos obligatorios del matriz oficial XLSX por tipo:
+  - **Liga (F1)**: 15 campos personería + asamblea completa (2 reuniones + convocante + quórum) + 7 sub-bloques de estructura (3 fundadores, 5 OA, 2 RF, 3 CD, 2 CT, 2 CJ, 2 paradeporte) + cierre con cert. conjunta.
+  - **Asociación (F2)**: 15 campos personería + 3 seccionales + cierre.
+  - **Federación (F3)**: 5 campos personería + asamblea constitución + 4 afiliados + 4 OA + 2 RF + 3 CD + 3 certificaciones (COC + CPC + no investigación) + cierre.
+- **Bump `SEED_VERSION: 1 → 2`** para forzar reset del localStorage en clientes existentes y regenerar trámites con datos completos.
+
+### Bloqueantes activos
+
+- Plantillas Word/PDF reales de actos administrativos (hoy son archivos mock con nombre generado).
+- Implementación real de magic link por correo para reemplazar la consulta pública (riesgo INS-014).
+- Lista cerrada y final de roles.
+- HUs faltantes pasos 7-12.
+
+---
+
 ## [ivc-v1.6.9] — 2026-05-26
 
 > 🪟 **Modal "Ver detalle del trámite" iterado a fondo: secciones colapsables con DS `.naowee-accordion` canónico + label "Ver más/menos" en naranja + empty states a nivel tab + tooltip que se cierra al click + ancho del modal forzado a 95vw + altura flexible + cache busters en assets compartidos.**

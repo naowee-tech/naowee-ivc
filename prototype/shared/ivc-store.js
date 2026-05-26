@@ -21,7 +21,7 @@
   'use strict';
 
   var KEY = 'ivc:store';
-  var SEED_VERSION = 1;            /* bump si cambia el schema del seed */
+  var SEED_VERSION = 2;            /* v1.7.3: bump por mocks completos (datos.f1/f2/f3 + asamblea + estructura + cierre) */
 
   /* ─── Seed inicial ───────────────────────────────────────────────────
      v1.5.3 FIX (25/05/2026): bug crítico — antes mkSeed referenciaba
@@ -36,10 +36,216 @@
     { id: 'lr-004', nombre: 'Lucía Ramírez',    area: 'aficionado', activos: 5  }
   ];
 
+  /* v1.7.3 (26/05/2026): factory de datos mock por tipo de organismo.
+     Cubre todos los campos obligatorios del matriz oficial XLSX, así el
+     modal "Ver detalle del trámite" muestra info completa en lugar de "—".
+
+     Cada tipo (liga/asociacion/federacion) tiene sus secciones obligatorias:
+       - generales: nombre, NIT (solo liga), dirección, municipio, teléfono, correo
+       - personeria: f1.* / f2.* / f3.* según organismo
+       - asamblea: f1_* (liga) / f3_* (federación) — N/A en asociación
+       - estructura: f1_* / f2_* / f3_*
+       - cierre: certificaciones + radicado + observaciones + archivos */
+  function _mockDatos(tipoOrg, organismo, nit) {
+    var base = {
+      nombre: organismo,
+      direccion: 'Carrera 13 # 45-67, Edificio Polideportivo, oficina 502',
+      municipio: 'Bogotá D.C.',
+      telefono: '+57 601 555 0123',
+      correo: 'contacto@' + organismo.toLowerCase().replace(/[^a-z]+/g,'') + '.org.co'
+    };
+    if (tipoOrg === 'liga') {
+      base.nit = nit;
+      base.f1 = {
+        no_res_personeria:    'Res. 0421-2018',
+        radicado_personeria:  'RAD-2018-04-0421',
+        fecha_reforma:        '2024-03-15',
+        radicado_estatutos:   'RAD-2024-03-0918',
+        no_res_estatutos:     'Res. 0918-2024',
+        periodo_inicial:      '2020-2024',
+        periodo_vigente:      '2024-2028',
+        no_res_rd_anterior:   'Res. 0210-2020',
+        fecha_notif_rd:       '2020-04-02',
+        fecha_firmeza_rd:     '2020-04-18',
+        f1_no_acta_miembros:  'Acta 03-2024',
+        tiene_constancia:     'si',
+        fecha_constancia:     '2024-04-10',
+        no_res_minimos:       'Res. 0210-2024',
+        n_minimos:            '15'
+      };
+      base.asamblea = {
+        f1_tema:                          'Elección de dignatarios período 2024-2028',
+        f1_reuniones: [
+          { tipo: 'ORDINARIA',             fechaConv: '2024-03-15', fechaReal: '2024-03-30', antelacion: '2024-03-15', cumple: 'si' },
+          { tipo: 'EXTRAORDINARIA',        fechaConv: '2024-02-10', fechaReal: '2024-02-20', antelacion: '2024-02-10', cumple: 'si' }
+        ],
+        f1_obs_asamblea:                  'Asamblea realizada conforme a los estatutos vigentes. Quórum verificado por Revisor Fiscal.',
+        f1_tipo_convocante:               'PRESIDENTE',
+        f1_convocante_vigente:            'si',
+        f1_no_res_convocante:             'Res. 0210-2020',
+        f1_no_acta_designa_presidente:    'Acta 01-2024',
+        f1_no_res_comite_provisional:     '',
+        f1_vigencia_comite_provisional:   '',
+        f1_comite_designado_por_oa:       'no_aplica',
+        f1_ente_deportivo:                'Indeportes Bolívar',
+        f1_num_afiliados:                 '47',
+        f1_num_asistentes:                '38',
+        f1_cumplio_quorum:                'si',
+        f1_adjunta_cert_rf_fecha:         'si',
+        f1_archivo_cert_rf_fecha:         { name: 'cert-rf-fecha-asamblea.pdf', size: '245 KB' },
+        f1_adjunta_cert_rf_actual:        'si',
+        f1_archivo_cert_rf_actual:        { name: 'cert-rf-actual.pdf', size: '198 KB' },
+        f1_obs_asistencia:                'Quórum del 80,8% de los afiliados activos.'
+      };
+      base.estructura = {
+        f1_fundadores: [
+          { nombre: 'Club Atlético Cartagena',  no_res_reconocimiento: 'Res. 0112-2015' },
+          { nombre: 'Club Deportivo Mompox',    no_res_reconocimiento: 'Res. 0078-2017' },
+          { nombre: 'Club Atletismo Magangué',  no_res_reconocimiento: 'Res. 0145-2019' }
+        ],
+        f1_miembros_oa: [
+          { nombre: 'Juan Carlos Hernández',  identificacion: '79.123.456',  cargo: 'Presidente',  capacitacion: 'si', nombrado_por: 'Asamblea',         no_periodos: '1' },
+          { nombre: 'María Elena Vargas',     identificacion: '52.234.567',  cargo: 'Vicepresidente', capacitacion: 'si', nombrado_por: 'Asamblea',     no_periodos: '1' },
+          { nombre: 'Pedro Antonio Gómez',    identificacion: '80.345.678',  cargo: 'Secretario',  capacitacion: 'si', nombrado_por: 'Asamblea',         no_periodos: '2' },
+          { nombre: 'Ana Lucía Rodríguez',    identificacion: '41.456.789',  cargo: 'Tesorero',    capacitacion: 'si', nombrado_por: 'Asamblea',         no_periodos: '1' },
+          { nombre: 'Carlos Mario Pérez',     identificacion: '79.567.890',  cargo: 'Vocal',       capacitacion: 'no', nombrado_por: 'Asamblea',         no_periodos: '1' }
+        ],
+        f1_presidente_antecedentes: 'no',
+        f1_persona_discapacidad:    'Pedro Antonio Gómez (discapacidad visual parcial)',
+        f1_revisor_fiscal: [
+          { display: 'Revisor Fiscal Principal', nombre: 'Luis Fernando Castro',   identificacion: '79.678.901' },
+          { display: 'Revisor Fiscal Suplente',  nombre: 'Patricia Eugenia Mejía', identificacion: '52.789.012' }
+        ],
+        f1_comision_disciplinaria: [
+          { display: 'Miembro 1', nombre: 'Jorge Iván Restrepo' },
+          { display: 'Miembro 2', nombre: 'Sandra Milena Ortiz' },
+          { display: 'Miembro 3', nombre: 'Ricardo Andrés Toro' }
+        ],
+        f1_comision_tecnica: [
+          { display: 'Miembro 1', nombre: 'Diego Alejandro Rojas' },
+          { display: 'Miembro 2', nombre: 'Mónica Patricia Salazar' }
+        ],
+        f1_comision_juzgamiento: [
+          { display: 'Miembro 1', nombre: 'Felipe Antonio Cárdenas' },
+          { display: 'Miembro 2', nombre: 'Laura Cristina Mejía' }
+        ],
+        f1_aplica_paradeporte: 'si',
+        f1_comision_paradeporte: [
+          { display: 'Miembro 1', nombre: 'Roberto Carlos Pinilla' },
+          { display: 'Miembro 2', nombre: 'Diana Marcela Ríos' }
+        ],
+        f1_paradeporte_fecha_asamblea: '2024-04-05'
+      };
+      base.cierre = {
+        f1_adjunta_cert_conjunta:  'si',
+        f1_archivo_cert_conjunta:  { name: 'cert-conjunta-estructura.pdf', size: '312 KB' },
+        no_radicado_doc:           'RAD-2026-05-' + nit.slice(-4),
+        observaciones:             'Documentación completa. Pendiente revisión de plazo de notificación.',
+        archivos_adjuntos:         { name: 'expediente-completo.zip', size: '4.2 MB' }
+      };
+    }
+    if (tipoOrg === 'asociacion') {
+      base.f2 = {
+        sub_tipo:                       'JUVENIL',
+        no_personeria:                  'Res. 0512-2019 (15/06/2019)',
+        radicado_personeria:            'RAD-2019-06-0512',
+        fecha_estatutos:                '2022-08-22',
+        radicado_estatutos:             'RAD-2022-08-0712',
+        no_acta_sede:                   'Acta 12-2023',
+        radicado_acta_sede:             'RAD-2023-09-0112',
+        no_acta_constitucion:           'Acta 02-2023',
+        radicado_acta_constitucion:     'RAD-2023-02-0078',
+        no_inscripcion_miembros:        'Res. 0089-2024',
+        radicado_inscripcion_miembros:  'RAD-2024-02-0089',
+        tiene_inventario:               'si',
+        archivo_inventario:             { name: 'inventario-bienes.pdf', size: '189 KB' },
+        tiene_afiliacion:               'no',
+        archivo_afiliacion:             null
+      };
+      base.estructura = {
+        f2_seccionales: [
+          { nombre_seccional: 'Seccional Cali',      nombre_directivo: 'Andrés Felipe Quintero' },
+          { nombre_seccional: 'Seccional Palmira',   nombre_directivo: 'Beatriz Elena Mosquera' },
+          { nombre_seccional: 'Seccional Buga',      nombre_directivo: 'Carlos Eduardo Tobón' }
+        ]
+      };
+      base.cierre = {
+        no_radicado_doc:    'RAD-2026-05-ASO-' + nit.slice(-4),
+        observaciones:      'Documentación de seccionales completa. Falta validar inventario actualizado 2026.',
+        archivos_adjuntos:  { name: 'expediente-asociacion.zip', size: '2.8 MB' }
+      };
+    }
+    if (tipoOrg === 'federacion') {
+      base.municipio = 'Bogotá D.C.';
+      base.f3 = {
+        no_res_personeria:                'Res. 0042-1982',
+        radicado_personeria:              'RAD-1982-01-0042',
+        f3_periodo_estatutario_inicial:   '2020-2024',
+        f3_no_res_minimos:                'Res. 0312-2024',
+        f3_n_minimos:                     '32'
+      };
+      base.asamblea = {
+        f3_tipo_convocatoria:    'COMITE_PROVISIONAL',
+        f3_fecha_convocatoria:   '2024-02-15',
+        f3_fecha_realizacion:    '2024-03-15',
+        f3_num_afiliados:        '32',
+        f3_num_asistentes:       '28',
+        f3_cumplio_quorum:       'si',
+        f3_adjunta_cert_rf:      'si',
+        f3_archivo_cert:         { name: 'cert-rf-federacion.pdf', size: '276 KB' }
+      };
+      base.estructura = {
+        f3_afiliados: [
+          { nombre: 'Liga de Atletismo de Antioquia', no_res_reconocimiento: 'Res. 0023-2018' },
+          { nombre: 'Liga de Atletismo de Bolívar',   no_res_reconocimiento: 'Res. 0078-2019' },
+          { nombre: 'Liga de Atletismo del Valle',    no_res_reconocimiento: 'Res. 0145-2017' },
+          { nombre: 'Liga de Atletismo de Caldas',    no_res_reconocimiento: 'Res. 0210-2020' }
+        ],
+        f3_miembros_oa: [
+          { nombre: 'Dr. Ramón Eduardo Velásquez', cargo: 'Presidente',     identificacion: '19.876.543', tiene_capacitacion: 'si', nombrado_por: 'Asamblea', acepta_cargo: 'si' },
+          { nombre: 'Dra. Marcela Andrea Robles',  cargo: 'Vicepresidenta', identificacion: '52.987.654', tiene_capacitacion: 'si', nombrado_por: 'Asamblea', acepta_cargo: 'si' },
+          { nombre: 'Ing. Hernán Darío Cardona',   cargo: 'Secretario',     identificacion: '70.123.456', tiene_capacitacion: 'si', nombrado_por: 'Asamblea', acepta_cargo: 'si' },
+          { nombre: 'Cra. Liliana Marcela Posada', cargo: 'Tesorera',       identificacion: '43.234.567', tiene_capacitacion: 'si', nombrado_por: 'Asamblea', acepta_cargo: 'si' }
+        ],
+        f3_persona_discapacidad:          'Dr. Ramón Eduardo Velásquez (movilidad reducida)',
+        f3_fecha_reunion_electiva_oa:     '2024-03-15',
+        f3_fecha_reunion_asignacion:      '2024-03-22',
+        f3_acredita_cert_residencia_oa:   'si',
+        f3_nombres_cert_residencia_oa:    'Velásquez, Robles, Cardona, Posada',
+        f3_archivo_cert_residencia_oa:    { name: 'cert-residencia-oa.pdf', size: '156 KB' },
+        f3_revisor_fiscal: [
+          { display: 'Revisor Fiscal Principal', nombre: 'CP. Alejandro Rivera',   identificacion: '79.345.678', no_tarjeta_profesional: '152.345-T', acepta_cargo: 'si', antecedentes_disciplinarios: 'no', firma_revisoria: 'si' },
+          { display: 'Revisor Fiscal Suplente',  nombre: 'CP. Mónica Patricia Ríos', identificacion: '52.456.789', no_tarjeta_profesional: '167.890-T', acepta_cargo: 'si', antecedentes_disciplinarios: 'no', firma_revisoria: 'si' }
+        ],
+        f3_acredita_cert_residencia_oc:   'si',
+        f3_nombres_cert_residencia_oc:    'Rivera, Ríos',
+        f3_archivo_cert_residencia_oc:    { name: 'cert-residencia-oc.pdf', size: '134 KB' },
+        f3_comision_disciplinaria: [
+          { display: 'Miembro 1', nombre: 'Dr. Iván Mauricio Vargas',  identificacion: '79.456.789', acepta: 'si' },
+          { display: 'Miembro 2', nombre: 'Dra. Adriana Lucía Soto',   identificacion: '52.567.890', acepta: 'si' },
+          { display: 'Miembro 3', nombre: 'Dr. Javier Andrés Mendoza', identificacion: '80.678.901', acepta: 'si' }
+        ],
+        f3_fecha_reunion_oa_cd:           '2024-03-28'
+      };
+      base.cierre = {
+        f3_adjunta_cert_coc:                 'si',
+        f3_archivo_cert_coc:                 { name: 'cert-coc.pdf', size: '298 KB' },
+        f3_adjunta_aval_paralimpico:         'si',
+        f3_archivo_aval_paralimpico:         { name: 'aval-cpc.pdf', size: '187 KB' },
+        f3_adjunta_cert_conjunta_no_inv:     'si',
+        f3_archivo_cert_conjunta_no_inv:     { name: 'cert-no-investigacion.pdf', size: '245 KB' },
+        no_radicado_doc:                     'RAD-2026-05-FED-' + nit.slice(-4),
+        observaciones:                       'Documentación completa según matriz oficial F3. Trámite priorizado por COC.',
+        archivos_adjuntos:                   { name: 'expediente-federacion.zip', size: '6.4 MB' }
+      };
+    }
+    return base;
+  }
+
   function mkSeed(id, tipoOrg, tipoTramite, organismo, nit, fechaIso, plazoDias, estado, profId) {
     var prof = profId && PROFESIONALES.find(function(p){ return p.id === profId; });
     var hist = [
-      { fecha: fechaIso, hora: '08:15', actor: 'Liga de Atletismo (demo)', accion: 'Radicado' },
+      { fecha: fechaIso, hora: '08:15', actor: organismo + ' (demo)', accion: 'Radicado' },
       { fecha: fechaIso, hora: '08:15', actor: 'Sistema', accion: 'Remisión automática a Deporte Aficionado' }
     ];
     if (estado === 'Asignada' || estado === 'En validación') {
@@ -62,7 +268,7 @@
       profesionalNombre: prof ? prof.nombre : null,
       historico: hist,
       documentos: {},
-      datos: {}
+      datos: _mockDatos(tipoOrg, organismo, nit)
     };
   }
 

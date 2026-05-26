@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css">
-  <link rel="stylesheet" href="../shared/components.css">
-  <link rel="stylesheet" href="../shared/shell.css">
-  <link rel="stylesheet" href="../shared/naowee-footer.css">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/components.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.8.4">
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
        Hero card (info + plazo) + naowee-tabs--animated + sticky decision footer.
@@ -214,38 +214,40 @@
        - tabs background transparent (sin fill crema del DS, evita conflicto visual con el indicator)
        - .naowee-tabs__indicator con z-index sobre el border-top del panel (cubre la línea gris bajo el tab activo)
        - .ivc-tab-panel margin-top: -1px para que su border-top "abrace" exactamente con la base del .naowee-tabs */
-    .ivc-tabs-card > .naowee-tabs {
-      padding: 8px 16px 0;
+    /* v1.7.9 (26/05/2026): mismo padding-top que el modal para respirar
+       del top del card. Height 60 = 48 (tab) + 12 (padding-top). */
+    .ivc-tabs-card .naowee-tabs {
+      overflow-x: visible;
       border-bottom: 0;
-      background: transparent;
       position: relative;
-      z-index: 1;
+      padding: 12px 24px 0;       /* top 12 — lateral 24 — bottom 0 */
+      background: transparent;    /* mata el background: var(--bg) legacy */
+      border-radius: 0;           /* mata el border-radius legacy */
+      gap: 0;                     /* mata el gap legacy */
+      box-sizing: border-box;
+      height: 60px;
+      min-height: 60px;
     }
-    .ivc-tabs-card > .naowee-tabs > .naowee-tab {
-      padding: 12px 18px;
-      background: transparent !important;     /* override del fill mute-idle del DS */
-      border-radius: var(--radius-sm, 6px) var(--radius-sm, 6px) 0 0;
-      transition: background var(--duration-fast) var(--ease-in-out), color var(--duration-fast) var(--ease-in-out);
+    .ivc-tabs-card .naowee-tabs::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border);
+      pointer-events: none;
     }
-    .ivc-tabs-card > .naowee-tabs > .naowee-tab:hover:not(.naowee-tab--selected) {
-      background: var(--bg-soft, #f5f6fa) !important;   /* hover gris claro, no naranja */
-      color: var(--text-primary);
-    }
-    .ivc-tabs-card > .naowee-tabs > .naowee-tab--selected {
-      color: var(--accent, #d74009);
-    }
-    /* Indicator: garantizar color accent + z-index sobre el border-top del panel */
-    .ivc-tabs-card > .naowee-tabs > .naowee-tabs__indicator {
-      background: var(--accent, #d74009);
-      z-index: 2;
-      bottom: -1px;   /* baja 1px para cubrir el border-top del panel = sin hueco */
-      height: 3px;
-      border-radius: 3px 3px 0 0;
+    .ivc-tabs-card .naowee-tabs > .naowee-tab::after {
+      border-radius: 0;
     }
 
+    /* v1.7.5: REMOVIDO border-top del .ivc-tab-panel — creaba DOBLE divider
+       porque .naowee-tabs ya tiene su border-bottom canónico justo encima.
+       Antes funcionaba porque el span __indicator del patrón animated tapaba
+       el gap; ahora con patrón simple sin __indicator se veían las 2 líneas. */
     .ivc-tab-panel {
       padding: 24px 28px;
-      border-top: 1px solid var(--border);
     }
     .ivc-tab-panel[hidden] { display: none; }
 
@@ -557,6 +559,72 @@
       font-size: 12.5px;
       color: var(--text-secondary);
       margin-top: 2px;
+    }
+
+    /* v1.8.0 (26/05/2026): banner + lock state cuando el trámite ya tuvo
+       una decisión final (Cumple / NoCumple / Parcial). Una vez el profesional
+       emitió un veredicto, los toggles de cumple/no-cumple por documento Y el
+       botón Finalizar quedan deshabilitados — el detalle pasa a view-only.
+       Para reabrir hay que esperar a que el organismo subsanade (mock con
+       botón "Reabrir tras subsanación" en el banner). */
+    .ivc-lock-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      margin: 16px 28px 0;
+      border-radius: var(--radius-lg, 12px);
+      border: 1px solid;
+    }
+    .ivc-lock-banner--cumple   { background: var(--green-bg, #e6f4e7);  border-color: var(--green-border, #b7dfb9); }
+    .ivc-lock-banner--parcial  { background: var(--orange-bg, #fff3e6); border-color: var(--orange-border, #ffbf75); }
+    .ivc-lock-banner--nocumple { background: var(--red-bg, #fff0ee);    border-color: var(--red-border, #ffc4bb); }
+    .ivc-lock-banner__icon {
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface);
+    }
+    .ivc-lock-banner--cumple   .ivc-lock-banner__icon { color: var(--green, #1f8923); }
+    .ivc-lock-banner--parcial  .ivc-lock-banner__icon { color: #c97300; }
+    .ivc-lock-banner--nocumple .ivc-lock-banner__icon { color: #c01818; }
+    .ivc-lock-banner__text { flex: 1; min-width: 0; }
+    .ivc-lock-banner__title {
+      font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px;
+    }
+    .ivc-lock-banner__sub {
+      font-size: 12.5px; color: var(--text-secondary); margin: 0; line-height: 1.45;
+    }
+    .ivc-lock-banner__btn {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border-radius: var(--radius-md, 8px);
+      background: var(--surface);
+      border: 1px solid var(--border-dark, #d0d4e6);
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .ivc-lock-banner__btn:hover {
+      border-color: var(--accent, #d74009);
+      color: var(--accent, #d74009);
+    }
+
+    /* Lock state — deshabilita toggles de documentos + finalizar buttons */
+    .ivc-tramite-locked .ivc-ra-toggle__btn {
+      pointer-events: none;
+      opacity: 0.4;
+    }
+    .ivc-tramite-locked [data-obs] {
+      pointer-events: none;
+      background: var(--bg-soft, #f5f6fa);
+      color: var(--text-secondary);
+    }
+    .ivc-tramite-locked .ivc-finalizar-row {
+      display: none !important;
     }
 
     /* v1.5.4 rev2 (25/05/2026): sticky footer con 3 botones REMOVIDO.
@@ -984,10 +1052,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js"></script>
-  <script src="../shared/shell.js"></script>
-  <script src="../shared/ivc-store.js"></script>
-  <script src="../shared/naowee-footer.js" defer></script>
+  <script src="../shared/data.js?v=1.8.4"></script>
+  <script src="../shared/shell.js?v=1.8.4"></script>
+  <script src="../shared/ivc-store.js?v=1.8.4"></script>
+  <script src="../shared/naowee-footer.js?v=1.8.4" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1050,15 +1118,80 @@
       wireDocActions();
       wireFooterActions();
       wireModales();
+      applyLockState();        /* v1.8.0: aplica lock + banner si el estado es terminal */
 
       /* Subscriptions: refrescar si el store cambia (otra tab, etc.) */
       IVCStore.on('store:changed-external', function () {
         state.tramite = IVCStore.getTramite(id);
         if (!state.tramite) return;
-        /* Re-render solo si el estado cambió (no perder el draft de docs) */
         renderHistorial();
+        applyLockState();      /* v1.8.0: sincroniza el lock si otra tab cambió el estado */
       });
     });
+
+    /* v1.8.0 (26/05/2026): helpers de lock — el trámite queda view-only
+       cuando el profesional ya emitió un veredicto (Cumple/NoCumple/Parcial).
+       El banner ofrece reabrir por subsanación del organismo. */
+    function isTramiteFinalizado() {
+      var e = state.tramite && state.tramite.estado;
+      return e === 'Cumple' || e === 'NoCumple' || e === 'Parcial';
+    }
+    function applyLockState() {
+      document.body.classList.toggle('ivc-tramite-locked', isTramiteFinalizado());
+      renderLockBanner();
+    }
+    function renderLockBanner() {
+      var host = document.getElementById('lockBannerHost');
+      if (!host) return;
+      if (!isTramiteFinalizado()) { host.innerHTML = ''; return; }
+      var e = state.tramite.estado;
+      var lastEntry = (state.tramite.historico || []).slice().reverse().find(function (h) {
+        return (h.accion || '').indexOf(e) >= 0;
+      }) || {};
+      var iconCheck = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      var iconWarn  = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      var iconX     = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      var cfg = {
+        Cumple:   { cls: 'cumple',   icon: iconCheck, title: 'Trámite cerrado · CUMPLE',           sub: 'Acto administrativo de Otorgamiento generado. Pendiente firma del Director IVC.' },
+        Parcial:  { cls: 'parcial',  icon: iconWarn,  title: 'Trámite devuelto · CUMPLIMIENTO PARCIAL', sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando el organismo radique la subsanación.' },
+        NoCumple: { cls: 'nocumple', icon: iconX,     title: 'Trámite cerrado · NO CUMPLE',         sub: 'Acto de no cumplimiento generado. El organismo fue notificado y puede subsanar.' }
+      }[e];
+      var actorLine = (lastEntry.actor ? lastEntry.actor + ' · ' : '') + (lastEntry.fecha ? formatDate(lastEntry.fecha) : '');
+      /* Sólo Parcial y NoCumple permiten reabrir por subsanación del organismo.
+         Cumple es terminal (acto administrativo ya firmado). */
+      var canReopen = (e === 'Parcial' || e === 'NoCumple');
+      /* v1.8.4: link al portal público del organismo (INS-014) — el demo
+         end-to-end se prueba abriendo este link en otra tab y radicando
+         subsanación. Cuando el organismo radica, el lock se quita auto. */
+      var portalLink = canReopen
+        ? '<a href="../usuario-externo/consultar.html?rad=' + encodeURIComponent(state.tramite.id) + '" target="_blank" class="ivc-lock-banner__btn" title="Abre la vista pública del organismo en otra pestaña">Ver portal del organismo →</a>'
+        : '';
+      var reopenBtn = canReopen
+        ? '<button type="button" class="ivc-lock-banner__btn" onclick="reabrirPorSubsanacion()">Reabrir (mock)</button>'
+        : '';
+      host.innerHTML =
+        '<div class="ivc-lock-banner ivc-lock-banner--' + cfg.cls + '">' +
+          '<div class="ivc-lock-banner__icon">' + cfg.icon + '</div>' +
+          '<div class="ivc-lock-banner__text">' +
+            '<p class="ivc-lock-banner__title">' + cfg.title + '</p>' +
+            '<p class="ivc-lock-banner__sub">' + cfg.sub + (actorLine ? ' · <em>' + actorLine + '</em>' : '') + '</p>' +
+          '</div>' +
+          portalLink +
+          reopenBtn +
+        '</div>';
+    }
+    /* Mock subsanación: el organismo radica la subsanación → trámite vuelve a "En validación".
+       En producción esto vendría del evento "subsanación radicada" del usuario externo. */
+    function reabrirPorSubsanacion() {
+      if (!state.tramite) return;
+      var actor = 'Sistema (mock: subsanación radicada por ' + (state.tramite.organismo || 'organismo') + ')';
+      IVCStore.actualizarEstado(state.tramite.id, 'En validación', actor, 'Trámite reabierto tras subsanación');
+      state.tramite = IVCStore.getTramite(state.tramite.id);
+      applyLockState();
+      renderHistorial();
+      window.IVCShell.showSnackbar('Trámite reabierto. Puede continuar la revisión con la documentación subsanada.', 'success');
+    }
+    window.reabrirPorSubsanacion = reabrirPorSubsanacion;
 
     /* ───────── Empty (trámite no existe) ───────── */
     function renderEmpty(host) {
@@ -1108,13 +1241,15 @@
           '</div>' +
         '</section>' +
 
-        /* TABS CARD */
+        /* v1.8.0: host del banner de lock (renderiza si el estado es terminal) */
+        '<div id="lockBannerHost"></div>' +
+
+        /* v1.7.2: Tabs DS LITERALES — estructura mínima del playground. */
         '<section class="ivc-tabs-card">' +
-          '<div class="naowee-tabs naowee-tabs--animated" role="tablist">' +
+          '<div class="naowee-tabs" role="tablist" style="width:100%">' +
             '<button class="naowee-tab naowee-tab--selected" data-tab="documentos" role="tab" type="button">Documentos</button>' +
             '<button class="naowee-tab" data-tab="datos" role="tab" type="button">Datos</button>' +
             '<button class="naowee-tab" data-tab="historial" role="tab" type="button">Historial</button>' +
-            '<span class="naowee-tabs__indicator"></span>' +
           '</div>' +
 
           '<div class="ivc-tab-panel" data-panel="documentos" id="panelDocumentos">' +
@@ -1559,22 +1694,11 @@
       if (panel) panel.innerHTML = renderHistorialPanel();
     }
 
-    /* ───────── Tabs interaction (paridad con Project v2.0.3) ───────── */
+    /* v1.7.0: tabs interaction simplificado — patrón DS simple usa ::after
+       de .naowee-tab--selected como indicator (no requiere JS de posicionamiento). */
     function wireTabs() {
       var tabsEl = document.querySelector('.ivc-tabs-card .naowee-tabs');
       if (!tabsEl) return;
-      var indicator = tabsEl.querySelector('.naowee-tabs__indicator');
-
-      function positionIndicator(tab) {
-        if (!indicator) return;
-        var r = tab.getBoundingClientRect();
-        var parent = tabsEl.getBoundingClientRect();
-        indicator.style.width = r.width + 'px';
-        indicator.style.transform = 'translateX(' + (r.left - parent.left) + 'px)';
-      }
-      var initial = tabsEl.querySelector('.naowee-tab--selected');
-      if (initial) requestAnimationFrame(function () { positionIndicator(initial); });
-
       tabsEl.querySelectorAll('.naowee-tab').forEach(function (tab) {
         tab.addEventListener('click', function () {
           var key = tab.dataset.tab;
@@ -1585,13 +1709,7 @@
             p.hidden = p.dataset.panel !== key;
           });
           state.activeTab = key;
-          positionIndicator(tab);
         });
-      });
-
-      window.addEventListener('resize', function () {
-        var current = tabsEl.querySelector('.naowee-tab--selected');
-        if (current) positionIndicator(current);
       });
     }
 
@@ -1807,6 +1925,7 @@
       document.getElementById('modalCumpleOverlay').classList.remove('open');
       window.IVCShell.showSnackbar('Acto administrativo generado. Pendiente de firma por el Director.', 'success');
       renderHistorial();
+      applyLockState();   /* v1.8.0: lock inmediato post-decisión */
     }
 
     function confirmParcial() {
@@ -1817,6 +1936,7 @@
       document.getElementById('modalParcialOverlay').classList.remove('open');
       window.IVCShell.showSnackbar('Trámite devuelto al organismo para subsanación.', 'caution');
       renderHistorial();
+      applyLockState();   /* v1.8.0 */
     }
 
     function confirmNoCumple() {
@@ -1827,6 +1947,7 @@
       document.getElementById('modalNoCumpleOverlay').classList.remove('open');
       window.IVCShell.showSnackbar('Acto de no cumplimiento generado. El organismo será notificado.', 'negative');
       renderHistorial();
+      applyLockState();   /* v1.8.0 */
     }
 
     /* ───────── Helpers ───────── */

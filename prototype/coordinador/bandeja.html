@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.6.9">
-  <link rel="stylesheet" href="../shared/components.css?v=1.6.9">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.6.9">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.6.9">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/components.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.8.4">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -611,102 +611,234 @@
       color: var(--text-secondary);
     }
 
-    /* v1.6.3 (26/05/2026): MIRROR EXACTO del CSS de tabs de workspace.html
-       (que el usuario ya tenía aceptado). Antes intenté variantes "minimalistas"
-       y el resultado fue inconsistente con el resto de la app. Patrón:
-       .ivc-tabs-card > .naowee-tabs > .naowee-tab. El border-bottom vive
-       en el wrap (edge-to-edge) y la .naowee-tabs tiene padding INTERNO
-       lateral para que ni el primer ni el último tab queden pegados al borde
-       del modal — independiente del max-width del modal. */
-    .ivc-detalle-tabs-wrap {
-      position: relative;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
+    /* v1.7.9 (26/05/2026): tabs canónicos DS sobre la base del v1.7.8 +
+       padding para que respiren:
+         - padding-top: 12px  → separa del divider del header
+         - padding-left/right: 24px → primer/último tab sin pegarse al borde
+         - height: 60px = 48 (tab) + 12 (padding-top) [box-sizing: border-box] */
+    #modalDetalleOverlay #modalDetalleTabs.naowee-tabs {
       flex-shrink: 0;
-    }
-    .ivc-detalle-tabs-wrap > .naowee-tabs {
-      padding: 8px 40px 0;   /* v1.6.4: 24→40px laterales para aire generoso al primer y último tab */
+      overflow-x: visible;
       border-bottom: 0;
-      background: transparent;
       position: relative;
-      z-index: 1;
+      box-sizing: border-box;
+      height: 60px;
+      min-height: 60px;
+      padding: 12px 24px 0;      /* top 12 — lateral 24 — bottom 0 (divider via ::after) */
+      background: transparent;   /* mata el background: var(--bg) legacy */
+      border-radius: 0;          /* mata el border-radius legacy */
+      gap: 0;                    /* mata el gap legacy */
     }
-    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab {
-      padding: 12px 18px;
-      background: transparent !important;
-      border-radius: var(--radius-sm, 6px) var(--radius-sm, 6px) 0 0;
-      transition: background var(--duration-fast, .15s) var(--ease-in-out, ease),
-                  color var(--duration-fast, .15s) var(--ease-in-out, ease);
+    #modalDetalleOverlay #modalDetalleTabs.naowee-tabs::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border);
+      pointer-events: none;
     }
-    /* v1.6.7: hover sutil — sin background fill, solo darken del texto.
-       Antes el bg-soft cream se confundía con un "segundo selected". */
-    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab:hover:not(.naowee-tab--selected) {
-      background: transparent !important;
-      color: var(--text-primary);
+    #modalDetalleOverlay #modalDetalleTabs.naowee-tabs > .naowee-tab::after {
+      border-radius: 0;
     }
-    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab--selected {
-      color: var(--accent, #d74009);
-    }
-    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tabs__indicator {
-      background: var(--accent, #d74009);
-      z-index: 2;
-      bottom: -1px;
-      height: 3px;
-      border-radius: 3px 3px 0 0;
-    }
-    .ivc-detail-subblock { margin: 18px 0 0; }
+    /* v1.8.1 (26/05/2026): UX/UI redesign del modal — feedback Doug:
+       - Sub-block titles NO uppercase (compitiendo con accordion titles que ya son uppercase).
+       - Field labels NO uppercase, lowercase regular, lighter weight (legibilidad).
+       - Solo el accordion title (section anchor) se mantiene en uppercase como section marker. */
+    .ivc-detail-subblock { margin: 20px 0 0; }
     .ivc-detail-subblock__title {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .6px;
-      text-transform: uppercase;
-      color: #9a9db0;          /* v1.6.7: igual que block-title */
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text-primary);
       margin: 0 0 10px;
     }
-    /* v1.6.8 (26/05/2026): 3 columnas que LLENAN el modal (sin hueco a la
-       derecha). El modal ahora es de 1100px y el grid usa 1fr — columnas
-       de ~320px que se distribuyen el ancho. Antes con max 280px + justify
-       start dejaba un hueco enorme a la derecha. */
     .ivc-data-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px 36px;
+      gap: 24px 32px;       /* v1.8.2: row gap 16→24px (más aire entre rows) */
     }
     @media (max-width: 900px) { .ivc-data-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 600px) { .ivc-data-grid { grid-template-columns: 1fr; } }
-    .ivc-data-grid__cell { display: flex; flex-direction: column; gap: 4px; }
+    .ivc-data-grid__cell { display: flex; flex-direction: column; gap: 2px; }
     .ivc-data-grid__label {
-      font-size: 11px; font-weight: 700; letter-spacing: .6px;
-      text-transform: uppercase; color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text-secondary);
     }
     .ivc-data-grid__value {
-      font-size: 13.5px; color: var(--text-primary); font-weight: 500;
+      font-size: 14px; color: var(--text-primary); font-weight: 500;
       word-break: break-word;
+      line-height: 1.45;
     }
     .ivc-data-grid__value--mono {
       font-family: ui-monospace, SFMono-Regular, monospace;
-      font-weight: 700;
+      font-weight: 600;
+      font-size: 13px;
     }
+    /* v1.8.1: tablas más limpias — header lowercase, font weight medium,
+       hover sutil en rows, padding más generoso. */
     .ivc-detail-table {
-      width: 100%; border-collapse: collapse; font-size: 12.5px;
-      border: 1px solid var(--border); border-radius: 8px;
+      width: 100%; border-collapse: collapse; font-size: 13px;
+      border: 1px solid var(--border); border-radius: var(--radius-md, 8px);
       overflow: hidden; margin: 0 0 6px;
+      background: var(--surface);
     }
     .ivc-detail-table th {
       background: var(--bg-soft); text-align: left;
-      padding: 10px 12px; font-size: 11px; font-weight: 700;
-      letter-spacing: .3px; text-transform: uppercase;
+      padding: 11px 14px;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0; text-transform: none;
       color: var(--text-secondary); border-bottom: 1px solid var(--border);
     }
     .ivc-detail-table td {
-      padding: 10px 12px; border-bottom: 1px solid var(--border);
+      padding: 12px 14px; border-bottom: 1px solid var(--border);
       color: var(--text-primary); vertical-align: top;
+      font-weight: 500;
     }
     .ivc-detail-table tr:last-child td { border-bottom: 0; }
+    .ivc-detail-table tbody tr:hover { background: rgba(0,0,0,0.015); }
     .ivc-detail-empty {
-      font-size: 12.5px; color: var(--text-secondary);
+      font-size: 13px; color: var(--text-secondary);
       font-style: italic; margin: 4px 0;
     }
+
+    /* v1.8.2 (26/05/2026): file link minimal — sin container, solo
+       nombre del archivo + tamaño + icono download naranja. Tooltip nativo
+       via title="Descargar". Feedback Doug: cards eran demasiado pesados
+       inline. */
+    .ivc-file-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      max-width: 100%;
+      line-height: 1.3;
+    }
+    .ivc-file-link__name {
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .ivc-file-link__size {
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 400;
+    }
+    .ivc-file-link__download {
+      flex-shrink: 0;
+      color: var(--accent, #d74009);
+      transition: opacity .15s, transform .15s;
+    }
+    .ivc-file-link:hover .ivc-file-link__download {
+      opacity: 0.7;
+      transform: translateY(1px);
+    }
+
+    /* v1.8.3: usar componente .naowee-message canónico del DS para el
+       veredicto. Sólo agrego margen externo scoped al modal — el resto
+       (colors, icon circle, layout, typography) viene del DS sin overrides. */
+    #modalDetalleBody .naowee-message {
+      margin: 4px 0 24px;
+    }
+
+    /* v1.8.2: actor pill — avatar con iniciales + nombre + rol */
+    .ivc-actor-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ivc-actor-pill__avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent, #d74009);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      flex-shrink: 0;
+    }
+    .ivc-actor-pill__meta { display: flex; flex-direction: column; min-width: 0; }
+    .ivc-actor-pill__name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .ivc-actor-pill__role {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 1px;
+      line-height: 1.2;
+    }
+
+    /* v1.8.2: simple list — para datos tabulares de 2 columnas
+       (ej. F2 Entidades seccionales). Sin headers, sin background, sólo
+       row dividers sutiles. Más ligero que una tabla. */
+    .ivc-simple-list { list-style: none; padding: 0; margin: 0; }
+    .ivc-simple-list__item {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ivc-simple-list__item:last-child { border-bottom: 0; }
+    .ivc-simple-list__primary {
+      font-size: 14px; font-weight: 600; color: var(--text-primary);
+    }
+    .ivc-simple-list__secondary {
+      font-size: 13.5px; color: var(--text-secondary);
+    }
+
+    /* v1.8.1: lista de documentos validados (cuando state es terminal) */
+    .ivc-validation-list {
+      display: flex; flex-direction: column; gap: 8px;
+      margin: 8px 0 0;
+    }
+    .ivc-validation-list__item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md, 8px);
+      background: var(--surface);
+    }
+    .ivc-validation-list__num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-soft);
+      font-size: 11px; font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .ivc-validation-list__body { flex: 1; min-width: 0; }
+    .ivc-validation-list__title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .ivc-validation-list__obs   { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; line-height: 1.45; }
+    .ivc-validation-list__badge {
+      flex-shrink: 0;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .ivc-validation-list__badge--cumple   { background: var(--green-bg, #e6f4e7); color: #156d18; }
+    .ivc-validation-list__badge--nocumple { background: var(--red-bg, #fff0ee);   color: #8a1212; }
+    .ivc-validation-list__badge--obs      { background: var(--orange-bg, #fff3e6); color: #c97300; }
+    .ivc-validation-list__item--cumple   { border-left: 3px solid var(--green, #1f8923); }
+    .ivc-validation-list__item--nocumple { border-left: 3px solid #c01818; }
+    .ivc-validation-list__item--obs      { border-left: 3px solid var(--accent, #d74009); }
 
     /* Datepicker hover state alineado con demo Fase 1 (futuro-proof si se
        añaden filtros de fecha — no se inyecta markup ahora porque no aplica). */
@@ -1097,25 +1229,23 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <!-- Tabs canónicos DS (mismo patrón que workspace.html) -->
-      <div class="ivc-detalle-tabs-wrap">
-        <div class="naowee-tabs naowee-tabs--animated" role="tablist" id="modalDetalleTabs">
-          <!-- tabs populados dinámicamente por openModalDetalle según tipo organismo -->
-        </div>
+      <!-- v1.7.2: Tabs DS canónicos LITERALES — estructura mínima del playground -->
+      <div class="naowee-tabs" id="modalDetalleTabs" role="tablist" style="width:100%">
+        <!-- tabs populados dinámicamente por openModalDetalle según tipo organismo -->
       </div>
       <div class="naowee-modal__body" id="modalDetalleBody"></div>
     </div>
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.6.9"></script>
-  <script src="../shared/shell.js?v=1.6.9"></script>
-  <script src="../shared/demo-tour.js?v=1.6.9"></script>
-  <script src="../shared/ivc-store.js?v=1.6.9"></script>
+  <script src="../shared/data.js?v=1.8.4"></script>
+  <script src="../shared/shell.js?v=1.8.4"></script>
+  <script src="../shared/demo-tour.js?v=1.8.4"></script>
+  <script src="../shared/ivc-store.js?v=1.8.4"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.6.9" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.8.4" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -2323,7 +2453,7 @@
       var tabsHtml = tabs.map(function(tab, i){
         return '<button class="naowee-tab' + (i === 0 ? ' naowee-tab--selected' : '') +
                '" data-detalle-tab="' + tab.id + '" role="tab" type="button">' + tab.label + '</button>';
-      }).join('') + '<span class="naowee-tabs__indicator"></span>';
+      }).join('');
       document.getElementById('modalDetalleTabs').innerHTML = tabsHtml;
       // Renderizar contenido del primer tab
       document.getElementById('modalDetalleBody').innerHTML = renderDetalleTabContent(t, tabs[0].id);
@@ -2334,19 +2464,11 @@
       document.getElementById('modalDetalleOverlay').classList.remove('open');
       __detalleTramiteActual = null;
     }
+    /* v1.7.0: simplificado — patrón DS simple usa ::after del .naowee-tab--selected
+       para el indicator (no requiere posicionamiento JS de un span __indicator). */
     function wireTabsDetalle() {
       var tabsEl = document.getElementById('modalDetalleTabs');
       if (!tabsEl) return;
-      var indicator = tabsEl.querySelector('.naowee-tabs__indicator');
-      function positionIndicator(tab) {
-        if (!indicator || !tab) return;
-        var r = tab.getBoundingClientRect();
-        var parent = tabsEl.getBoundingClientRect();
-        indicator.style.width = r.width + 'px';
-        indicator.style.transform = 'translateX(' + (r.left - parent.left + tabsEl.scrollLeft) + 'px)';
-      }
-      var initial = tabsEl.querySelector('.naowee-tab--selected');
-      if (initial) requestAnimationFrame(function(){ positionIndicator(initial); });
       tabsEl.querySelectorAll('.naowee-tab').forEach(function(tab){
         tab.addEventListener('click', function(){
           var key = tab.dataset.detalleTab;
@@ -2354,8 +2476,6 @@
             t.classList.toggle('naowee-tab--selected', t === tab);
           });
           document.getElementById('modalDetalleBody').innerHTML = renderDetalleTabContent(__detalleTramiteActual, key);
-          positionIndicator(tab);
-          // Scroll body al top al cambiar de tab
           document.getElementById('modalDetalleBody').scrollTop = 0;
         });
       });
@@ -2472,6 +2592,47 @@
       if (typeof file === 'object' && file.name) return file.name + (file.size ? ' · ' + file.size : '');
       return 'Archivo adjunto';
     }
+    /* v1.8.2: file link minimal — sin container, sólo nombre + tamaño +
+       download icon naranja con tooltip "Descargar". */
+    var _ICON_DOWNLOAD = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+    function _dtFileLink(file) {
+      if (!file) return '<span class="ivc-data-grid__value">—</span>';
+      var name = (typeof file === 'object' && file.name) ? file.name : 'Archivo adjunto';
+      var size = (typeof file === 'object' && file.size) ? file.size : '';
+      return '<a href="#" class="ivc-file-link" title="Descargar" onclick="event.preventDefault(); _mockDownload(this);" data-file-name="' + escHtml(name) + '">' +
+        '<span class="ivc-file-link__name">' + escHtml(name) + '</span>' +
+        (size ? '<span class="ivc-file-link__size">' + escHtml(size) + '</span>' : '') +
+        '<span class="ivc-file-link__download" aria-label="Descargar">' + _ICON_DOWNLOAD + '</span>' +
+      '</a>';
+    }
+    /* Mock download — UX feedback en el demo (en prod conecta a la URL real). */
+    window._mockDownload = function (el) {
+      var name = el.getAttribute('data-file-name') || 'archivo';
+      window.IVCShell && window.IVCShell.showSnackbar
+        ? window.IVCShell.showSnackbar('Descargando ' + name + ' (mock)', 'info')
+        : alert('Mock: descargando ' + name);
+    };
+    function _dtCellFile(label, file) {
+      return '<div class="ivc-data-grid__cell">' +
+        '<span class="ivc-data-grid__label">' + label + '</span>' +
+        _dtFileLink(file) +
+      '</div>';
+    }
+    /* v1.8.2: simple list para datos tabulares de 2 columnas (más ligero que tabla). */
+    function _dtSimpleList(rows) {
+      if (!Array.isArray(rows) || rows.length === 0) return '<p class="ivc-detail-empty">No se diligenció ninguna fila.</p>';
+      return '<ul class="ivc-simple-list">' + rows.map(function (r) {
+        return '<li class="ivc-simple-list__item">' +
+          '<span class="ivc-simple-list__primary">' + escHtml(r[0] || '—') + '</span>' +
+          '<span class="ivc-simple-list__secondary">' + escHtml(r[1] || '—') + '</span>' +
+        '</li>';
+      }).join('') + '</ul>';
+    }
+    /* Iniciales de un nombre para el avatar del actor pill */
+    function _initials(name) {
+      if (!name) return '?';
+      return name.replace(/\([^)]*\)/g, '').trim().split(/\s+/).slice(0, 2).map(function (p) { return p.charAt(0).toUpperCase(); }).join('');
+    }
     function _dtDate(s) {
       if (!s) return '—';
       try { return formatDate(s); } catch (e) { return s; }
@@ -2575,9 +2736,9 @@
           _dtCell('N° Resolución Inscripción Miembros', f2.no_inscripcion_miembros) +
           _dtCell('Radicado Resolución Miembros en IVC', f2.radicado_inscripcion_miembros, true) +
           _dtCell('¿Cuenta con inventario de bienes?', _dtRadio(f2.tiene_inventario)) +
-          _dtCell('Archivo inventario', _dtArchivo(f2.archivo_inventario)) +
+          _dtCellFile('Archivo inventario', f2.archivo_inventario) +
           _dtCell('¿Documentos de afiliación internacional?', _dtRadio(f2.tiene_afiliacion)) +
-          _dtCell('Archivo afiliación', _dtArchivo(f2.archivo_afiliacion))
+          _dtCellFile('Archivo afiliación', f2.archivo_afiliacion)
         );
       }
       if (t.tipoOrganismo === 'federacion' && d.f3) {
@@ -2631,9 +2792,9 @@
           _dtCell('N° afiliados asistentes', a.f1_num_asistentes, true) +
           _dtCell('¿Se cumplió el quórum?', _dtRadio(a.f1_cumplio_quorum)) +
           _dtCell('¿Cert. RF a la fecha de reunión?', _dtRadio(a.f1_adjunta_cert_rf_fecha)) +
-          _dtCell('Archivo cert. RF fecha', _dtArchivo(a.f1_archivo_cert_rf_fecha)) +
+          _dtCellFile('Archivo cert. RF fecha', a.f1_archivo_cert_rf_fecha) +
           _dtCell('¿Cert. RF en la actualidad?', _dtRadio(a.f1_adjunta_cert_rf_actual)) +
-          _dtCell('Archivo cert. RF actualidad', _dtArchivo(a.f1_archivo_cert_rf_actual)) +
+          _dtCellFile('Archivo cert. RF actualidad', a.f1_archivo_cert_rf_actual) +
           _dtCell('Observaciones sobre asistencia', a.f1_obs_asistencia)
         );
       } else {
@@ -2647,7 +2808,7 @@
           _dtCell('N° afiliados asistentes', a.f3_num_asistentes, true) +
           _dtCell('¿Se cumplió el quórum?', _dtRadio(a.f3_cumplio_quorum)) +
           _dtCell('¿Cert. RF sobre afiliados?', _dtRadio(a.f3_adjunta_cert_rf)) +
-          _dtCell('Archivo cert. RF', _dtArchivo(a.f3_archivo_cert))
+          _dtCellFile('Archivo cert. RF', a.f3_archivo_cert)
         );
       }
       return html;
@@ -2726,8 +2887,8 @@
       }
       if (t.tipoOrganismo === 'asociacion') {
         var sec = (e.f2_seccionales || []).map(function(r){ return [r.nombre_seccional, r.nombre_directivo]; });
-        return _dtBlockRaw('Entidades seccionales',
-          _dtTable(['Nombre seccional','Nombre directivo'], sec));
+        /* v1.8.2: simple list en lugar de tabla — más ligero para 2 columnas */
+        return _dtBlockRaw('Entidades seccionales', _dtSimpleList(sec));
       }
       if (t.tipoOrganismo === 'federacion') {
         var afi = (e.f3_afiliados || []).map(function(r){ return [r.nombre, r.no_res_reconocimiento]; });
@@ -2744,13 +2905,13 @@
             _dtCell('Fecha reunión asignación de cargos', _dtDate(e.f3_fecha_reunion_asignacion)) +
             _dtCell('¿Acredita Cert. Residencia OA?', _dtRadio(e.f3_acredita_cert_residencia_oa)) +
             _dtCell('Nombres cert. residencia OA', e.f3_nombres_cert_residencia_oa) +
-            _dtCell('Archivo cert. residencia OA', _dtArchivo(e.f3_archivo_cert_residencia_oa))) +
+            _dtCellFile('Archivo cert. residencia OA', e.f3_archivo_cert_residencia_oa)) +
           _dtBlockRaw('C. Órgano de Control (Revisor Fiscal)',
             _dtTable(['Cargo','Nombre','Identificación','N° Tarjeta','¿Acepta?','¿Antecedentes?','¿Firma revisoría?'], rf3)) +
           _dtBlock('C. Datos extra OC',
             _dtCell('¿Acredita Cert. Residencia OC?', _dtRadio(e.f3_acredita_cert_residencia_oc)) +
             _dtCell('Nombres cert. residencia OC', e.f3_nombres_cert_residencia_oc) +
-            _dtCell('Archivo cert. residencia OC', _dtArchivo(e.f3_archivo_cert_residencia_oc))) +
+            _dtCellFile('Archivo cert. residencia OC', e.f3_archivo_cert_residencia_oc)) +
           _dtBlockRaw('D. Comisión Disciplinaria',
             _dtTable(['Órgano electivo','Nombre','Identificación','¿Acepta?'], cd3) +
             '<div class="ivc-data-grid">' + _dtCell('Fecha reunión OA elección Miembro 3 CD', _dtDate(e.f3_fecha_reunion_oa_cd)) + '</div>');
@@ -2758,29 +2919,145 @@
       return '<p class="ivc-detail-empty">Sin datos de estructura diligenciados.</p>';
     }
 
-    /* ── TAB 5 · Cierre: F1 (cert. conjunta) / F3 (3 certs) + cierre común ── */
+    /* ── TAB 5 · Cierre (refactor v1.8.1) ──
+       Estructura:
+       1. Si state es terminal (Cumple/NoCumple/Parcial) → RESULTADO de la revisión:
+          - badge del veredicto + actor + fecha
+          - acta administrativa generada (file card descargable)
+          - lista de documentos validados con su veredicto e observaciones
+       2. Certificaciones del organismo (F1 / F3): pregunta + file card si aplica.
+          Las preguntas "¿…?" se traducen a etiquetas declarativas legibles.
+       3. Documentación final del trámite (radicado + observaciones del organismo + archivos). */
     function _renderTabCierre(t, d) {
-      if (!d.cierre || !Object.values(d.cierre).some(function(v){ return v !== '' && v != null; })) {
+      var c2 = d.cierre || {};
+      var hasCierreData = Object.values(c2).some(function (v) { return v !== '' && v != null; });
+      var isTerminal = (t.estado === 'Cumple' || t.estado === 'NoCumple' || t.estado === 'Parcial');
+      if (!hasCierreData && !isTerminal) {
         return '<p class="ivc-detail-empty">Sin información de cierre diligenciada todavía.</p>';
       }
-      var c2 = d.cierre;
-      var cierre = '';
-      if (t.tipoOrganismo === 'liga') {
-        cierre += _dtCell('¿Certificación conjunta estructura funcional?', _dtRadio(c2.f1_adjunta_cert_conjunta)) +
-                  _dtCell('Archivo cert. conjunta', _dtArchivo(c2.f1_archivo_cert_conjunta));
+
+      var html = '';
+
+      /* (1) Resultado de la validación profesional — solo cuando hay veredicto */
+      if (isTerminal) {
+        html += _renderResultadoValidacion(t);
+      }
+
+      /* (2) Certificaciones específicas del organismo */
+      if (t.tipoOrganismo === 'liga' && (c2.f1_adjunta_cert_conjunta || c2.f1_archivo_cert_conjunta)) {
+        html += _dtBlock('Certificación de la estructura funcional',
+          _dtCell('Adjunta certificación conjunta', _dtRadio(c2.f1_adjunta_cert_conjunta)) +
+          _dtCellFile('Archivo de la certificación', c2.f1_archivo_cert_conjunta)
+        );
       }
       if (t.tipoOrganismo === 'federacion') {
-        cierre += _dtCell('¿Certificación del COC?', _dtRadio(c2.f3_adjunta_cert_coc)) +
-                  _dtCell('Archivo cert. COC', _dtArchivo(c2.f3_archivo_cert_coc)) +
-                  _dtCell('¿Aval del Comité Paralímpico?', _dtRadio(c2.f3_adjunta_aval_paralimpico)) +
-                  _dtCell('Archivo Aval CPC', _dtArchivo(c2.f3_archivo_aval_paralimpico)) +
-                  _dtCell('¿Cert. conjunta no investigación disciplinaria/penal?', _dtRadio(c2.f3_adjunta_cert_conjunta_no_inv)) +
-                  _dtCell('Archivo cert. no investigación', _dtArchivo(c2.f3_archivo_cert_conjunta_no_inv));
+        var anyF3Cert = c2.f3_adjunta_cert_coc || c2.f3_adjunta_aval_paralimpico || c2.f3_adjunta_cert_conjunta_no_inv;
+        if (anyF3Cert) {
+          html += _dtBlock('Certificaciones de la federación',
+            _dtCell('Certificación del COC', _dtRadio(c2.f3_adjunta_cert_coc)) +
+            _dtCellFile('Archivo certificación COC', c2.f3_archivo_cert_coc) +
+            _dtCell('Aval del Comité Paralímpico (CPC)', _dtRadio(c2.f3_adjunta_aval_paralimpico)) +
+            _dtCellFile('Archivo aval CPC', c2.f3_archivo_aval_paralimpico) +
+            _dtCell('Certificación conjunta de no investigación disciplinaria o penal', _dtRadio(c2.f3_adjunta_cert_conjunta_no_inv)) +
+            _dtCellFile('Archivo certificación no-investigación', c2.f3_archivo_cert_conjunta_no_inv)
+          );
+        }
       }
-      cierre += _dtCell('N° radicado de la documentación adjunta', c2.no_radicado_doc, true) +
-                _dtCell('Observaciones y documentación pendiente', c2.observaciones) +
-                _dtCell('Archivos adjuntos al trámite', _dtArchivo(c2.archivos_adjuntos));
-      return _dtBlock('Información adicional y cierre', cierre);
+
+      /* (3) Documentación final del trámite (siempre, si existe) */
+      if (hasCierreData) {
+        html += _dtBlock('Documentación adjunta al trámite',
+          _dtCell('Número de radicado de la documentación', c2.no_radicado_doc, true) +
+          (c2.observaciones ? _dtCell('Observaciones del organismo', c2.observaciones) : '') +
+          _dtCellFile('Expediente completo', c2.archivos_adjuntos)
+        );
+      }
+
+      return html;
+    }
+
+    /* v1.8.2 (26/05/2026): redesign del Resultado de la Validación con
+       jerarquía visual mejorada (feedback Doug):
+       - Badge GRANDE del veredicto arriba (banner color-coded).
+       - Profesional como actor pill (avatar iniciales + nombre + rol).
+       - Acto administrativo como file link minimal (sin container, sólo
+         download icon naranja + tooltip "Descargar").
+       - Lista de docs validados igual que antes (cards con badge per doc). */
+    /* SVG icons para el .naowee-message__icon (DS canónico) */
+    var _MSG_ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+    var _MSG_ICON_WARN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    var _MSG_ICON_X     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+    function _renderResultadoValidacion(t) {
+      var estado = t.estado;
+      var cfg = {
+        Cumple:   { variant: 'positive', icon: _MSG_ICON_CHECK, label: 'CUMPLE',                sub: 'Acto administrativo de Otorgamiento generado. Pendiente firma del Director IVC.',          file: 'acto-otorgamiento-' + t.id + '.pdf' },
+        Parcial:  { variant: 'caution',  icon: _MSG_ICON_WARN,  label: 'CUMPLIMIENTO PARCIAL',  sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando radique la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
+        NoCumple: { variant: 'negative', icon: _MSG_ICON_X,     label: 'NO CUMPLE',             sub: 'Acto de no cumplimiento generado. El organismo fue notificado y puede subsanar.',           file: 'acto-no-cumplimiento-' + t.id + '.pdf' }
+      }[estado];
+      if (!cfg) return '';
+
+      /* Evento del histórico que disparó este estado (para actor + fecha) */
+      var evento = (t.historico || []).slice().reverse().find(function (h) {
+        return (h.accion || '').indexOf(estado) >= 0;
+      }) || {};
+      /* Nombre del profesional limpio (sin "(Profesional)" en el name principal) */
+      var actorFull = evento.actor || 'Carlos Pérez (Profesional)';
+      var actorName = actorFull.replace(/\s*\([^)]*\)\s*$/, '').trim();
+      var actorRole = (actorFull.match(/\(([^)]*)\)/) || [, 'Profesional'])[1];
+
+      /* Lista de documentos validados */
+      var docs = Array.isArray(t.documentos) ? t.documentos : [];
+      var docList = docs.length === 0
+        ? '<p class="ivc-detail-empty">No hay registro detallado de la validación por documento.</p>'
+        : '<div class="ivc-validation-list">' + docs.map(function (doc, i) {
+            var vCfg = {
+              cumple:   { cls: 'cumple',   label: 'Cumple' },
+              no:       { cls: 'nocumple', label: 'No cumple' },
+              obs:      { cls: 'obs',      label: 'Observación' }
+            }[doc.validacion] || { cls: '', label: 'Sin validar' };
+            return '<div class="ivc-validation-list__item' + (vCfg.cls ? ' ivc-validation-list__item--' + vCfg.cls : '') + '">' +
+              '<div class="ivc-validation-list__num">' + (doc.orden || (i + 1)) + '</div>' +
+              '<div class="ivc-validation-list__body">' +
+                '<div class="ivc-validation-list__title">' + escHtml(doc.titulo || 'Documento') + '</div>' +
+                (doc.observacion ? '<div class="ivc-validation-list__obs">' + escHtml(doc.observacion) + '</div>' : '') +
+              '</div>' +
+              (vCfg.label !== 'Sin validar'
+                ? '<span class="ivc-validation-list__badge ivc-validation-list__badge--' + vCfg.cls + '">' + vCfg.label + '</span>'
+                : '') +
+            '</div>';
+          }).join('') + '</div>';
+
+      var inner =
+        /* v1.8.3: .naowee-message canónico del DS (variant + icon + title + text). */
+        '<div class="naowee-message naowee-message--' + cfg.variant + '">' +
+          '<div class="naowee-message__header">' +
+            '<div class="naowee-message__icon">' + cfg.icon + '</div>' +
+            '<div class="naowee-message__title">' + cfg.label + '</div>' +
+          '</div>' +
+          '<div class="naowee-message__text">' + escHtml(cfg.sub) + '</div>' +
+        '</div>' +
+        /* Grid: profesional (actor pill) · fecha · acto administrativo (file link minimal) */
+        '<div class="ivc-data-grid">' +
+          '<div class="ivc-data-grid__cell">' +
+            '<span class="ivc-data-grid__label">Profesional encargado</span>' +
+            '<div class="ivc-actor-pill">' +
+              '<div class="ivc-actor-pill__avatar">' + _initials(actorName) + '</div>' +
+              '<div class="ivc-actor-pill__meta">' +
+                '<div class="ivc-actor-pill__name">' + escHtml(actorName) + '</div>' +
+                '<div class="ivc-actor-pill__role">' + escHtml(actorRole) + '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          _dtCell('Fecha del veredicto', evento.fecha ? _dtDate(evento.fecha) + (evento.hora ? ' · ' + evento.hora : '') : '—') +
+          _dtCellFile('Acto administrativo', { name: cfg.file, size: '312 KB · PDF' }) +
+        '</div>' +
+        /* Documentos validados */
+        '<div class="ivc-detail-subblock"><h4 class="ivc-detail-subblock__title">Documentos validados por el profesional</h4>' +
+          docList +
+        '</div>';
+
+      return _dtBlockRaw('Resultado de la validación', inner);
     }
 
     /* GAP #11 — Modal histórico */
