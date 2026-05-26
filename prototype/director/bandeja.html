@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.0">
-  <link rel="stylesheet" href="../shared/components.css?v=1.11.0">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.11.0">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.1">
 
   <style>
     /* ═══════════════════════════════════════════════════════════════════
@@ -720,10 +720,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.11.0"></script>
-  <script src="../shared/shell.js?v=1.11.0"></script>
-  <script src="../shared/ivc-store.js?v=1.11.0"></script>
-  <script src="../shared/naowee-footer.js?v=1.11.0" defer></script>
+  <script src="../shared/data.js?v=1.11.1"></script>
+  <script src="../shared/shell.js?v=1.11.1"></script>
+  <script src="../shared/ivc-store.js?v=1.11.1"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.1" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -1248,7 +1248,9 @@
       document.getElementById('modalFirmaConfirm').addEventListener('click', function () {
         var t = state.tramite;
         if (!t) return;
-        var actor = 'Dr. Andrés Martínez (Director IVC)';
+        /* v1.11.1: actor dinámico desde IVCData.PERFILES (María Helena Ramos). */
+        var perfilDir = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['director']) || {};
+        var actor = (perfilDir.nombre || 'Director IVC') + ' (Director IVC)';
         var detalle = 'Acto administrativo firmado electrónicamente con firma preset del Director.';
         IVCStore.actualizarEstado(t.id, 'Firmado', actor, detalle);
         state.tramite = IVCStore.getTramite(t.id);
@@ -1292,7 +1294,9 @@
         var t = state.tramite;
         if (!t || !state.selectedMedio) return;
 
-        var actor = 'Dr. Andrés Martínez (Director IVC)';
+        /* v1.11.1: actor dinámico desde IVCData.PERFILES (María Helena Ramos). */
+        var perfilDir = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['director']) || {};
+        var actor = (perfilDir.nombre || 'Director IVC') + ' (Director IVC)';
         var newState, detalle, msgSnack;
         if (state.selectedMedio === 'electronica') {
           newState = 'NotifElectronica';

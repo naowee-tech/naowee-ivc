@@ -50,10 +50,14 @@
       id: 'director',
       nombre: 'María Helena Ramos',
       cedula: '41.567.890',
-      rol: 'Director Deporte Aficionado',
+      rol: 'Director · Deporte Aficionado',
+      area: 'Deporte Aficionado',
       avatar: 'MR',
-      etapa: 'Fase 2',
-      enabled: false,
+      etapa: 'Fase 5',
+      /* v1.11.1: habilitado para el role switcher tras entregar /director/.
+         Antes era enabled:false → no aparecía como opción, por eso era
+         imposible llegar a la bandeja del Director desde el chip "Cambiar perfil". */
+      enabled: true,
       color: '#d74009'
     }
   };

@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.0">
-  <link rel="stylesheet" href="../shared/components.css?v=1.11.0">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.11.0">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.1">
 
   <style>
     /* ═══════════════════════════════════════════════════════════════════
@@ -633,10 +633,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.11.0"></script>
-  <script src="../shared/shell.js?v=1.11.0"></script>
-  <script src="../shared/ivc-store.js?v=1.11.0"></script>
-  <script src="../shared/naowee-footer.js?v=1.11.0" defer></script>
+  <script src="../shared/data.js?v=1.11.1"></script>
+  <script src="../shared/shell.js?v=1.11.1"></script>
+  <script src="../shared/ivc-store.js?v=1.11.1"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.1" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -1111,7 +1111,11 @@
     window.aprobarActo = function () {
       var t = state.tramite;
       if (!t) return;
-      var actor = 'Ana Martínez (Coordinador IVC)';
+      /* v1.11.1: el actor se lee del perfil activo de IVCData.PERFILES en lugar
+         de hardcoded. Así el historico refleja al coordinador real (Carolina Méndez)
+         y futuras adiciones (nuevos coordinadores) no requieren tocar este string. */
+      var perfilCoord = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['coordinador']) || {};
+      var actor = (perfilCoord.nombre || 'Coordinador IVC') + ' (Coordinador IVC)';
       var version = _versionActo(t);
       var detalle = 'Acto v' + version + ' aprobado (COO). Enviado al Director del IVC para firma electrónica.';
       /* v1.11.0: tras aprobación COO, estado pasa a PendienteFirma (no Cumple).
@@ -1153,7 +1157,9 @@
         var causales = ta.value.trim();
         if (causales.length < 10) return;
         var version = _versionActo(t);
-        var actor = 'Ana Martínez (Coordinador IVC)';
+        /* v1.11.1: actor dinámico desde IVCData.PERFILES (consistencia con aprobar). */
+        var perfilCoord = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['coordinador']) || {};
+        var actor = (perfilCoord.nombre || 'Coordinador IVC') + ' (Coordinador IVC)';
         /* Devolver al profesional: estado vuelve a 'En validación' con causales.
            El profesional asignado recibe el trámite y al re-finalizar generará
            la versión v+1 del acto. */

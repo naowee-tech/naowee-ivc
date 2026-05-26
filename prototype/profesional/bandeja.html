@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-helper, .naowee-tooltip. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css">
-  <link rel="stylesheet" href="../shared/components.css">
-  <link rel="stylesheet" href="../shared/shell.css">
-  <link rel="stylesheet" href="../shared/naowee-footer.css">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.1">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.1">
   <style>
     /* Page-local: paridad con coordinador/bandeja.html. Sin invención de
        clases .naowee-*; solo prefijo .ivc-* y patrón page-title-block local. */
@@ -350,10 +350,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js"></script>
-  <script src="../shared/shell.js"></script>
-  <script src="../shared/ivc-store.js"></script>
-  <script src="../shared/naowee-footer.js" defer></script>
+  <script src="../shared/data.js?v=1.11.1"></script>
+  <script src="../shared/shell.js?v=1.11.1"></script>
+  <script src="../shared/ivc-store.js?v=1.11.1"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.1" defer></script>
   <script>
     /* Profesional activo: por simplicidad del demo, fijo a Carlos Pérez.
        Si en el futuro se identifica via session/auth, reemplazar acá. */
@@ -377,8 +377,28 @@
       /* SOURCE OF TRUTH = IVCStore */
       IVCStore.init();
 
+      /* v1.11.1: estados que ya NO están en manos del Profesional (downstream
+         del Coordinador / Director / Sistema). Se excluyen de la bandeja para
+         que el profesional no vea trámites aprobados COO como "pendientes".
+         Si el usuario quiere ver el journey completo, puede acceder al
+         workspace específico (que mantiene la cenefa view-only). */
+      var ESTADOS_DOWNSTREAM = [
+        'PendienteCOO',    /* en aprobación del Coord */
+        'PendienteFirma',  /* aprobado COO, en cola Director */
+        'Firmado',         /* firmado por Director */
+        'NotifElectronica',/* notificación enviada al portal */
+        'NotifOficinas',   /* esperando asistencia del organismo */
+        'Vigente'          /* terminal positivo final */
+      ];
+
       function loadFromStore() {
-        state.tramites = IVCStore.misAsignaciones(PROFESIONAL_ACTIVO_ID);
+        var todas = IVCStore.misAsignaciones(PROFESIONAL_ACTIVO_ID) || [];
+        /* Filtra los downstream — el profesional solo ve sus trámites activos
+           + sus veredictos terminales propios (NoCumple/Parcial/Cumple).
+           Cumple es legacy del seed v1; ya no se escribe a partir de v1.11.0. */
+        state.tramites = todas.filter(function (t) {
+          return ESTADOS_DOWNSTREAM.indexOf(t.estado) < 0;
+        });
         /* Plazo fallback si el seed antiguo no lo trae */
         state.tramites.forEach(function (t, idx) {
           if (typeof t.plazoDias !== 'number') {
@@ -404,8 +424,13 @@
     });
 
     function refresh() {
+      /* v1.11.1: mismo filtro de estados downstream que el load inicial. */
+      var DOWNSTREAM = ['PendienteCOO', 'PendienteFirma', 'Firmado', 'NotifElectronica', 'NotifOficinas', 'Vigente'];
       var loadFromStore = function () {
-        state.tramites = IVCStore.misAsignaciones(PROFESIONAL_ACTIVO_ID);
+        var todas = IVCStore.misAsignaciones(PROFESIONAL_ACTIVO_ID) || [];
+        state.tramites = todas.filter(function (t) {
+          return DOWNSTREAM.indexOf(t.estado) < 0;
+        });
         state.tramites.forEach(function (t, idx) {
           if (typeof t.plazoDias !== 'number') {
             var rotation = [15, 12, 3, 0, 18, 5, -2, 20, 2, 10, 4, -5];
