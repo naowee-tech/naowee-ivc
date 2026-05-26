@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.1">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.1">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.12.1">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.1">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.2">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.2">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.2">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.2">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -1253,14 +1253,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.12.1"></script>
-  <script src="../shared/shell.js?v=1.12.1"></script>
-  <script src="../shared/demo-tour.js?v=1.12.1"></script>
-  <script src="../shared/ivc-store.js?v=1.12.1"></script>
+  <script src="../shared/data.js?v=1.12.2"></script>
+  <script src="../shared/shell.js?v=1.12.2"></script>
+  <script src="../shared/demo-tour.js?v=1.12.2"></script>
+  <script src="../shared/ivc-store.js?v=1.12.2"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.12.1" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.12.2" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1430,9 +1430,19 @@
           /* refresh icon — reasignar */
           : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>';
 
+        /* v1.12.2: onclick inline directo en cada botón — antes la event
+           delegation en #bandejaBody fallaba para Doug ("sigo sin poder
+           accionar el detalle"). Causa probable: la tooltip wrapper o algún
+           padre interceptaba el bubble del click. onclick directo es a
+           prueba de balas. Window.* expone los openers para que sean
+           accesibles desde inline onclick. */
+        var safeId = escHtml(t.id);
         var accionBtn =
           '<span class="naowee-tooltip naowee-tooltip--bottom">' +
-            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" data-asignar="' + t.id + '" aria-label="' + accionLabel + '">' +
+            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" ' +
+              'data-asignar="' + safeId + '" ' +
+              'onclick="event.stopPropagation(); window.openModalIndividual(\'' + safeId + '\');" ' +
+              'aria-label="' + accionLabel + '">' +
               accionIcon +
             '</button>' +
             '<span class="naowee-tooltip__content">' + accionLabel + '</span>' +
@@ -1441,7 +1451,10 @@
         /* Botón histórico — icon button ghost (mute) con tooltip canónico */
         var historicoBtn =
           '<span class="naowee-tooltip naowee-tooltip--bottom">' +
-            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" data-historico="' + t.id + '" aria-label="Ver histórico del trámite">' +
+            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" ' +
+              'data-historico="' + safeId + '" ' +
+              'onclick="event.stopPropagation(); window.openModalHistorico(\'' + safeId + '\');" ' +
+              'aria-label="Ver histórico del trámite">' +
               '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
                 '<circle cx="12" cy="12" r="10"/>' +
                 '<polyline points="12 6 12 12 16 14"/>' +
@@ -1454,7 +1467,10 @@
            los datos diligenciados en el formulario. Feedback Juanma. */
         var detalleBtn =
           '<span class="naowee-tooltip naowee-tooltip--bottom">' +
-            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" data-detalle="' + t.id + '" aria-label="Ver detalle del trámite">' +
+            '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" ' +
+              'data-detalle="' + safeId + '" ' +
+              'onclick="event.stopPropagation(); window.openModalDetalle(\'' + safeId + '\');" ' +
+              'aria-label="Ver detalle del trámite">' +
               '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
                 '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>' +
                 '<circle cx="12" cy="12" r="3"/>' +
@@ -2406,14 +2422,16 @@
       }, 220);
     }
 
-    function openModalIndividual(tramiteId) {
+    /* v1.12.2: window.* expuesto para que el onclick inline de la tabla
+       pueda invocarlo. La event delegation fallaba para Doug. */
+    window.openModalIndividual = function (tramiteId) {
       state.modalTramiteId = tramiteId;
       var t = state.tramites.find(function (x) { return x.id === tramiteId; });
       var sub = t ? (t.id + ' · ' + t.organismo) : '';
       document.getElementById('modalIndividualSub').textContent = sub;
       document.getElementById('modalIndividualOverlay').classList.add('open');
       updateCargaWarning('single');
-    }
+    };
     function closeModalIndividual() {
       document.getElementById('modalIndividualOverlay').classList.remove('open');
       state.modalTramiteId = null;
@@ -2491,7 +2509,10 @@
       return tabs;
     }
 
-    function openModalDetalle(tramiteId) {
+    /* v1.12.2: window.openModalDetalle expuesto para que el onclick inline
+       inside renderTabla pueda invocarlo. Misma exposición para Historico
+       y Individual abajo. */
+    window.openModalDetalle = function (tramiteId) {
       var t = state.tramites.find(function (x) { return x.id === tramiteId; });
       if (!t) return;
       __detalleTramiteActual = t;
@@ -3132,8 +3153,9 @@
       return _dtBlockRaw('Resultado de la validación', inner);
     }
 
-    /* GAP #11 — Modal histórico */
-    function openModalHistorico(tramiteId) {
+    /* GAP #11 — Modal histórico
+       v1.12.2: window.* expuesto para inline onclick. */
+    window.openModalHistorico = function (tramiteId) {
       var t = state.tramites.find(function (x) { return x.id === tramiteId; });
       if (!t) return;
       document.getElementById('modalHistoricoSub').textContent = t.id + ' · ' + t.organismo;
