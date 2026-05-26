@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.8.4">
-  <link rel="stylesheet" href="../shared/components.css?v=1.8.4">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.8.4">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/components.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.10.5">
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
        Hero card (info + plazo) + naowee-tabs--animated + sticky decision footer.
@@ -561,56 +561,79 @@
       margin-top: 2px;
     }
 
-    /* v1.8.0 (26/05/2026): banner + lock state cuando el trámite ya tuvo
-       una decisión final (Cumple / NoCumple / Parcial). Una vez el profesional
-       emitió un veredicto, los toggles de cumple/no-cumple por documento Y el
-       botón Finalizar quedan deshabilitados — el detalle pasa a view-only.
-       Para reabrir hay que esperar a que el organismo subsanade (mock con
-       botón "Reabrir tras subsanación" en el banner). */
-    .ivc-lock-banner {
+    /* v1.9.3 (26/05/2026): CSS verbatim del .convo-status-cenefa del módulo
+       Project v2.0.3 (naowee-test-digitacion/shared/pages.css L1900+).
+       Sólo agrego el panel de causales expandible (no invasivo, colapsado
+       por default). Patrón --top: edge-to-edge pegado al header con
+       negative margins escapando el padding del .page-inner. */
+    #lockBannerHost { margin: 0; }
+    .convo-status-cenefa {
+      margin: 32px -28px -28px;
+      padding: 22px 28px;
+      border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 14px 18px;
-      margin: 16px 28px 0;
-      border-radius: var(--radius-lg, 12px);
-      border: 1px solid;
+      gap: 18px;
+      flex-wrap: wrap;
     }
-    .ivc-lock-banner--cumple   { background: var(--green-bg, #e6f4e7);  border-color: var(--green-border, #b7dfb9); }
-    .ivc-lock-banner--parcial  { background: var(--orange-bg, #fff3e6); border-color: var(--orange-border, #ffbf75); }
-    .ivc-lock-banner--nocumple { background: var(--red-bg, #fff0ee);    border-color: var(--red-border, #ffc4bb); }
-    .ivc-lock-banner__icon {
-      flex-shrink: 0;
-      width: 36px; height: 36px;
+    .convo-status-cenefa--top {
+      margin: -28px -32px 14px;
+      padding: 12px 32px;
+      border-top: 0;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .convo-status-cenefa--top .convo-status-cenefa__icon { width: 36px; height: 36px; }
+    .convo-status-cenefa--top .convo-status-cenefa__icon svg { width: 18px; height: 18px; }
+    .convo-status-cenefa--top .convo-status-cenefa__title { font-size: 14px; margin-bottom: 2px; }
+    .convo-status-cenefa--top .convo-status-cenefa__msg { font-size: 12px; line-height: 1.4; max-width: 660px; }
+
+    .convo-status-cenefa--positive {
+      background: linear-gradient(90deg, var(--green-bg, #e6f4e7) 0%, #f4faf5 70%, var(--surface) 100%);
+      border-top-color: var(--green-border, #b7dfb9);
+    }
+    .convo-status-cenefa--caution {
+      background: linear-gradient(90deg, var(--orange-bg, #fff3e6) 0%, #fff8ef 70%, var(--surface) 100%);
+      border-top-color: var(--orange-border, #ffbf75);
+    }
+    .convo-status-cenefa--negative {
+      background: linear-gradient(90deg, var(--red-bg, #fff0ee) 0%, #fff8f7 70%, var(--surface) 100%);
+      border-top-color: var(--red-border, #ffc4bb);
+    }
+    /* --top usa border-bottom → sincronizar con la variante */
+    .convo-status-cenefa--top.convo-status-cenefa--positive { border-bottom-color: var(--green-border, #b7dfb9); }
+    .convo-status-cenefa--top.convo-status-cenefa--caution  { border-bottom-color: var(--orange-border, #ffbf75); }
+    .convo-status-cenefa--top.convo-status-cenefa--negative { border-bottom-color: var(--red-border, #ffc4bb); }
+
+    .convo-status-cenefa__icon {
+      width: 48px; height: 48px;
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--surface);
-    }
-    .ivc-lock-banner--cumple   .ivc-lock-banner__icon { color: var(--green, #1f8923); }
-    .ivc-lock-banner--parcial  .ivc-lock-banner__icon { color: #c97300; }
-    .ivc-lock-banner--nocumple .ivc-lock-banner__icon { color: #c01818; }
-    .ivc-lock-banner__text { flex: 1; min-width: 0; }
-    .ivc-lock-banner__title {
-      font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px;
-    }
-    .ivc-lock-banner__sub {
-      font-size: 12.5px; color: var(--text-secondary); margin: 0; line-height: 1.45;
-    }
-    .ivc-lock-banner__btn {
+      display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      padding: 8px 14px;
-      border-radius: var(--radius-md, 8px);
-      background: var(--surface);
-      border: 1px solid var(--border-dark, #d0d4e6);
-      color: var(--text-primary);
-      font-size: 12.5px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: border-color .15s, color .15s;
+      box-shadow: 0 2px 8px rgba(40, 40, 52, .08);
     }
-    .ivc-lock-banner__btn:hover {
-      border-color: var(--accent, #d74009);
-      color: var(--accent, #d74009);
+    .convo-status-cenefa--positive .convo-status-cenefa__icon { background: var(--green, #1f8923); color: #fff; }
+    .convo-status-cenefa--caution  .convo-status-cenefa__icon { background: var(--accent, #d74009); color: #fff; }
+    .convo-status-cenefa--negative .convo-status-cenefa__icon { background: #b42318; color: #fff; }
+    .convo-status-cenefa__icon svg { width: 22px; height: 22px; }
+
+    .convo-status-cenefa__body { flex: 1; min-width: 0; }
+    .convo-status-cenefa__title {
+      font-size: 15px; font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 4px;
+    }
+    .convo-status-cenefa__msg {
+      font-size: 13px; line-height: 1.5;
+      color: var(--text-secondary);
+      margin: 0;
+      max-width: 540px;
+    }
+    .convo-status-cenefa__action {
+      flex-shrink: 0;
+      display: flex; gap: 10px; align-items: center;
     }
 
     /* Lock state — deshabilita toggles de documentos + finalizar buttons */
@@ -836,6 +859,11 @@
   <template id="page-content">
     <div class="page-inner">
 
+      <!-- v1.9.4: lock banner host PRIMERO — pegado al header (cenefa --top
+           usa negative margins para edge-to-edge + sticky top: 0). Antes el
+           back button bloqueaba el sticking porque la cenefa caía debajo. -->
+      <div id="lockBannerHost"></div>
+
       <!-- Back -->
       <a href="bandeja.html" class="naowee-btn naowee-btn--mute naowee-btn--small ivc-back-link" id="btnBack">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -862,15 +890,21 @@
       </div>
       <div class="naowee-modal__body">
 
+        <!-- v1.9.9: copy alineado al flujo real (INS-004 loop COO):
+             Profesional genera acto → Coordinador revisa → ¿Aprueba COO?
+               · Sí → Director firma electrónicamente.
+               · No → vuelve al Profesional para versionar y nueva revisión.
+             Antes decía "pasará al Director del IVC en la siguiente fase",
+             saltándose la revisión del Coordinador. -->
         <div class="naowee-message naowee-message--informative">
           <div class="naowee-message__header">
             <span class="naowee-message__icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             </span>
-            <span class="naowee-message__title">Acto pendiente de firma</span>
+            <span class="naowee-message__title">Acto pendiente de revisión del Coordinador</span>
           </div>
           <div class="naowee-message__text">
-            Se generará un acto administrativo con numeración consecutiva automática. El acto NO se enviará automáticamente; deberá ser firmado por el Director del IVC en la siguiente fase.
+            Se generará un acto administrativo con numeración consecutiva automática. El acto pasará primero al Coordinador IVC para su revisión. Si lo aprueba, será enviado al Director del IVC para firma electrónica. Si requiere correcciones, le será devuelto para versionarlo (INS-004) y radicar una nueva revisión.
           </div>
         </div>
 
@@ -1052,10 +1086,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.8.4"></script>
-  <script src="../shared/shell.js?v=1.8.4"></script>
-  <script src="../shared/ivc-store.js?v=1.8.4"></script>
-  <script src="../shared/naowee-footer.js?v=1.8.4" defer></script>
+  <script src="../shared/data.js?v=1.10.5"></script>
+  <script src="../shared/shell.js?v=1.10.5"></script>
+  <script src="../shared/ivc-store.js?v=1.10.5"></script>
+  <script src="../shared/naowee-footer.js?v=1.10.5" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1084,6 +1118,15 @@
       shellRoot.innerHTML = template.innerHTML;
 
       window.IVCShell.init({ title: null, activeNav: 'bandeja-prof' });
+
+      /* v1.9.5: mover lockBannerHost OUT of .page-inner (max-width: 1480px
+         centrado) y ponerlo como primer hijo de .page (sin max-width) — así
+         la cenefa va edge-to-edge sin gaps en viewports anchos. */
+      var bannerHost = document.getElementById('lockBannerHost');
+      var pageEl = document.getElementById('page-main');
+      if (bannerHost && pageEl && bannerHost.parentNode !== pageEl) {
+        pageEl.insertBefore(bannerHost, pageEl.firstChild);
+      }
 
       IVCStore.init();
 
@@ -1132,9 +1175,13 @@
     /* v1.8.0 (26/05/2026): helpers de lock — el trámite queda view-only
        cuando el profesional ya emitió un veredicto (Cumple/NoCumple/Parcial).
        El banner ofrece reabrir por subsanación del organismo. */
+    /* v1.10.0: PendienteCOO también bloquea — el trámite salió de manos del
+       profesional y está en el flujo del Coordinador. Si el Coordinador
+       devuelve para corrección, el estado vuelve a 'En validación' (con
+       version++ en el historico) y el lock se libera automáticamente. */
     function isTramiteFinalizado() {
       var e = state.tramite && state.tramite.estado;
-      return e === 'Cumple' || e === 'NoCumple' || e === 'Parcial';
+      return e === 'Cumple' || e === 'NoCumple' || e === 'Parcial' || e === 'PendienteCOO';
     }
     function applyLockState() {
       document.body.classList.toggle('ivc-tramite-locked', isTramiteFinalizado());
@@ -1145,40 +1192,50 @@
       if (!host) return;
       if (!isTramiteFinalizado()) { host.innerHTML = ''; return; }
       var e = state.tramite.estado;
-      var lastEntry = (state.tramite.historico || []).slice().reverse().find(function (h) {
-        return (h.accion || '').indexOf(e) >= 0;
-      }) || {};
-      var iconCheck = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-      var iconWarn  = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
-      var iconX     = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      /* v1.9.3: iconos para .convo-status-cenefa__icon (22px svg) */
+      var iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      var iconWarn  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      /* v1.9.3: icono de error con círculo + X dentro (más expresivo para negative) */
+      var iconError = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+      /* v1.9.3: variants mapean a .convo-status-cenefa canónico del módulo Project.
+         v1.9.8: copy del NoCumple ya no menciona "puede subsanar" — es terminal en firme.
+         v1.10.0: nuevo estado intermedio PendienteCOO — el acto está en revisión del
+         Coordinador IVC; si éste lo devuelve para corrección, el lock se libera. */
       var cfg = {
-        Cumple:   { cls: 'cumple',   icon: iconCheck, title: 'Trámite cerrado · CUMPLE',           sub: 'Acto administrativo de Otorgamiento generado. Pendiente firma del Director IVC.' },
-        Parcial:  { cls: 'parcial',  icon: iconWarn,  title: 'Trámite devuelto · CUMPLIMIENTO PARCIAL', sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando el organismo radique la subsanación.' },
-        NoCumple: { cls: 'nocumple', icon: iconX,     title: 'Trámite cerrado · NO CUMPLE',         sub: 'Acto de no cumplimiento generado. El organismo fue notificado y puede subsanar.' }
+        PendienteCOO: { variant: 'caution',  icon: iconWarn,  title: 'Acto en revisión del Coordinador IVC', sub: 'El acto administrativo fue generado y enviado al Coordinador para su aprobación (COO). Quedará habilitado nuevamente si el Coordinador solicita correcciones.' },
+        Cumple:       { variant: 'positive', icon: iconCheck, title: 'Trámite cerrado · CUMPLE',           sub: 'Acto administrativo de Otorgamiento aprobado por el Coordinador IVC. Pendiente firma del Director IVC.' },
+        Parcial:      { variant: 'caution',  icon: iconWarn,  title: 'Trámite devuelto · CUMPLIMIENTO PARCIAL', sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando radique la subsanación.' },
+        NoCumple:     { variant: 'negative', icon: iconError, title: 'Trámite cerrado · NO CUMPLE',         sub: 'Acto de no cumplimiento generado. El trámite quedó cerrado en firme y no admite subsanación.' }
       }[e];
-      var actorLine = (lastEntry.actor ? lastEntry.actor + ' · ' : '') + (lastEntry.fecha ? formatDate(lastEntry.fecha) : '');
-      /* Sólo Parcial y NoCumple permiten reabrir por subsanación del organismo.
-         Cumple es terminal (acto administrativo ya firmado). */
-      var canReopen = (e === 'Parcial' || e === 'NoCumple');
-      /* v1.8.4: link al portal público del organismo (INS-014) — el demo
-         end-to-end se prueba abriendo este link en otra tab y radicando
-         subsanación. Cuando el organismo radica, el lock se quita auto. */
-      var portalLink = canReopen
-        ? '<a href="../usuario-externo/consultar.html?rad=' + encodeURIComponent(state.tramite.id) + '" target="_blank" class="ivc-lock-banner__btn" title="Abre la vista pública del organismo en otra pestaña">Ver portal del organismo →</a>'
-        : '';
-      var reopenBtn = canReopen
-        ? '<button type="button" class="ivc-lock-banner__btn" onclick="reabrirPorSubsanacion()">Reabrir (mock)</button>'
-        : '';
+      /* v1.9.8: sólo Parcial habilita la reapertura por subsanación.
+         NoCumple es terminal definitivo — el organismo debe presentar un nuevo trámite.
+         v1.10.0: PendienteCOO no requiere CTAs en el workspace del profesional —
+         la acción está del lado del Coordinador en su página de aprobación. */
+      var canReopen = (e === 'Parcial');
+
+      /* v1.9.6: banner simplificado — sin actor pill ni dropdown de causales.
+         Las causales del profesional siguen visibles per-documento en el panel
+         de la izquierda y en el portal público del organismo (consultar.html). */
+      var actionsHtml = '';
+      if (canReopen) {
+        actionsHtml += '<a href="../usuario-externo/consultar.html?rad=' + encodeURIComponent(state.tramite.id) + '" target="_blank" class="naowee-btn naowee-btn--quiet naowee-btn--small">Ver portal del organismo →</a>';
+        actionsHtml += '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="reabrirPorSubsanacion()">Marcar como subsanado</button>';
+      }
+
       host.innerHTML =
-        '<div class="ivc-lock-banner ivc-lock-banner--' + cfg.cls + '">' +
-          '<div class="ivc-lock-banner__icon">' + cfg.icon + '</div>' +
-          '<div class="ivc-lock-banner__text">' +
-            '<p class="ivc-lock-banner__title">' + cfg.title + '</p>' +
-            '<p class="ivc-lock-banner__sub">' + cfg.sub + (actorLine ? ' · <em>' + actorLine + '</em>' : '') + '</p>' +
+        '<div class="convo-status-cenefa convo-status-cenefa--' + cfg.variant + ' convo-status-cenefa--top">' +
+          '<span class="convo-status-cenefa__icon" aria-hidden="true">' + cfg.icon + '</span>' +
+          '<div class="convo-status-cenefa__body">' +
+            '<div class="convo-status-cenefa__title">' + cfg.title + '</div>' +
+            '<p class="convo-status-cenefa__msg">' + cfg.sub + '</p>' +
           '</div>' +
-          portalLink +
-          reopenBtn +
+          (actionsHtml ? '<div class="convo-status-cenefa__action">' + actionsHtml + '</div>' : '') +
         '</div>';
+    }
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+      });
     }
     /* Mock subsanación: el organismo radica la subsanación → trámite vuelve a "En validación".
        En producción esto vendría del evento "subsanación radicada" del usuario externo. */
@@ -1222,6 +1279,9 @@
       var tipoBadge = '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">' + (t.tipoTramite || t.tipo || 'Otorgamiento') + '</span>';
 
       host.innerHTML =
+        /* v1.9.4: lockBannerHost ya vive en el template (page-inner > primer hijo)
+           para que el sticky funcione pegado al header sin colisionar con el back. */
+
         /* HERO */
         '<section class="ivc-hero">' +
           '<div class="ivc-hero__left">' +
@@ -1240,9 +1300,6 @@
             '<div class="ivc-hero__right-sub">Vence ' + venceTxt + '</div>' +
           '</div>' +
         '</section>' +
-
-        /* v1.8.0: host del banner de lock (renderiza si el estado es terminal) */
-        '<div id="lockBannerHost"></div>' +
 
         /* v1.7.2: Tabs DS LITERALES — estructura mínima del playground. */
         '<section class="ivc-tabs-card">' +
@@ -1920,10 +1977,15 @@
 
     function confirmCumple() {
       var actor = 'Carlos Pérez (Profesional)';
-      IVCStore.actualizarEstado(state.tramite.id, 'Cumple', actor, 'Acto administrativo generado');
+      /* v1.10.0: el veredicto Cumple ya no salta directo a estado 'Cumple'.
+         Va a 'PendienteCOO' (acto generado, esperando aprobación del
+         Coordinador). El Coordinador en su página dedicada de aprobación
+         lo cierra en 'Cumple' (acto aprobado, pendiente firma Director)
+         o lo devuelve a 'En validación' versionado (loop INS-004 COO). */
+      IVCStore.actualizarEstado(state.tramite.id, 'PendienteCOO', actor, 'Acto administrativo generado y enviado al Coordinador IVC para revisión.');
       state.tramite = IVCStore.getTramite(state.tramite.id);
       document.getElementById('modalCumpleOverlay').classList.remove('open');
-      window.IVCShell.showSnackbar('Acto administrativo generado. Pendiente de firma por el Director.', 'success');
+      window.IVCShell.showSnackbar('Acto administrativo generado. Enviado al Coordinador IVC para aprobación.', 'success');
       renderHistorial();
       applyLockState();   /* v1.8.0: lock inmediato post-decisión */
     }
@@ -1969,6 +2031,8 @@
       if (estado === 'No asignada') return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">En remisión</span>';
       if (estado === 'Asignada')    return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Pendiente</span>';
       if (estado === 'En validación') return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">En validación</span>';
+      /* v1.10.0: nuevo estado intermedio entre veredicto Cumple y firma Director. */
+      if (estado === 'PendienteCOO') return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">En aprobación COO</span>';
       if (estado === 'Cumple')      return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Cumple</span>';
       if (estado === 'NoCumple')    return '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet">No cumple</span>';
       if (estado === 'Parcial')     return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Parcial</span>';

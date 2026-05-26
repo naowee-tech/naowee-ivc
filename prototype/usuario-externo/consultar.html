@@ -24,9 +24,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.8.4">
-  <link rel="stylesheet" href="../shared/components.css?v=1.8.4">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/components.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.10.5">
 
   <style>
     * { box-sizing: border-box; }
@@ -96,23 +96,38 @@
       padding: 32px 24px 64px;
     }
 
-    /* ── Disclaimer banner ──────────────────────────────────── */
-    .public-disclaimer {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      background: var(--orange-bg, #fff3e6);
-      border: 1px solid var(--orange-border, #ffbf75);
-      border-radius: 8px;
-      font-size: 12.5px;
-      color: var(--text-primary);
-      margin: 0 0 28px;
-      line-height: 1.4;
+    /* v1.8.6: back button "Nueva consulta" usa .naowee-btn--mute (Ghost) +
+       --small del DS. Sólo agrego margin-bottom para separar del grid. */
+    .public-main > .naowee-btn--mute {
+      margin: 0 0 16px;
     }
-    .public-disclaimer svg { flex-shrink: 0; color: #c97300; }
+    /* v1.8.7: layout grid de 2 columnas — main (contenido) + aside (caution
+       dismissable). El aside se colapsa al cerrar el disclaimer y la columna
+       main toma el ancho completo. */
+    .public-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      align-items: start;
+      transition: grid-template-columns .25s ease;
+    }
+    .public-grid__main { min-width: 0; }
+    .public-grid__aside {
+      position: sticky;
+      top: 24px;
+    }
+    .public-grid.is-aside-hidden {
+      grid-template-columns: 1fr;
+    }
+    .public-grid.is-aside-hidden .public-grid__aside {
+      display: none;
+    }
+    @media (max-width: 1000px) {
+      .public-grid { grid-template-columns: 1fr; }
+      .public-grid__aside { position: static; order: -1; }
+    }
 
-    /* ── Landing card (sin radicado) ────────────────────────── */
+    /* ── Landing card (sin radicado) — v1.8.5: sin shadow ── */
     .landing-card {
       max-width: 560px;
       margin: 64px auto 0;
@@ -121,7 +136,6 @@
       border: 1px solid var(--border, #e7e9f3);
       padding: 40px 36px;
       text-align: center;
-      box-shadow: var(--shadow-card, 0 0 2px rgba(145,158,171,.2), 0 12px 24px -4px rgba(145,158,171,.12));
     }
     .landing-card__icon {
       width: 64px; height: 64px;
@@ -162,6 +176,28 @@
       border-color: var(--accent, #d74009);
       box-shadow: 0 0 0 3px rgba(215, 64, 9, 0.12);
     }
+    /* v1.8.5: input error state */
+    .landing-form input.is-error {
+      border-color: #c01818;
+      box-shadow: 0 0 0 3px rgba(192, 24, 24, 0.12);
+    }
+    /* v1.8.5: glow naranja permanente cuando el botón está habilitado
+       (radicado válido en el input). DS .naowee-btn--loud sólo aplica glow
+       en :hover; acá lo dejamos visible siempre que esté activo. */
+    .landing-form button.naowee-btn--loud:not(:disabled) {
+      box-shadow: 0 4px 14px rgba(215, 64, 9, 0.35);
+    }
+    .landing-form button.naowee-btn--loud:not(:disabled):hover {
+      box-shadow: 0 6px 20px rgba(215, 64, 9, 0.5);
+    }
+    /* v1.8.6: helper error bajo el input ahora usa .naowee-message --negative
+       canónico DS. Por defecto oculto; aparece cuando se agrega .is-visible. */
+    #landingError {
+      display: none;
+      margin-top: 14px;
+      text-align: left;
+    }
+    #landingError.is-visible { display: flex; }
     .landing-card__hints {
       margin-top: 20px;
       padding-top: 20px;
@@ -182,31 +218,27 @@
       margin: 0 4px;
     }
 
-    /* ── Detalle del trámite encontrado ─────────────────────── */
-    .tramite-back {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 13px; font-weight: 600;
-      color: var(--accent, #d74009);
-      text-decoration: none;
-      margin: 0 0 16px;
-      cursor: pointer;
-    }
-    .tramite-back:hover { text-decoration: underline; }
-
+    /* ── Detalle del trámite encontrado (sin .tramite-back custom; ahora
+         el back button usa .naowee-btn--mute canónico) ─────────────── */
     .tramite-hero {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl, 20px);
       padding: 28px 32px;
       margin: 0 0 24px;
-      box-shadow: var(--shadow-card);
+      
     }
+    /* v1.8.8: grid en lugar de flex-wrap → PLAZO siempre a la derecha
+       sin caer abajo cuando el main es estrecho (820px). */
     .tramite-hero__top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto;
       gap: 24px;
-      flex-wrap: wrap;
+      align-items: start;
+    }
+    @media (max-width: 560px) {
+      .tramite-hero__top { grid-template-columns: 1fr; }
+      .tramite-hero__plazo { text-align: left; }
     }
     .tramite-hero__radicado {
       font-family: ui-monospace, monospace;
@@ -218,11 +250,11 @@
     }
     .tramite-hero__organismo {
       font-size: 22px; font-weight: 700; color: var(--text-primary);
-      margin: 0 0 8px;
+      margin: 0 0 10px;
       line-height: 1.25;
     }
     .tramite-hero__meta {
-      display: flex; gap: 24px; flex-wrap: wrap;
+      display: flex; gap: 18px 24px; flex-wrap: wrap;
       font-size: 13px; color: var(--text-secondary);
     }
     .tramite-hero__meta strong {
@@ -232,7 +264,7 @@
     .tramite-hero__plazo {
       flex-shrink: 0;
       text-align: right;
-      min-width: 160px;
+      min-width: 110px;
     }
     .tramite-hero__plazo-label {
       font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
@@ -260,7 +292,7 @@
       border-radius: var(--radius-xl, 20px);
       padding: 24px 32px 28px;
       margin: 0 0 20px;
-      box-shadow: var(--shadow-card);
+      
     }
     .section__header {
       display: flex;
@@ -280,15 +312,47 @@
       margin: 0 0 4px;
     }
 
-    /* ── Veredicto subgrid (profesional + fecha + acta) ──── */
+    /* v1.9.1: causales del veredicto dentro del .naowee-message */
+    .ivc-causales-inside {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 8px;
+      border-left: 3px solid currentColor;
+    }
+    .ivc-causales-inside__label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .ivc-causales-inside__text {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+    }
+
+    /* ── Veredicto subgrid (profesional + fecha + acta) ─────────
+       v1.8.8: 2 cols (profesional + fecha) en la fila 1, y acto admin
+       full-width en la fila 2. Antes 3 cols a 1fr apretaban el filename
+       del acto en columnas estrechas. */
     .veredicto-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 24px 32px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px 32px;
       margin: 24px 0 0;
     }
-    @media (max-width: 720px) { .veredicto-grid { grid-template-columns: 1fr; } }
-    .veredicto-grid__cell { display: flex; flex-direction: column; gap: 4px; }
+    .veredicto-grid__cell--full {
+      grid-column: 1 / -1;
+    }
+    @media (max-width: 600px) {
+      .veredicto-grid { grid-template-columns: 1fr; }
+      .veredicto-grid__cell--full { grid-column: auto; }
+    }
+    .veredicto-grid__cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .veredicto-grid__label {
       font-size: 12px; font-weight: 500; color: var(--text-secondary);
     }
@@ -315,21 +379,33 @@
     .file-link {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       color: var(--text-primary);
       text-decoration: none;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       line-height: 1.3;
+      max-width: 100%;
+      min-width: 0;
+    }
+    .file-link__name {
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
     .file-link__size {
       color: var(--text-secondary);
       font-size: 12px;
       font-weight: 400;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
     .file-link__download {
       color: var(--accent);
+      flex-shrink: 0;
       transition: opacity .15s, transform .15s;
     }
     .file-link:hover .file-link__download {
@@ -396,71 +472,204 @@
     .timeline__title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); display: block; line-height: 1.3; }
     .timeline__meta  { font-size: 12px; color: var(--text-secondary); display: block; margin-top: 3px; }
 
-    /* ── CTA subsanar ─────────────────────────────────────── */
+    /* ── CTA subsanar (v1.8.5: protagonismo + glow) ─────────── */
     .subsanar-cta {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 20px 24px;
-      background: var(--surface);
-      border: 1px dashed var(--accent);
+      gap: 24px;
+      padding: 28px 32px;
+      background: linear-gradient(135deg, var(--orange-bg, #fff3e6) 0%, #fff 100%);
+      border: 2px dashed var(--accent, #d74009);
       border-radius: var(--radius-xl, 20px);
-      margin: 0 0 20px;
+      margin: 0 0 24px;
     }
-    .subsanar-cta__text {
-      font-size: 13.5px; color: var(--text-primary);
-      line-height: 1.5; max-width: 640px;
+    .subsanar-cta__icon {
+      flex-shrink: 0;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--accent, #d74009);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(215, 64, 9, 0.3);
     }
-    .subsanar-cta__text strong { color: var(--accent); }
+    .subsanar-cta__body {
+      flex: 1;
+      min-width: 0;
+    }
+    .subsanar-cta__title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 4px;
+      line-height: 1.3;
+    }
+    .subsanar-cta__sub {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.5;
+    }
+    /* Botón "loud" con glow permanente */
+    .btn-loud-glow {
+      flex-shrink: 0;
+      height: 48px;
+      padding: 0 24px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--accent, #d74009);
+      border: none;
+      border-radius: var(--radius-md, 8px);
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(215, 64, 9, 0.4);
+      transition: box-shadow .2s, transform .1s;
+      font-family: inherit;
+    }
+    .btn-loud-glow:hover {
+      box-shadow: 0 6px 20px rgba(215, 64, 9, 0.55);
+      transform: translateY(-1px);
+    }
+    .btn-loud-glow:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(215, 64, 9, 0.4);
+    }
 
-    /* ── Modal de subsanación ────────────────────────────────── */
-    .subsanar-modal__doc-list {
-      display: flex; flex-direction: column; gap: 10px;
+    /* v1.9.0: Modal subsanación — file uploader canónico (patrón .wz-file-drop
+       del formulario) + textarea canónico DS + helper--negative para overflow. */
+    .subsanar-doc-list {
+      display: flex; flex-direction: column; gap: 14px;
       margin: 14px 0 18px;
     }
     .subsanar-doc-item {
-      display: flex; gap: 14px; align-items: flex-start;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md, 8px);
-      background: var(--bg-soft);
+      padding: 0;
+    }
+    .subsanar-doc-item__header {
+      display: flex; gap: 12px; align-items: flex-start;
+      margin-bottom: 10px;
     }
     .subsanar-doc-item__num {
       flex-shrink: 0;
       width: 26px; height: 26px;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      background: var(--surface);
+      background: var(--bg-soft);
       border: 1px solid var(--border);
       font-size: 11.5px; font-weight: 700;
       color: var(--text-secondary);
     }
-    .subsanar-doc-item__body { flex: 1; min-width: 0; }
-    .subsanar-doc-item__title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
-    .subsanar-doc-item__obs   { font-size: 12.5px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 10px; font-style: italic; }
-    .subsanar-doc-item__upload {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px;
-      background: var(--surface);
-      border: 1px dashed var(--border-dark);
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12.5px;
+    .subsanar-doc-item__title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+    /* v1.9.7: __obs queda DEBAJO del file-drop (no en el header).
+       Hint sutil — italic + small + secondary. */
+    .subsanar-doc-item__obs   {
+      font-size: 12px;
       color: var(--text-secondary);
-      transition: border-color .15s, color .15s;
+      line-height: 1.45;
+      font-style: italic;
+      margin-top: 8px;
+      padding-left: 2px;
     }
-    .subsanar-doc-item__upload:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+    /* File drop canónico — mismo patrón que el formulario Fase 1 */
+    .ivc-file-drop {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      padding: 18px;
+      border: 1.5px dashed var(--border-dark, #d0d4e6);
+      border-radius: 12px;
+      background: #fafbff;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      position: relative;
     }
-    .subsanar-doc-item__upload.is-loaded {
-      border-color: var(--green, #1f8923);
-      color: var(--green);
+    .ivc-file-drop:hover { border-color: var(--accent, #d74009); background: #fff8f4; }
+    .ivc-file-drop.is-filled {
       border-style: solid;
-      background: var(--green-bg, #e6f4e7);
+      border-color: #15803d;
+      background: #f0faf2;
     }
-    .subsanar-doc-item__upload input[type="file"] { display: none; }
+    .ivc-file-drop.is-error {
+      border-color: #c01818;
+      background: #fff0ee;
+      border-style: solid;
+    }
+    .ivc-file-drop__icon { color: var(--text-secondary); display: inline-flex; }
+    .ivc-file-drop.is-filled .ivc-file-drop__icon { color: #15803d; }
+    .ivc-file-drop.is-error  .ivc-file-drop__icon { color: #c01818; }
+    .ivc-file-drop__title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .ivc-file-drop__hint  { font-size: 11.5px; color: var(--text-secondary); text-align: center; }
+    .ivc-file-drop__name  { font-size: 12.5px; font-weight: 600; color: #15803d; margin-top: 4px; }
+    .ivc-file-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    /* Helper canónico DS — helper--negative para errores de upload */
+    .naowee-helper {
+      display: flex; align-items: flex-start;
+      gap: 8px; margin-top: 6px;
+      font-size: 12px;
+    }
+    /* v1.9.7: [hidden] no se respetaba por la cascada `display: flex` —
+       fuerza el ocultamiento canónico cuando hidden está presente. */
+    .naowee-helper[hidden] { display: none !important; }
+    .naowee-helper__badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .naowee-helper__text { line-height: 1.45; }
+    .naowee-helper--negative .naowee-helper__badge { background: #c01818; color: #fff; }
+    .naowee-helper--negative .naowee-helper__text  { color: #8a1212; }
+
+    /* v1.9.7: Snackbar canónico — mirror del patrón del módulo Project
+       v2.0.3 (.naowee-snackbar) + variant --success con check icon verde. */
+    .ivc-snackbar {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%) translateY(20px);
+      display: inline-flex; align-items: center;
+      gap: 12px;
+      padding: 12px 18px 12px 14px;
+      background: #282834;
+      color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.22), 0 0 0 1px rgba(255,255,255,.06);
+      font-size: 13px; font-weight: 500;
+      line-height: 1.4;
+      max-width: min(560px, calc(100vw - 32px));
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s cubic-bezier(.16,1,.3,1);
+    }
+    .ivc-snackbar.is-visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .ivc-snackbar__icon {
+      width: 24px; height: 24px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.08);
+    }
+    .ivc-snackbar--success .ivc-snackbar__icon {
+      background: #1f8923; color: #fff;
+    }
+    .ivc-snackbar__text { flex: 1; min-width: 0; }
+
+    /* v1.9.7: estado disabled canónico del CTA naowee-btn--loud --large */
+    .naowee-btn--loud[disabled],
+    .naowee-btn--loud:disabled {
+      background: var(--border, #e7e9f3) !important;
+      color: var(--text-secondary, #646587) !important;
+      border-color: transparent !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+      opacity: 1 !important;
+    }
+    .naowee-btn--loud[disabled]:hover,
+    .naowee-btn--loud:disabled:hover {
+      background: var(--border, #e7e9f3) !important;
+      color: var(--text-secondary, #646587) !important;
+    }
 
     /* ── Footer ─────────────────────────────────────────────── */
     .public-footer {
@@ -482,7 +691,7 @@
       border: 1px solid var(--border);
       padding: 48px 36px;
       text-align: center;
-      box-shadow: var(--shadow-card);
+      
     }
     .empty-not-found__icon {
       width: 72px; height: 72px;
@@ -531,8 +740,8 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.8.4"></script>
-  <script src="../shared/ivc-store.js?v=1.8.4"></script>
+  <script src="../shared/data.js?v=1.10.5"></script>
+  <script src="../shared/ivc-store.js?v=1.10.5"></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -548,10 +757,12 @@
     var ICON_BACK       = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
     var ICON_DOWNLOAD   = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
     var ICON_UPLOAD     = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+    var ICON_UPLOAD_LG  = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
     var ICON_CHECK      = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     var MSG_ICON_CHECK  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     var MSG_ICON_WARN   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
     var MSG_ICON_X      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    var MSG_ICON_INFO   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
 
     function escHtml(s) {
       return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
@@ -606,6 +817,10 @@
     }
 
     /* ─── Landing (sin radicado en URL) ────────────────────────────────── */
+    /* Pattern: IVC-YYYY-NNN (case insensitive). Permite también IVC-NNN sueltos
+       por robustez, pero la validación primaria es el patrón completo. */
+    var _RAD_PATTERN = /^IVC-\d{4}-\d{3,}$/i;
+
     function renderLanding(host) {
       host.innerHTML =
         '<div class="landing-card">' +
@@ -613,9 +828,17 @@
           '<h1>Consulte el estado de su trámite</h1>' +
           '<p>Ingrese el número de radicado para conocer el estado de su solicitud, descargar actos administrativos y, si aplica, radicar la subsanación.</p>' +
           '<form class="landing-form" onsubmit="return _onSubmitLanding(event)">' +
-            '<input type="text" id="radInput" placeholder="IVC-2026-XXX" autocomplete="off" autocapitalize="characters">' +
-            '<button type="submit" class="naowee-btn naowee-btn--accent" style="height:44px;">Consultar</button>' +
+            '<input type="text" id="radInput" placeholder="IVC-2026-XXX" autocomplete="off" autocapitalize="characters" oninput="_onRadInputChange()">' +
+            '<button type="submit" id="btnConsultar" class="naowee-btn naowee-btn--loud" style="height:44px;" disabled>Consultar</button>' +
           '</form>' +
+          /* v1.8.6: helper error usa .naowee-message --negative canónico DS */
+          '<div id="landingError" class="naowee-message naowee-message--negative" role="alert">' +
+            '<div class="naowee-message__header">' +
+              '<div class="naowee-message__icon">' + MSG_ICON_X + '</div>' +
+              '<div class="naowee-message__title" id="landingErrorMsg">Radicado no encontrado</div>' +
+            '</div>' +
+            '<div class="naowee-message__text" id="landingErrorSub"></div>' +
+          '</div>' +
           '<div class="landing-card__hints">' +
             '<strong>Ejemplo de radicado:</strong>' +
             '<span class="landing-card__sample">IVC-2026-003</span>' +
@@ -624,24 +847,56 @@
           '</div>' +
         '</div>';
     }
+    /* v1.8.5: habilita botón sólo con formato válido + limpia error al editar */
+    window._onRadInputChange = function () {
+      var input = document.getElementById('radInput');
+      var btn = document.getElementById('btnConsultar');
+      var val = (input.value || '').trim();
+      btn.disabled = !_RAD_PATTERN.test(val);
+      input.classList.remove('is-error');
+      var err = document.getElementById('landingError');
+      if (err) err.classList.remove('is-visible');
+    };
+    /* v1.8.5: validación antes de navegar — si el radicado no existe en el
+       store, muestra helper error inline (no redirige a /not-found). */
     window._onSubmitLanding = function (ev) {
       ev.preventDefault();
-      var val = (document.getElementById('radInput').value || '').trim().toUpperCase();
+      var input = document.getElementById('radInput');
+      var val = (input.value || '').trim().toUpperCase();
       if (!val) return false;
+      var t = IVCStore.getTramite(val);
+      if (!t) {
+        _showLandingError('El radicado ' + val + ' no tiene registro. Por favor verifique el número.');
+        return false;
+      }
       location.search = '?rad=' + encodeURIComponent(val);
       return false;
     };
+    function _showLandingError(msg) {
+      var err = document.getElementById('landingError');
+      var sub = document.getElementById('landingErrorSub');
+      var input = document.getElementById('radInput');
+      if (sub) sub.textContent = msg;
+      if (err) err.classList.add('is-visible');
+      if (input) input.classList.add('is-error');
+    }
 
     /* ─── Not Found ────────────────────────────────────────────────────── */
     function renderNotFound(host, rad) {
       host.innerHTML =
-        '<a class="tramite-back" onclick="_goLanding()">' + ICON_BACK + 'Nueva consulta</a>' +
+        _renderBackButton() +
         '<div class="empty-not-found">' +
           '<div class="empty-not-found__icon">' + ICON_SEARCH + '</div>' +
           '<h2>No encontramos el radicado</h2>' +
           '<p>No existe ningún trámite con el número <code>' + escHtml(rad) + '</code>. Verifique que esté escrito correctamente o consulte el documento que recibió al radicar.</p>' +
-          '<button class="naowee-btn naowee-btn--outline" onclick="_goLanding()">Intentar de nuevo</button>' +
+          '<button class="naowee-btn naowee-btn--quiet" onclick="_goLanding()">Intentar de nuevo</button>' +
         '</div>';
+    }
+    /* v1.8.6: back button canónico DS — .naowee-btn--mute (Ghost) + --small */
+    function _renderBackButton() {
+      return '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="_goLanding()">' +
+        ICON_BACK + ' Nueva consulta' +
+      '</button>';
     }
     window._goLanding = function () { location.search = ''; };
 
@@ -656,69 +911,113 @@
         : 'hábiles restantes';
 
       var isTerminal = (t.estado === 'Cumple' || t.estado === 'NoCumple' || t.estado === 'Parcial');
-      var canSubsanar = (t.estado === 'NoCumple' || t.estado === 'Parcial');
+      /* v1.9.8: NoCumple es terminal DEFINITIVO (al menos un doc fue marcado
+         como No Cumple por el profesional → no admite subsanación).
+         Sólo Parcial (docs con observaciones, ningún No Cumple) habilita el
+         flujo de subsanación. */
+      var canSubsanar = (t.estado === 'Parcial');
 
+      /* v1.8.9: caution siempre visible al cargar — dismiss sólo afecta la
+         vista actual (no persiste). Antes usaba sessionStorage y confundía
+         porque hard refresh no lo limpia. Feedback Doug. */
       host.innerHTML =
-        '<a class="tramite-back" onclick="_goLanding()">' + ICON_BACK + 'Nueva consulta</a>' +
+        _renderBackButton() +
 
-        '<div class="public-disclaimer">' + ICON_INFO +
-          '<div>Esta es una <strong>consulta pública por número de radicado</strong>. Próximamente activaremos verificación por correo electrónico (INS-014).</div>' +
-        '</div>' +
+        '<div class="public-grid" id="publicGrid">' +
+          /* COLUMNA PRINCIPAL (main) */
+          '<div class="public-grid__main">' +
 
-        /* HERO */
-        '<section class="tramite-hero">' +
-          '<div class="tramite-hero__top">' +
-            '<div>' +
-              '<div class="tramite-hero__radicado">' + escHtml(t.id) + '</div>' +
-              '<h1 class="tramite-hero__organismo">' + escHtml(t.organismo) + '</h1>' +
-              '<div class="tramite-hero__meta">' +
-                '<span>Tipo: <strong>' + escHtml(orgLabel) + '</strong></span>' +
-                '<span>Trámite: <strong>' + escHtml(t.tipoTramite) + '</strong></span>' +
-                '<span>Radicado: <strong>' + formatDate(t.fechaRadicacion) + '</strong></span>' +
+            /* HERO */
+            '<section class="tramite-hero">' +
+              '<div class="tramite-hero__top">' +
+                '<div>' +
+                  '<div class="tramite-hero__radicado">' + escHtml(t.id) + '</div>' +
+                  '<h1 class="tramite-hero__organismo">' + escHtml(t.organismo) + '</h1>' +
+                  '<div class="tramite-hero__meta">' +
+                    '<span>Tipo: <strong>' + escHtml(orgLabel) + '</strong></span>' +
+                    '<span>Trámite: <strong>' + escHtml(t.tipoTramite) + '</strong></span>' +
+                    '<span>Radicado: <strong>' + formatDate(t.fechaRadicacion) + '</strong></span>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="tramite-hero__plazo">' +
+                  '<div class="tramite-hero__plazo-label">Plazo restante</div>' +
+                  '<div class="tramite-hero__plazo-value tramite-hero__plazo-value--' + plazoCls + '">' + plazoTxt + '</div>' +
+                  '<div class="tramite-hero__plazo-sub">' + plazoSub + '</div>' +
+                '</div>' +
               '</div>' +
-            '</div>' +
-            '<div class="tramite-hero__plazo">' +
-              '<div class="tramite-hero__plazo-label">Plazo restante</div>' +
-              '<div class="tramite-hero__plazo-value tramite-hero__plazo-value--' + plazoCls + '">' + plazoTxt + '</div>' +
-              '<div class="tramite-hero__plazo-sub">' + plazoSub + '</div>' +
-            '</div>' +
+            '</section>' +
+
+            /* RESULTADO (solo cuando hay veredicto) */
+            (isTerminal ? renderResultado(t) : renderEnTramite(t)) +
+
+            /* CTA SUBSANAR (solo NoCumple / Parcial) */
+            (canSubsanar ? renderCTASubsanar() : '') +
+
+            /* HISTÓRICO */
+            renderHistorico(t) +
+
           '</div>' +
-        '</section>' +
 
-        /* RESULTADO (solo cuando hay veredicto) */
-        (isTerminal ? renderResultado(t) : renderEnTramite(t)) +
-
-        /* CTA SUBSANAR (solo NoCumple / Parcial) */
-        (canSubsanar ? renderCTASubsanar() : '') +
-
-        /* HISTÓRICO */
-        renderHistorico(t);
+          /* COLUMNA LATERAL (aside) — caution INS-014 con dismiss canónico DS */
+          '<aside class="public-grid__aside" id="publicAside">' +
+            '<div class="naowee-message naowee-message--caution">' +
+              '<div class="naowee-message__header">' +
+                '<div class="naowee-message__icon">' + MSG_ICON_INFO + '</div>' +
+                '<div class="naowee-message__title">Consulta pública</div>' +
+                '<button type="button" class="naowee-message__dismiss" onclick="_dismissDisclaimer()" aria-label="Cerrar aviso">' +
+                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                '</button>' +
+              '</div>' +
+              '<div class="naowee-message__text">Esta consulta funciona por número de radicado. Próximamente activaremos verificación por correo electrónico para fortalecer la privacidad de su trámite (INS-014).</div>' +
+            '</div>' +
+          '</aside>' +
+        '</div>';
     }
+    window._dismissDisclaimer = function () {
+      var grid = document.getElementById('publicGrid');
+      if (grid) grid.classList.add('is-aside-hidden');
+      /* v1.8.9: sin persistencia. Hard refresh / navegación → caution vuelve. */
+    };
 
     /* ─── Resultado (cuando hay veredicto) ───────────────────────────── */
     function renderResultado(t) {
       var cfg = ({
         Cumple:   { variant: 'positive', icon: MSG_ICON_CHECK, title: 'CUMPLE',                desc: 'Su trámite fue aprobado. El acto administrativo de Otorgamiento está pendiente de firma por el Director IVC.', file: 'acto-otorgamiento-' + t.id + '.pdf' },
-        Parcial:  { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'CUMPLIMIENTO PARCIAL',  desc: 'Su trámite presenta observaciones que debe subsanar. Tiene 30 días hábiles desde la notificación para radicar la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
-        NoCumple: { variant: 'negative', icon: MSG_ICON_X,     title: 'NO CUMPLE',             desc: 'Su trámite no cumple con los requisitos establecidos. Puede radicar una subsanación adjuntando los documentos faltantes o corregidos.',   file: 'acto-no-cumplimiento-' + t.id + '.pdf' }
+        Parcial:  { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'CUMPLIMIENTO PARCIAL',  desc: 'Su trámite presenta observaciones subsanables. Tiene 30 días hábiles desde la notificación para radicar la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
+        /* v1.9.8: NoCumple es terminal en firme — al menos un documento fue
+           marcado como No Cumple. No admite subsanación; el organismo puede
+           presentar un nuevo trámite si así lo decide. */
+        NoCumple: { variant: 'negative', icon: MSG_ICON_X,     title: 'NO CUMPLE',             desc: 'Su trámite no cumple con los requisitos establecidos y quedó cerrado en firme. No admite subsanación. Si desea continuar, puede presentar un nuevo trámite.', file: 'acto-no-cumplimiento-' + t.id + '.pdf' }
       })[t.estado] || null;
       if (!cfg) return '';
 
+      /* v1.9.1: leer event.estado + event.observacion como campos separados.
+         Fallback a parsear el accion string para entries del seed v1. */
       var evento = (t.historico || []).slice().reverse().find(function (h) {
-        return (h.accion || '').indexOf(t.estado) >= 0;
+        return h.estado === t.estado || (h.accion || '').indexOf(t.estado) >= 0;
       }) || {};
       var actorFull = evento.actor || 'Carlos Pérez (Profesional)';
       var actorName = actorFull.replace(/\s*\([^)]*\)\s*$/, '').trim();
       var actorRole = (actorFull.match(/\(([^)]*)\)/) || [, 'Profesional'])[1];
+      var causales = evento.observacion || '';
+      if (!causales && evento.accion) {
+        var parts = evento.accion.split(' · ');
+        if (parts.length > 1) causales = parts.slice(1).join(' · ');
+      }
 
-      /* Lista de docs no cumplidos (sólo si NoCumple/Parcial) */
+      /* Lista de docs observados/no aprobados (sólo si NoCumple/Parcial).
+         v1.9.8: label contextual — Parcial son subsanables; NoCumple son
+         documentos rechazados sin opción de subsanación. */
       var docs = Array.isArray(t.documentos) ? t.documentos : [];
       var docsFail = docs.filter(function (d) { return d.validacion === 'no' || d.validacion === 'obs'; });
       var docsFailHtml = '';
       if (docsFail.length > 0) {
+        var listLabel = (t.estado === 'NoCumple')
+          ? 'Documentos no aprobados'
+          : 'Documentos a subsanar';
         docsFailHtml =
           '<div style="margin-top: 28px;">' +
-            '<h3 class="section__title" style="margin-bottom: 14px;">Documentos a subsanar</h3>' +
+            '<h3 class="section__title" style="margin-bottom: 14px;">' + listLabel + '</h3>' +
             '<div class="docs-fail-list">' +
               docsFail.map(function (d, i) {
                 var isObs = d.validacion === 'obs';
@@ -734,10 +1033,14 @@
           '</div>';
       }
 
+      /* v1.9.5: causales removidas del .naowee-message — quedan implícitas
+         en la lista "Documentos a subsanar" más abajo (cada doc trae su
+         observación específica del profesional). Feedback Doug. */
+
       return '<section class="section">' +
         '<div class="section__header"><h3 class="section__title">Resultado de la validación</h3></div>' +
 
-        /* .naowee-message canónico DS */
+        /* .naowee-message canónico DS — limpio, sin causales adentro */
         '<div class="naowee-message naowee-message--' + cfg.variant + '">' +
           '<div class="naowee-message__header">' +
             '<div class="naowee-message__icon">' + cfg.icon + '</div>' +
@@ -762,10 +1065,10 @@
             '<span class="veredicto-grid__label">Fecha del veredicto</span>' +
             '<span style="font-size:14px; font-weight:500;">' + (evento.fecha ? formatDate(evento.fecha) + (evento.hora ? ' · ' + evento.hora : '') : '—') + '</span>' +
           '</div>' +
-          '<div class="veredicto-grid__cell">' +
+          '<div class="veredicto-grid__cell veredicto-grid__cell--full">' +
             '<span class="veredicto-grid__label">Acto administrativo</span>' +
             '<a href="#" class="file-link" title="Descargar" onclick="event.preventDefault(); _mockDownload(\'' + cfg.file + '\');">' +
-              '<span>' + escHtml(cfg.file) + '</span>' +
+              '<span class="file-link__name">' + escHtml(cfg.file) + '</span>' +
               '<span class="file-link__size">312 KB · PDF</span>' +
               '<span class="file-link__download">' + ICON_DOWNLOAD + '</span>' +
             '</a>' +
@@ -778,10 +1081,14 @@
 
     /* ─── En trámite (sin veredicto aún) ─────────────────────────────── */
     function renderEnTramite(t) {
+      /* v1.10.0: PendienteCOO es estado intermedio post-veredicto Cumple —
+         el profesional ya generó el acto y el Coordinador IVC lo está
+         revisando antes de pasarlo al Director para firma. */
       var msg = ({
         'No asignada':   { variant: 'informative', title: 'EN REMISIÓN',    desc: 'Su trámite fue recibido y está pendiente de ser asignado a un profesional IVC.' },
         'Asignada':      { variant: 'informative', title: 'EN ASIGNACIÓN', desc: 'Su trámite ya fue asignado a un profesional. Pronto iniciará la revisión.' },
-        'En validación': { variant: 'caution',     title: 'EN VALIDACIÓN', desc: 'Un profesional del IVC está revisando la documentación de su trámite.' }
+        'En validación': { variant: 'caution',     title: 'EN VALIDACIÓN', desc: 'Un profesional del IVC está revisando la documentación de su trámite.' },
+        'PendienteCOO':  { variant: 'caution',     title: 'EN APROBACIÓN COO', desc: 'Su acto administrativo fue generado por el profesional IVC y está en revisión del Coordinador. Una vez aprobado, pasará al Director del IVC para firma electrónica.' }
       })[t.estado] || { variant: 'informative', title: t.estado, desc: 'Su trámite se encuentra en proceso.' };
 
       var msgIcon = msg.variant === 'caution' ? MSG_ICON_WARN : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
@@ -798,13 +1105,15 @@
       '</section>';
     }
 
-    /* ─── CTA de subsanación ────────────────────────────────────────── */
+    /* ─── CTA de subsanación (v1.8.5: protagonismo + icono + glow) ───── */
     function renderCTASubsanar() {
       return '<div class="subsanar-cta">' +
-        '<div class="subsanar-cta__text">' +
-          '<strong>¿Listo para subsanar?</strong> Cargue los documentos corregidos y radique la subsanación. Su trámite volverá automáticamente a validación.' +
+        '<div class="subsanar-cta__icon">' + ICON_UPLOAD_LG + '</div>' +
+        '<div class="subsanar-cta__body">' +
+          '<h3 class="subsanar-cta__title">Subsane su trámite</h3>' +
+          '<p class="subsanar-cta__sub">Cargue los documentos corregidos. Al radicar, su trámite volverá automáticamente a validación por parte del profesional IVC.</p>' +
         '</div>' +
-        '<button class="naowee-btn naowee-btn--accent" onclick="_openSubsanarModal()" style="flex-shrink:0;">Radicar subsanación</button>' +
+        '<button class="btn-loud-glow" onclick="_openSubsanarModal()">Radicar subsanación</button>' +
       '</div>';
     }
 
@@ -828,14 +1137,37 @@
       '</section>';
     }
 
-    /* ─── Modal de subsanación ──────────────────────────────────────── */
+    /* ─── Modal de subsanación (v1.9.0 — componentes canónicos DS) ───── */
+    var MAX_UPLOAD_BYTES = 10 * 1024 * 1024;   /* 10 MB */
+    var ICON_FILE_FILLED = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>';
+    var ICON_FILE_UP     = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+    var ICON_HELPER_X    = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+    function _renderFileDrop(docId, obs) {
+      /* v1.9.7: layout reordenado — obs ahora vive DEBAJO del file-drop (no
+         en el header del item), y el helper de errores queda al final. */
+      var obsHtml = obs
+        ? '<div class="subsanar-doc-item__obs">' + escHtml(obs) + '</div>'
+        : '';
+      return '<label class="ivc-file-drop" for="file-' + escHtml(docId) + '" data-doc-id="' + escHtml(docId) + '">' +
+        '<span class="ivc-file-drop__icon">' + ICON_FILE_UP + '</span>' +
+        '<div class="ivc-file-drop__title">Cargar documento corregido</div>' +
+        '<div class="ivc-file-drop__hint">PDF, DOC o DOCX · máx. 10 MB</div>' +
+        '<input type="file" id="file-' + escHtml(docId) + '" accept=".pdf,.doc,.docx,application/pdf" onchange="_onUploadChange(this)" />' +
+      '</label>' +
+      obsHtml +
+      '<div class="naowee-helper naowee-helper--negative" id="err-' + escHtml(docId) + '" hidden>' +
+        '<span class="naowee-helper__badge">' + ICON_HELPER_X + '</span>' +
+        '<span class="naowee-helper__text"></span>' +
+      '</div>';
+    }
+
     window._openSubsanarModal = function () {
       var t = IVCState.tramite;
       if (!t) return;
       var docs = (Array.isArray(t.documentos) ? t.documentos : []).filter(function (d) {
         return d.validacion === 'no' || d.validacion === 'obs';
       });
-      /* Si no hay docs marcados, mostrar mensaje genérico */
       if (docs.length === 0) {
         docs = [{ id: 'general', orden: 1, titulo: 'Documentación corregida', observacion: 'Adjunte los documentos solicitados en el acto administrativo.' }];
       }
@@ -859,35 +1191,38 @@
           '<div class="naowee-modal__body" style="flex: 1 1 auto; overflow-y:auto; padding: 20px 28px;">' +
             '<div class="naowee-message naowee-message--informative" style="margin-bottom: 18px;">' +
               '<div class="naowee-message__header">' +
-                '<div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>' +
+                '<div class="naowee-message__icon">' + MSG_ICON_INFO + '</div>' +
                 '<div class="naowee-message__title">Documentos por corregir</div>' +
               '</div>' +
-              '<div class="naowee-message__text">Adjunte la versión corregida de cada documento. Al radicar, su trámite volverá a revisión.</div>' +
+              '<div class="naowee-message__text">Adjunte la versión corregida de cada documento. Al radicar, su trámite volverá automáticamente al profesional IVC que lo está revisando.</div>' +
             '</div>' +
-            '<div class="subsanar-modal__doc-list">' +
+            '<div class="subsanar-doc-list">' +
               docs.map(function (d, i) {
-                return '<div class="subsanar-doc-item" data-doc-id="' + escHtml(d.id) + '">' +
-                  '<div class="subsanar-doc-item__num">' + (d.orden || (i + 1)) + '</div>' +
-                  '<div class="subsanar-doc-item__body">' +
-                    '<div class="subsanar-doc-item__title">' + escHtml(d.titulo) + '</div>' +
-                    (d.observacion ? '<div class="subsanar-doc-item__obs">' + escHtml(d.observacion) + '</div>' : '') +
-                    '<label class="subsanar-doc-item__upload" for="file-' + escHtml(d.id) + '">' +
-                      '<span class="ico-upload" style="display:flex;">' + ICON_UPLOAD + '</span>' +
-                      '<span class="upload-label">Cargar documento corregido (PDF · máx. 10 MB)</span>' +
-                      '<input type="file" id="file-' + escHtml(d.id) + '" accept=".pdf" onchange="_onUploadChange(this)" />' +
-                    '</label>' +
+                /* v1.9.7: obs ya NO va en el header — se pasa a _renderFileDrop
+                   para que aparezca como hint sutil debajo de la caja de upload. */
+                return '<div class="subsanar-doc-item">' +
+                  '<div class="subsanar-doc-item__header">' +
+                    '<div class="subsanar-doc-item__num">' + (d.orden || (i + 1)) + '</div>' +
+                    '<div style="flex:1;min-width:0;">' +
+                      '<div class="subsanar-doc-item__title">' + escHtml(d.titulo) + '</div>' +
+                    '</div>' +
                   '</div>' +
+                  _renderFileDrop(d.id, d.observacion) +
                 '</div>';
               }).join('') +
             '</div>' +
-            '<div style="margin-top: 18px;">' +
-              '<label style="display:block; font-size:12.5px; font-weight:600; color: var(--text-secondary); margin-bottom: 6px;">Comentarios adicionales (opcional)</label>' +
-              '<textarea id="subsanarObs" placeholder="Describa brevemente los cambios realizados…" style="width:100%; min-height: 80px; padding: 10px 12px; border: 1px solid var(--border-dark); border-radius: 8px; font-family: inherit; font-size: 13px; resize: vertical;"></textarea>' +
+            /* Textarea canónico DS (.naowee-textfield --textarea pattern) */
+            '<div class="naowee-textfield naowee-textfield--textarea" style="margin-top: 8px;">' +
+              '<label class="naowee-textfield__label" for="subsanarObs">Comentarios adicionales <span style="color:var(--text-secondary);font-weight:400;">(opcional)</span></label>' +
+              '<div class="naowee-textfield__input-wrap" style="height:auto; padding: 10px 12px;">' +
+                '<textarea class="naowee-textfield__input" id="subsanarObs" maxlength="500" rows="4" placeholder="Describa brevemente los cambios realizados…" style="min-height:88px; resize:vertical; line-height:1.5; border:0; outline:none; width:100%; background:transparent; font-family:inherit; font-size:14px; color:inherit;"></textarea>' +
+              '</div>' +
             '</div>' +
           '</div>' +
-          '<div class="naowee-modal__footer" style="flex-shrink:0; padding: 16px 28px; border-top: 1px solid var(--border); display:flex; justify-content:flex-end; gap: 10px;">' +
-            '<button class="naowee-btn naowee-btn--outline" onclick="_closeSubsanarModal()">Cancelar</button>' +
-            '<button class="naowee-btn naowee-btn--accent" onclick="_confirmSubsanacion()">Radicar subsanación</button>' +
+          '<div class="naowee-modal__footer" style="flex-shrink:0; padding: 16px 28px; border-top: 1px solid var(--border); display:flex; justify-content:flex-end;">' +
+            /* v1.9.7: CTA --large + disabled por default. Se activa cuando al
+               menos un documento válido se sube exitosamente (file-drop is-filled). */
+            '<button id="subsanarConfirmBtn" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="_confirmSubsanacion()" disabled>Radicar subsanación</button>' +
           '</div>' +
         '</div>';
       document.body.appendChild(overlay);
@@ -896,32 +1231,87 @@
       var el = document.getElementById('subsanarOverlay');
       if (el) el.remove();
     };
+    /* v1.9.0: upload con validación de tamaño máx (10 MB). Si excede →
+       muestra .naowee-helper--negative bajo el file-drop.
+       v1.9.7: tras cualquier cambio, recalcula si el CTA "Radicar" debe
+       habilitarse (al menos 1 file-drop con clase is-filled). */
     window._onUploadChange = function (input) {
       var file = input.files && input.files[0];
-      if (!file) return;
-      var label = input.closest('.subsanar-doc-item__upload');
-      if (!label) return;
-      label.classList.add('is-loaded');
-      var ico = label.querySelector('.ico-upload');
-      if (ico) ico.innerHTML = ICON_CHECK;
-      var txt = label.querySelector('.upload-label');
-      if (txt) txt.textContent = file.name + ' · cargado';
+      var dropEl = input.closest('.ivc-file-drop');
+      var docId = dropEl && dropEl.getAttribute('data-doc-id');
+      var errEl = docId && document.getElementById('err-' + docId);
+      var errTxt = errEl && errEl.querySelector('.naowee-helper__text');
+
+      /* Reset estados */
+      if (dropEl) {
+        dropEl.classList.remove('is-error');
+      }
+      if (errEl) errEl.hidden = true;
+
+      if (!file) { _updateSubsanarBtnState(); return; }
+
+      /* Validación: máx 10 MB */
+      if (file.size > MAX_UPLOAD_BYTES) {
+        var mb = (file.size / (1024 * 1024)).toFixed(1);
+        if (dropEl) dropEl.classList.add('is-error');
+        if (errTxt) errTxt.textContent = 'El archivo "' + file.name + '" pesa ' + mb + ' MB. El máximo permitido es 10 MB.';
+        if (errEl) errEl.hidden = false;
+        input.value = '';  /* limpia el file input */
+        _updateSubsanarBtnState();
+        return;
+      }
+
+      /* OK — marca el drop como "filled" con el nombre del archivo */
+      if (dropEl) {
+        dropEl.classList.add('is-filled');
+        var icon = dropEl.querySelector('.ivc-file-drop__icon');
+        if (icon) icon.innerHTML = ICON_FILE_FILLED;
+        var title = dropEl.querySelector('.ivc-file-drop__title');
+        if (title) title.textContent = 'Archivo cargado';
+        var hint  = dropEl.querySelector('.ivc-file-drop__hint');
+        if (hint)  hint.style.display = 'none';
+        /* Inserta el name si no existe */
+        if (!dropEl.querySelector('.ivc-file-drop__name')) {
+          var n = document.createElement('div');
+          n.className = 'ivc-file-drop__name';
+          n.textContent = file.name + ' · ' + _bytesToMb(file.size);
+          dropEl.insertBefore(n, dropEl.querySelector('input'));
+        }
+      }
+      _updateSubsanarBtnState();
     };
+
+    /* v1.9.7: gate del CTA "Radicar subsanación" — habilita sólo cuando
+       hay al menos un file-drop con clase is-filled (upload válido). */
+    function _updateSubsanarBtnState() {
+      var btn = document.getElementById('subsanarConfirmBtn');
+      if (!btn) return;
+      var hasValid = document.querySelectorAll('#subsanarOverlay .ivc-file-drop.is-filled').length > 0;
+      btn.disabled = !hasValid;
+    }
+    function _bytesToMb(b) {
+      var mb = b / (1024 * 1024);
+      return (mb < 1 ? (b / 1024).toFixed(0) + ' KB' : mb.toFixed(2) + ' MB');
+    }
+
     window._confirmSubsanacion = function () {
       var t = IVCState.tramite;
       if (!t) return;
       var obs = (document.getElementById('subsanarObs') || {}).value || '';
 
-      /* Mock: en lugar de subir archivos a un backend, sólo actualizamos
-         el estado a "En validación" y registramos en el histórico. */
+      /* Mock: actualizamos estado a "En validación" — el profesional asignado
+         (state.tramite.profesionalId) SIGUE siendo el mismo, así que recibe
+         el trámite de vuelta y empieza un nuevo ciclo de revisión.
+         El workspace del profesional escucha el evento storage y quita el lock. */
+      var profesional = t.profesionalNombre ? ' · vuelve a ' + t.profesionalNombre + ' para revisión' : '';
       var actorOrg = t.organismo + ' (Organismo)';
-      var detalle = 'Subsanación radicada por el organismo' + (obs ? ' · ' + obs : '');
+      var detalle = 'Subsanación radicada' + (obs ? ' · ' + obs : '') + profesional;
       IVCStore.actualizarEstado(t.id, 'En validación', actorOrg, detalle);
 
       _closeSubsanarModal();
-      _showToast('Subsanación radicada. Su trámite vuelve a revisión.');
+      /* v1.9.7: snackbar canónico --success con check icon verde. */
+      _showSnackbar('Subsanación radicada con éxito. Su trámite vuelve a revisión por el profesional asignado.', 'success');
 
-      /* Re-render con el nuevo estado */
       setTimeout(function () {
         IVCState.tramite = IVCStore.getTramite(t.id);
         route();
@@ -931,15 +1321,42 @@
 
     /* ─── Helpers ──────────────────────────────────────────────────── */
     window._mockDownload = function (filename) {
-      _showToast('Descargando ' + filename + ' (mock)');
+      _showSnackbar('Descargando ' + filename + ' (mock)');
     };
-    function _showToast(msg) {
-      var t = document.createElement('div');
-      t.textContent = msg;
-      t.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#282834; color:#fff; padding:10px 18px; border-radius:8px; font-size:13px; font-weight:500; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,.2);';
-      document.body.appendChild(t);
-      setTimeout(function(){ t.remove(); }, 2600);
+
+    /* v1.9.7: Snackbar canónico DS — mirror del patrón del módulo Project.
+       Soporta variants: 'default' (dark pill), 'success' (check verde).
+       Backward compat: _showToast() sigue funcionando como alias. */
+    var SNACKBAR_ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+
+    function _showSnackbar(msg, variant) {
+      /* Limpia snackbars previos */
+      var prev = document.querySelectorAll('.ivc-snackbar');
+      for (var i = 0; i < prev.length; i++) prev[i].remove();
+
+      var el = document.createElement('div');
+      el.className = 'ivc-snackbar' + (variant === 'success' ? ' ivc-snackbar--success' : '');
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+
+      var iconHtml = variant === 'success'
+        ? '<span class="ivc-snackbar__icon">' + SNACKBAR_ICON_CHECK + '</span>'
+        : '';
+      el.innerHTML = iconHtml + '<span class="ivc-snackbar__text"></span>';
+      el.querySelector('.ivc-snackbar__text').textContent = msg;
+
+      document.body.appendChild(el);
+      /* Trigger entrada (next frame para que la transición corra) */
+      requestAnimationFrame(function () {
+        el.classList.add('is-visible');
+      });
+      setTimeout(function () {
+        el.classList.remove('is-visible');
+        setTimeout(function () { el.remove(); }, 280);
+      }, 3200);
     }
+    /* Backward compat */
+    function _showToast(msg) { _showSnackbar(msg); }
   </script>
 </body>
 </html>

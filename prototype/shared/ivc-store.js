@@ -459,11 +459,16 @@
       var now = new Date();
       var prev = t.estado;
       t.estado = estado;
+      /* v1.9.1: además del campo `accion` (string concatenado), guardar
+         `estado` y `observacion` separados para que el consumidor pueda
+         extraer las causales del veredicto sin parsear strings. */
       t.historico.push({
         fecha: now.toISOString().slice(0, 10),
         hora: now.toTimeString().slice(0, 5),
         actor: actor || 'Sistema',
-        accion: 'Estado: ' + prev + ' → ' + estado + (observacion ? ' · ' + observacion : '')
+        accion: 'Estado: ' + prev + ' → ' + estado + (observacion ? ' · ' + observacion : ''),
+        estado: estado,
+        observacion: observacion || ''
       });
       write(s);
       emit('tramite:estado-cambiado', t);

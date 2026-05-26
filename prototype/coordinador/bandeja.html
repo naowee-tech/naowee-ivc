@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.8.4">
-  <link rel="stylesheet" href="../shared/components.css?v=1.8.4">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.8.4">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.8.4">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/components.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.10.5">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -941,6 +941,9 @@
                 <div class="naowee-dropdown__option" role="option" data-val="No asignada" tabindex="-1">En remisión</div>
                 <div class="naowee-dropdown__option" role="option" data-val="Asignada" tabindex="-1">Asignada</div>
                 <div class="naowee-dropdown__option" role="option" data-val="En validación" tabindex="-1">En validación</div>
+                <!-- v1.10.0: PendienteCOO — visible para visibilidad. La acción
+                     real (aprobar/corregir) vive en "Aprobación de actos". -->
+                <div class="naowee-dropdown__option" role="option" data-val="PendienteCOO" tabindex="-1">En aprobación COO</div>
                 <div class="naowee-dropdown__option" role="option" data-val="No cumple" tabindex="-1">No cumple</div>
                 <div class="naowee-dropdown__option" role="option" data-val="Cumple" tabindex="-1">Cumple</div>
                 <div class="naowee-dropdown__option" role="option" data-val="Cumplimiento parcial" tabindex="-1">Cumplimiento parcial</div>
@@ -1238,14 +1241,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.8.4"></script>
-  <script src="../shared/shell.js?v=1.8.4"></script>
-  <script src="../shared/demo-tour.js?v=1.8.4"></script>
-  <script src="../shared/ivc-store.js?v=1.8.4"></script>
+  <script src="../shared/data.js?v=1.10.5"></script>
+  <script src="../shared/shell.js?v=1.10.5"></script>
+  <script src="../shared/demo-tour.js?v=1.10.5"></script>
+  <script src="../shared/ivc-store.js?v=1.10.5"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.8.4" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.10.5" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1484,14 +1487,18 @@
       if (estado === 'En validación') {
         return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">En validación</span>';
       }
-      /* v1.5.9: badges para estados finales con variant semántico. */
+      /* v1.5.9: badges para estados finales con variant semántico.
+         v1.10.0: PendienteCOO — estado intermedio en aprobación del Coordinador. */
+      if (estado === 'PendienteCOO') {
+        return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">En aprobación COO</span>';
+      }
       if (estado === 'No cumple' || estado === 'NoCumple') {
         return '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">No cumple</span>';
       }
       if (estado === 'Cumple') {
         return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Cumple</span>';
       }
-      if (estado === 'Cumplimiento parcial' || estado === 'CumplimientoParcial') {
+      if (estado === 'Cumplimiento parcial' || estado === 'CumplimientoParcial' || estado === 'Parcial') {
         return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Cumplimiento parcial</span>';
       }
       return '<span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">' + estado + '</span>';
@@ -2931,7 +2938,10 @@
     function _renderTabCierre(t, d) {
       var c2 = d.cierre || {};
       var hasCierreData = Object.values(c2).some(function (v) { return v !== '' && v != null; });
-      var isTerminal = (t.estado === 'Cumple' || t.estado === 'NoCumple' || t.estado === 'Parcial');
+      /* v1.10.1: PendienteCOO también dispara el bloque de "Resultado" — el
+         acto fue generado por el profesional aunque aún espere aprobación
+         del Coordinador. Permite navegar desde acá a actos.html para revisar. */
+      var isTerminal = (t.estado === 'Cumple' || t.estado === 'NoCumple' || t.estado === 'Parcial' || t.estado === 'PendienteCOO');
       if (!hasCierreData && !isTerminal) {
         return '<p class="ivc-detail-empty">Sin información de cierre diligenciada todavía.</p>';
       }
@@ -2991,9 +3001,13 @@
     function _renderResultadoValidacion(t) {
       var estado = t.estado;
       var cfg = {
-        Cumple:   { variant: 'positive', icon: _MSG_ICON_CHECK, label: 'CUMPLE',                sub: 'Acto administrativo de Otorgamiento generado. Pendiente firma del Director IVC.',          file: 'acto-otorgamiento-' + t.id + '.pdf' },
-        Parcial:  { variant: 'caution',  icon: _MSG_ICON_WARN,  label: 'CUMPLIMIENTO PARCIAL',  sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando radique la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
-        NoCumple: { variant: 'negative', icon: _MSG_ICON_X,     label: 'NO CUMPLE',             sub: 'Acto de no cumplimiento generado. El organismo fue notificado y puede subsanar.',           file: 'acto-no-cumplimiento-' + t.id + '.pdf' }
+        /* v1.10.1: PendienteCOO — acto recién generado por el profesional, en
+           cola para revisión del Coordinador. CTA: navegar a actos.html. */
+        PendienteCOO: { variant: 'caution',  icon: _MSG_ICON_WARN,  label: 'EN APROBACIÓN COO',     sub: 'El acto administrativo fue generado por el profesional y está pendiente de su revisión y aprobación.', file: 'acto-otorgamiento-' + t.id + '.pdf', ctaLabel: 'Revisar y aprobar acto →', ctaHref: 'actos.html?id=' + encodeURIComponent(t.id) },
+        Cumple:       { variant: 'positive', icon: _MSG_ICON_CHECK, label: 'CUMPLE',                sub: 'Acto administrativo de Otorgamiento aprobado por el Coordinador IVC. Pendiente firma del Director IVC.',          file: 'acto-otorgamiento-' + t.id + '.pdf', ctaLabel: 'Ver acto administrativo →', ctaHref: 'actos.html?id=' + encodeURIComponent(t.id) },
+        Parcial:      { variant: 'caution',  icon: _MSG_ICON_WARN,  label: 'CUMPLIMIENTO PARCIAL',  sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando radique la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
+        /* v1.9.8: NoCumple es terminal en firme — no admite subsanación. */
+        NoCumple:     { variant: 'negative', icon: _MSG_ICON_X,     label: 'NO CUMPLE',             sub: 'Acto de no cumplimiento generado. El trámite quedó cerrado en firme y no admite subsanación.', file: 'acto-no-cumplimiento-' + t.id + '.pdf' }
       }[estado];
       if (!cfg) return '';
 
@@ -3028,6 +3042,22 @@
             '</div>';
           }).join('') + '</div>';
 
+      /* v1.10.1: CTA opcional dentro del message — shortcut para navegar a
+         actos.html?id=… directamente desde el modal Detalle. Sólo aplica para
+         PendienteCOO (acción requerida) y Cumple (vista del acto firmado).
+         v1.10.2: text-decoration: none inline para quitar underline heredado
+         del estilo de <a>. Cumple usa --mute para look ghost neutral, no quiet
+         que parecía textlink subrayado. */
+      var ctaHtml = cfg.ctaLabel
+        ? '<div style="margin-top: 12px; display: flex;">' +
+            '<a href="' + cfg.ctaHref + '" ' +
+               'class="naowee-btn naowee-btn--' + (cfg.variant === 'positive' ? 'mute' : 'loud') + ' naowee-btn--small" ' +
+               'style="text-decoration: none;">' +
+              cfg.ctaLabel +
+            '</a>' +
+          '</div>'
+        : '';
+
       var inner =
         /* v1.8.3: .naowee-message canónico del DS (variant + icon + title + text). */
         '<div class="naowee-message naowee-message--' + cfg.variant + '">' +
@@ -3036,6 +3066,7 @@
             '<div class="naowee-message__title">' + cfg.label + '</div>' +
           '</div>' +
           '<div class="naowee-message__text">' + escHtml(cfg.sub) + '</div>' +
+          ctaHtml +
         '</div>' +
         /* Grid: profesional (actor pill) · fecha · acto administrativo (file link minimal) */
         '<div class="ivc-data-grid">' +
