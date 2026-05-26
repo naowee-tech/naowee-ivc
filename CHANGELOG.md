@@ -6,6 +6,50 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.6.9] — 2026-05-26
+
+> 🪟 **Modal "Ver detalle del trámite" iterado a fondo: secciones colapsables con DS `.naowee-accordion` canónico + label "Ver más/menos" en naranja + empty states a nivel tab + tooltip que se cierra al click + ancho del modal forzado a 95vw + altura flexible + cache busters en assets compartidos.**
+
+### Coordinador · Bandeja (`coordinador/bandeja.html`) · Modal Ver detalle
+
+#### Changed
+- **Bloques colapsables con componente `.naowee-accordion` canónico del DS**. Cada bloque del modal usa la estructura DS oficial:
+  - `.naowee-accordion__item` (estado `--open` cuando expandido)
+  - `.naowee-accordion__header` (clickeable, role=button, tabindex=0)
+  - `.naowee-accordion__title` (texto, 11px gris claro letterspaced)
+  - `.naowee-accordion__action` (label **"Ver más" ↔ "Ver menos"** en naranja accent)
+  - `.naowee-accordion__chevron` (rota 180° al abrir, naranja accent)
+  - `.naowee-accordion__body` + `__content` (max-height: 4000px en open para tablas grandes)
+- **Default: primer bloque de cada tab expandido**, el resto colapsado. UX pro max — usuario expande bajo demanda en lugar de ver todo de un solo.
+- **Soporte de keyboard** (Enter/Space toggle).
+- **Estructura tab refactorizada**: cada sub-bloque A-G (Liga) o A-D (Federación) es ahora su propio collapsible independiente. Antes era un `<section>` con sub-blocks anidados sin colapsar.
+- **Modal width forzado a 95vw** + `max-width: 1100px` (era 1320px). El DS `.naowee-modal` por sí solo no setea `width: 95vw`, sólo `max-width` que es techo no ancho real, así que el modal se sizeaba al contenido (~480px).
+- **Altura flexible** del body: `min-height: 280px; max-height: 70vh; height: auto`. Antes `height: 65vh` fijo dejaba enorme espacio en blanco en tabs cortas.
+- **Tabs canónicos DS** mirror de `workspace.html`: `padding: 8px 40px 0` interno en `.naowee-tabs` (no en wrap) → primer/último tab nunca pegados al borde; divider edge-to-edge en el wrap (no recortado por padding del `.naowee-tabs`); hover sin background pill (sólo color).
+- **Section titles más claros** (#9a9db0 en lugar de --text-secondary #646587) **sin border-bottom** debajo (feedback Doug: el divider competía con los tabs).
+- **3 columnas que llenan el modal** (`repeat(3, minmax(0, 1fr))`) — sin hueco vacío a la derecha.
+
+#### Added
+- **Empty states a nivel tab** cuando todo está vacío. Antes mostraba 6-7 accordions cada uno con "No se diligenció ninguna fila."; ahora un solo mensaje centrado por tab:
+  - Personería: "Sin datos de personería diligenciados todavía."
+  - Asamblea: "Sin datos de asamblea diligenciados todavía." (Liga/Federación) / "Este organismo no requiere sección de asamblea." (Asociación).
+  - Estructura: "Sin datos de estructura diligenciados todavía." (checkea 8+ campos y arrays con helper `_hasRows`).
+  - Cierre: "Sin información de cierre diligenciada todavía."
+- **Cache busters `?v=1.6.9`** en los 8 includes de `../shared/*.css|*.js`. Cada bump cambia el URL automáticamente y los browsers re-fetchean en lugar de servir versiones cacheadas.
+
+#### Fixed
+- **Tooltip "Ver detalle" quedaba colgado al abrir el modal**. El patrón tooltip-portal movía `.naowee-tooltip__content` al body en mouseover; al clickear el ojo y abrir el modal, el overlay tapaba el trigger y `mouseout` nunca disparaba → tooltip pegado con `opacity: 1`. Fix: `click` handler en fase de captura sobre cualquier `.naowee-tooltip` → `hideActive()` antes que se ejecute el handler del botón. Aplica a los 3 tooltips de la fila (Ver detalle, Ver histórico, Asignar).
+- **Mensaje engañoso en tab Asamblea**: Liga con asamblea vacía decía "Este organismo no requiere sección de asamblea" — mentira, la Liga SÍ requiere; sólo estaba sin diligenciar. Separado: Asociación → "no requiere" (correcto, F2 no la tiene en matriz). Liga/Federación vacía → "Sin datos de asamblea diligenciados todavía".
+- **5 tab funciones por tab restantes que no existían** (legacy de la compactación previa): `_renderTabPersoneria`, `_renderTabAsamblea`, `_renderTabEstructura`, `_renderTabCierre`. Sólo `_renderTabGeneral` estaba definida; los otros 4 tabs caían en `undefined` y el body del modal quedaba vacío.
+
+### Bloqueantes activos
+
+- Plantillas Word/PDF de actos administrativos.
+- Lista cerrada y final de roles.
+- HUs faltantes pasos 7-12.
+
+---
+
 ## [ivc-v1.6.0] — 2026-05-26
 
 > 🪟 **Modal "Ver detalle del trámite" del Coordinador refinado: ancho a 1320px, tabs DS canónicos sin overrides hardcodeados, títulos de sección pequeños/grises, grid auto-fit 3 columnas, alto fijo 65vh para que no salte al cambiar de tab.**

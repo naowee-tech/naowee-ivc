@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css">
-  <link rel="stylesheet" href="../shared/components.css">
-  <link rel="stylesheet" href="../shared/shell.css">
-  <link rel="stylesheet" href="../shared/naowee-footer.css">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.6.9">
+  <link rel="stylesheet" href="../shared/components.css?v=1.6.9">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.6.9">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.6.9">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -532,46 +532,127 @@
       min-height: 0;
     }
 
-    /* v1.6.0 (26/05/2026): alto fijo del body del modal Detalle — antes
-       cambiar de tab hacía que el modal se encogiera/expandiera porque la
-       altura dependía del contenido. Ahora el body siempre mide 65vh y
-       solo el contenido interno scrollea. Feedback Doug. */
+    /* v1.6.5 (26/05/2026): alto FLEXIBLE en lugar de fijo.
+       Antes (v1.6.0–v1.6.4): height fija → tabs cortos con mensaje "no requiere"
+       creaban 400-500px de espacio en blanco. Ahora:
+       - min-height 280px → baseline para que el modal nunca colapse demasiado
+       - max-height 70vh → contenido largo (Estructura F3) scrollea internamente
+       - height: auto → el modal RESPIRA al cambiar de tab dentro de ese rango */
     #modalDetalleOverlay .naowee-modal__body {
-      height: 65vh;
-      max-height: 65vh;
-      padding: 28px 32px;
+      height: auto;
+      min-height: 280px;
+      max-height: 70vh;
+      padding: 28px 40px 40px;
     }
 
-    /* v1.6.0: bloques de detalle — títulos pequeños/gris claro letterspaced
-       (misma convención que .ivc-data-grid__label). Antes 13px bold negro
-       competía con los tabs y se sentía pesado. Feedback Doug. */
-    .ivc-detail-block { margin: 0 0 32px; }
-    .ivc-detail-block:last-child { margin-bottom: 0; }
-    .ivc-detail-block__title {
+    /* v1.6.9 (26/05/2026): bloques de detalle ahora usan el componente
+       canónico .naowee-accordion del DS (con __title + __action label
+       + __chevron). Overrides scoped al modal body:
+       - __action label en naranja accent (en lugar de text-link-idle)
+       - __chevron en naranja accent (en lugar de icon-secondary gris)
+       - __title pequeño/gris claro/letterspaced (override del 14px default)
+       - max-height en open subido a 4000px para que las tablas grandes
+         (Estructura F3 con 7 columnas) no queden recortadas. */
+    #modalDetalleBody .naowee-accordion__item {
+      border-bottom: 1px solid var(--border);
+    }
+    #modalDetalleBody .naowee-accordion__item:last-child {
+      border-bottom: 0;
+    }
+    #modalDetalleBody .naowee-accordion__header {
+      padding: 14px 0;
+      gap: 12px;
+    }
+    #modalDetalleBody .naowee-accordion__header:hover {
+      background: transparent;
+      margin: 0;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    #modalDetalleBody .naowee-accordion__title {
       font-size: 11px;
       font-weight: 700;
       letter-spacing: .6px;
       text-transform: uppercase;
+      color: #9a9db0;
+      transition: color .15s ease;
+    }
+    #modalDetalleBody .naowee-accordion__header:hover .naowee-accordion__title {
       color: var(--text-secondary);
-      margin: 0 0 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
+    }
+    #modalDetalleBody .naowee-accordion__action {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent, #d74009);
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    #modalDetalleBody .naowee-accordion__chevron {
+      width: 16px;
+      height: 16px;
+      color: var(--accent, #d74009);
+    }
+    #modalDetalleBody .naowee-accordion__body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease;
+    }
+    #modalDetalleBody .naowee-accordion__item--open .naowee-accordion__body {
+      max-height: 4000px;
+    }
+    #modalDetalleBody .naowee-accordion__content {
+      padding-bottom: 18px;
+    }
+    /* Empty state del tab (cuando NO hay datos en toda la tab) */
+    #modalDetalleBody > .ivc-detail-empty {
+      padding: 32px 4px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
     }
 
-    /* v1.6.0: Tabs del modal Detalle — usar canónicos DS sin reset.
-       Wrapper sólo para padding lateral y border-bottom; el .naowee-tabs +
-       --animated + .naowee-tab--selected + __indicator vienen del DS v1.8.0
-       y se respetan as-is (no más overrides hardcodeados de background
-       /box-shadow /border-radius). El padding horizontal del wrapper le da
-       aire para que no se peguen al borde del modal ahora que es más ancho. */
+    /* v1.6.3 (26/05/2026): MIRROR EXACTO del CSS de tabs de workspace.html
+       (que el usuario ya tenía aceptado). Antes intenté variantes "minimalistas"
+       y el resultado fue inconsistente con el resto de la app. Patrón:
+       .ivc-tabs-card > .naowee-tabs > .naowee-tab. El border-bottom vive
+       en el wrap (edge-to-edge) y la .naowee-tabs tiene padding INTERNO
+       lateral para que ni el primer ni el último tab queden pegados al borde
+       del modal — independiente del max-width del modal. */
     .ivc-detalle-tabs-wrap {
       position: relative;
-      padding: 0 32px;
       background: var(--surface);
+      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
-    .ivc-detalle-tabs-wrap .naowee-tabs {
-      gap: 4px;
+    .ivc-detalle-tabs-wrap > .naowee-tabs {
+      padding: 8px 40px 0;   /* v1.6.4: 24→40px laterales para aire generoso al primer y último tab */
+      border-bottom: 0;
+      background: transparent;
+      position: relative;
+      z-index: 1;
+    }
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab {
+      padding: 12px 18px;
+      background: transparent !important;
+      border-radius: var(--radius-sm, 6px) var(--radius-sm, 6px) 0 0;
+      transition: background var(--duration-fast, .15s) var(--ease-in-out, ease),
+                  color var(--duration-fast, .15s) var(--ease-in-out, ease);
+    }
+    /* v1.6.7: hover sutil — sin background fill, solo darken del texto.
+       Antes el bg-soft cream se confundía con un "segundo selected". */
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab:hover:not(.naowee-tab--selected) {
+      background: transparent !important;
+      color: var(--text-primary);
+    }
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tab--selected {
+      color: var(--accent, #d74009);
+    }
+    .ivc-detalle-tabs-wrap > .naowee-tabs > .naowee-tabs__indicator {
+      background: var(--accent, #d74009);
+      z-index: 2;
+      bottom: -1px;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
     }
     .ivc-detail-subblock { margin: 18px 0 0; }
     .ivc-detail-subblock__title {
@@ -579,19 +660,20 @@
       font-weight: 700;
       letter-spacing: .6px;
       text-transform: uppercase;
-      color: var(--text-secondary);
+      color: #9a9db0;          /* v1.6.7: igual que block-title */
       margin: 0 0 10px;
     }
-    /* v1.6.0: 3 columnas fluidas con auto-fit — el modal ahora es de 1320px
-       y los campos respiran con un ancho mínimo de 280px. Si una tab tiene
-       pocos campos, se distribuyen igualmente en 3 columnas (grid 1fr 1fr 1fr). */
+    /* v1.6.8 (26/05/2026): 3 columnas que LLENAN el modal (sin hueco a la
+       derecha). El modal ahora es de 1100px y el grid usa 1fr — columnas
+       de ~320px que se distribuyen el ancho. Antes con max 280px + justify
+       start dejaba un hueco enorme a la derecha. */
     .ivc-data-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px 32px;
+      gap: 18px 36px;
     }
-    @media (max-width: 1200px) { .ivc-data-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 700px)  { .ivc-data-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .ivc-data-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .ivc-data-grid { grid-template-columns: 1fr; } }
     .ivc-data-grid__cell { display: flex; flex-direction: column; gap: 4px; }
     .ivc-data-grid__label {
       font-size: 11px; font-weight: 700; letter-spacing: .6px;
@@ -1005,7 +1087,7 @@
        Tabs adaptativos según tipo de organismo (Liga/Federación tienen Asamblea,
        Asociación no). Width 1200px + grid de 3 columnas. Feedback Doug: UX pro max. -->
   <div class="naowee-modal-overlay" id="modalDetalleOverlay" role="dialog" aria-modal="true" aria-labelledby="modalDetalleTitle">
-    <div class="naowee-modal" style="max-width: 1320px;">
+    <div class="naowee-modal" style="width: 95vw; max-width: 1100px;">
       <div class="naowee-modal__header">
         <div class="naowee-modal__title-group">
           <h2 class="naowee-modal__title" id="modalDetalleTitle">Detalle del trámite</h2>
@@ -1026,14 +1108,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js"></script>
-  <script src="../shared/shell.js"></script>
-  <script src="../shared/demo-tour.js"></script>
-  <script src="../shared/ivc-store.js"></script>
+  <script src="../shared/data.js?v=1.6.9"></script>
+  <script src="../shared/shell.js?v=1.6.9"></script>
+  <script src="../shared/demo-tour.js?v=1.6.9"></script>
+  <script src="../shared/ivc-store.js?v=1.6.9"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.6.9" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1382,6 +1464,19 @@
         /* solo cerrar si el mouse salió del trigger hacia algo que no es el trigger ni sus hijos */
         if (activeTrigger.contains(ev.relatedTarget)) return;
         hideActive();
+      });
+
+      /* v1.6.1 (26/05/2026): cerrar tooltip al clickear el trigger.
+         Antes: clickear el botón "Ver detalle" abría el modal pero el tooltip
+         quedaba pegado en el body porque la portaling no recibe mouseout
+         cuando el modal overlay tapa el trigger. Feedback Doug. */
+      document.addEventListener('click', function(ev){
+        if (ev.target.closest('.naowee-tooltip')) hideActive();
+      }, true);
+      /* Cerrar también cuando se abre cualquier modal overlay (defensivo: si
+         el tooltip vino de un trigger fuera del .naowee-tooltip, ej. teclado). */
+      document.addEventListener('keydown', function(ev){
+        if (ev.key === 'Escape') hideActive();
       });
 
       window.addEventListener('scroll', hideActive, true);
@@ -2266,6 +2361,34 @@
       });
     }
 
+    /* v1.6.9 (26/05/2026): toggle del DS .naowee-accordion. Click o
+       Enter/Space sobre el header → toggle --open + actualiza label
+       "Ver más" ↔ "Ver menos". Event delegation en el body para que
+       funcione aunque el contenido se re-renderice al cambiar de tab. */
+    function _toggleAccordionItem(header) {
+      var item = header.closest('.naowee-accordion__item');
+      if (!item) return;
+      item.classList.toggle('naowee-accordion__item--open');
+      var isOpen = item.classList.contains('naowee-accordion__item--open');
+      var action = header.querySelector('.naowee-accordion__action');
+      if (action) action.textContent = isOpen ? 'Ver menos' : 'Ver más';
+    }
+    (function wireDetailAccordionToggle(){
+      var body = document.getElementById('modalDetalleBody');
+      if (!body) return;
+      body.addEventListener('click', function(ev){
+        var header = ev.target.closest('.naowee-accordion__header[data-accordion-toggle]');
+        if (header) _toggleAccordionItem(header);
+      });
+      body.addEventListener('keydown', function(ev){
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        var header = ev.target.closest('.naowee-accordion__header[data-accordion-toggle]');
+        if (!header) return;
+        ev.preventDefault();
+        _toggleAccordionItem(header);
+      });
+    })();
+
     /* Helper compartido con workspace.html — muestra TODOS los datos del trámite. */
     function _dtCell(label, value, mono) {
       var v = (value === undefined || value === null || value === '') ? '—' : String(value);
@@ -2275,12 +2398,39 @@
         '<span class="' + valCls + '">' + escHtml(v) + '</span>' +
       '</div>';
     }
+    /* v1.6.9: usar componente .naowee-accordion canónico del DS.
+       Cada bloque es ahora un .naowee-accordion__item con:
+       - __title (label de la sección)
+       - __action (link "Ver más" / "Ver menos" en naranja)
+       - __chevron (icono que rota 180° al abrir)
+       Primer bloque de cada tab arranca con --open. */
+    var __dtBlockCounter = 0;
+    function _resetBlockCounter() { __dtBlockCounter = 0; }
+    var _ACCORDION_CHEVRON = '<svg class="naowee-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+
+    function _dtAccordionItem(title, contentHtml) {
+      __dtBlockCounter += 1;
+      var isOpen = __dtBlockCounter === 1;
+      var openCls = isOpen ? ' naowee-accordion__item--open' : '';
+      var actionLabel = isOpen ? 'Ver menos' : 'Ver más';
+      return '<div class="naowee-accordion__item' + openCls + '">' +
+        '<div class="naowee-accordion__header" role="button" tabindex="0" data-accordion-toggle>' +
+          '<span class="naowee-accordion__title">' + title + '</span>' +
+          '<span class="naowee-accordion__action">' + actionLabel + '</span>' +
+          _ACCORDION_CHEVRON +
+        '</div>' +
+        '<div class="naowee-accordion__body">' +
+          '<div class="naowee-accordion__content">' + contentHtml + '</div>' +
+        '</div>' +
+      '</div>';
+    }
     function _dtBlock(title, cellsHtml) {
       if (!cellsHtml) return '';
-      return '<section class="ivc-detail-block">' +
-        '<h3 class="ivc-detail-block__title">' + title + '</h3>' +
-        '<div class="ivc-data-grid">' + cellsHtml + '</div>' +
-      '</section>';
+      return _dtAccordionItem(title, '<div class="ivc-data-grid">' + cellsHtml + '</div>');
+    }
+    function _dtBlockRaw(title, innerHtml) {
+      if (!innerHtml) return '';
+      return _dtAccordionItem(title, innerHtml);
     }
     function _dtSubBlock(title, content) {
       return '<div class="ivc-detail-subblock"><h4 class="ivc-detail-subblock__title">' + title + '</h4>' + content + '</div>';
@@ -2332,6 +2482,7 @@
        otros 4 (_renderTabPersoneria/Asamblea/Estructura/Cierre) no existían,
        por eso clickear cualquier tab distinto de General mostraba undefined. */
     function renderDetalleTabContent(t, tabId) {
+      _resetBlockCounter();  /* v1.6.7: cada tab arranca con su primer bloque expandido */
       if (!t) return '<p class="ivc-detail-empty">Trámite no encontrado.</p>';
       var d = t.datos || {};
       if (tabId === 'general')    return _renderTabGeneral(t, d);
@@ -2382,6 +2533,13 @@
 
     /* ── TAB 2 · Personería: F1 / F2 / F3 según organismo ── */
     function _renderTabPersoneria(t, d) {
+      /* v1.6.9: empty state a nivel tab */
+      var hasPersData = (t.tipoOrganismo === 'liga' && d.f1 && Object.values(d.f1).some(function(v){ return v !== '' && v != null; })) ||
+                       (t.tipoOrganismo === 'asociacion' && d.f2 && Object.values(d.f2).some(function(v){ return v !== '' && v != null; })) ||
+                       (t.tipoOrganismo === 'federacion' && d.f3 && Object.values(d.f3).some(function(v){ return v !== '' && v != null; }));
+      if (!hasPersData) {
+        return '<p class="ivc-detail-empty">Sin datos de personería diligenciados todavía.</p>';
+      }
       if (t.tipoOrganismo === 'liga' && d.f1) {
         var f1 = d.f1;
         return _dtBlock('Personería, Estatutos y Constitución (F1)',
@@ -2437,8 +2595,14 @@
 
     /* ── TAB 3 · Asamblea: solo Liga (F1) y Federación (F3) ── */
     function _renderTabAsamblea(t, d) {
-      if (!d.asamblea || (t.tipoOrganismo !== 'liga' && t.tipoOrganismo !== 'federacion')) {
+      /* v1.6.5: separar 2 casos. Asociación no tiene asamblea en el matriz;
+         Liga/Federación SÍ pero pueden estar vacíos. Antes ambos casos
+         devolvían "no requiere", lo cual era engañoso para Liga vacía. */
+      if (t.tipoOrganismo !== 'liga' && t.tipoOrganismo !== 'federacion') {
         return '<p class="ivc-detail-empty">Este organismo no requiere sección de asamblea.</p>';
+      }
+      if (!d.asamblea) {
+        return '<p class="ivc-detail-empty">Sin datos de asamblea diligenciados todavía.</p>';
       }
       var a = d.asamblea;
       var html = '';
@@ -2447,8 +2611,8 @@
         var rowsAsamblea = (a.f1_reuniones || []).map(function(r){
           return [_DT_TIPOS_REUNION[r.tipo] || r.tipo || '—', _dtDate(r.fechaConv), _dtDate(r.fechaReal), _dtDate(r.antelacion), _dtRadio(r.cumple)];
         });
-        html += '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Asamblea — Tipos de reunión realizados</h3>' +
-          _dtTable(['Tipo / Clase','Fecha Convocatoria','Fecha Realización','Antelación','¿Cumple?'], rowsAsamblea) + '</section>';
+        html += _dtBlockRaw('Asamblea — Tipos de reunión realizados',
+          _dtTable(['Tipo / Clase','Fecha Convocatoria','Fecha Realización','Antelación','¿Cumple?'], rowsAsamblea));
         if (a.f1_obs_asamblea) {
           html += _dtBlock('Asamblea — Observaciones', _dtCell('Observaciones sobre la asamblea', a.f1_obs_asamblea));
         }
@@ -2490,9 +2654,43 @@
     }
 
     /* ── TAB 4 · Estructura: F1 (7 sub-bloques A-G) / F2 (seccionales) / F3 (completa) ── */
+    /* v1.6.9: helper para detectar arrays/tablas con al menos una fila no vacía */
+    function _hasRows(arr) {
+      if (!Array.isArray(arr) || arr.length === 0) return false;
+      return arr.some(function(r){
+        if (!r || typeof r !== 'object') return !!r;
+        return Object.keys(r).some(function(k){
+          var v = r[k];
+          return v !== undefined && v !== null && v !== '';
+        });
+      });
+    }
     function _renderTabEstructura(t, d) {
-      if (!d.estructura) return '<p class="ivc-detail-empty">Sin datos de estructura diligenciados.</p>';
+      if (!d.estructura) return '<p class="ivc-detail-empty">Sin datos de estructura diligenciados todavía.</p>';
       var e = d.estructura;
+
+      /* v1.6.9: empty state a nivel TAB. Si TODOS los sub-bloques están
+         vacíos, mostrar un solo mensaje en lugar de N accordions vacíos. */
+      var anyData = false;
+      if (t.tipoOrganismo === 'liga') {
+        anyData = _hasRows(e.f1_fundadores) || _hasRows(e.f1_miembros_oa) ||
+                  _hasRows(e.f1_revisor_fiscal) || _hasRows(e.f1_comision_disciplinaria) ||
+                  _hasRows(e.f1_comision_tecnica) || _hasRows(e.f1_comision_juzgamiento) ||
+                  _hasRows(e.f1_comision_paradeporte) ||
+                  !!e.f1_presidente_antecedentes || !!e.f1_persona_discapacidad ||
+                  !!e.f1_paradeporte_fecha_asamblea;
+      } else if (t.tipoOrganismo === 'asociacion') {
+        anyData = _hasRows(e.f2_seccionales);
+      } else if (t.tipoOrganismo === 'federacion') {
+        anyData = _hasRows(e.f3_afiliados) || _hasRows(e.f3_miembros_oa) ||
+                  _hasRows(e.f3_revisor_fiscal) || _hasRows(e.f3_comision_disciplinaria) ||
+                  !!e.f3_persona_discapacidad || !!e.f3_fecha_reunion_electiva_oa ||
+                  !!e.f3_fecha_reunion_asignacion || !!e.f3_acredita_cert_residencia_oa ||
+                  !!e.f3_acredita_cert_residencia_oc || !!e.f3_fecha_reunion_oa_cd;
+      }
+      if (!anyData) {
+        return '<p class="ivc-detail-empty">Sin datos de estructura diligenciados todavía.</p>';
+      }
 
       if (t.tipoOrganismo === 'liga') {
         var fund = (e.f1_fundadores || []).map(function(r){ return [r.nombre, r.no_res_reconocimiento]; });
@@ -2502,61 +2700,69 @@
         var ct = (e.f1_comision_tecnica || []).map(function(r){ return [r.display, r.nombre]; });
         var cj = (e.f1_comision_juzgamiento || []).map(function(r){ return [r.display, r.nombre]; });
         var cp = (e.f1_comision_paradeporte || []).map(function(r){ return [r.display, r.nombre]; });
-        return '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Estructura del organismo (F1)</h3>' +
-          _dtSubBlock('A. Fundadores / Afiliados asistentes', _dtTable(['Nombre','N° Res. Reconocimiento Deportivo'], fund)) +
-          _dtSubBlock('B. Miembros del Órgano de Administración', _dtTable(['Nombre','Identificación','Cargo','¿Capacitación?','Nombrado por','N° Períodos'], oa)) +
-          _dtSubBlock('B. Datos extra OA', '<div class="ivc-data-grid">' +
+        /* v1.6.7: cada sub-bloque (A-G) es ahora su propio collapsible.
+           Sólo "A" arranca expandido; B-G se expanden bajo demanda. */
+        return _dtBlockRaw('A. Fundadores / Afiliados asistentes',
+            _dtTable(['Nombre','N° Res. Reconocimiento Deportivo'], fund)) +
+          _dtBlockRaw('B. Miembros del Órgano de Administración',
+            _dtTable(['Nombre','Identificación','Cargo','¿Capacitación?','Nombrado por','N° Períodos'], oa)) +
+          _dtBlock('B. Datos extra OA',
             _dtCell('¿Presidente con antecedentes disciplinarios?', _dtRadio(e.f1_presidente_antecedentes)) +
-            _dtCell('Persona con discapacidad / grupo poblacional', e.f1_persona_discapacidad) +
-          '</div>') +
-          _dtSubBlock('C. Revisor Fiscal', _dtTable(['Cargo','Nombre','Identificación'], rf)) +
-          _dtSubBlock('D. Comisión Disciplinaria', _dtTable(['Órgano electivo','Nombre'], cd)) +
-          _dtSubBlock('E. Comisión Técnica', _dtTable(['Integrante','Nombre'], ct)) +
-          _dtSubBlock('F. Comisión de Juzgamiento', _dtTable(['Integrante','Nombre'], cj)) +
+            _dtCell('Persona con discapacidad / grupo poblacional', e.f1_persona_discapacidad)) +
+          _dtBlockRaw('C. Revisor Fiscal',
+            _dtTable(['Cargo','Nombre','Identificación'], rf)) +
+          _dtBlockRaw('D. Comisión Disciplinaria',
+            _dtTable(['Órgano electivo','Nombre'], cd)) +
+          _dtBlockRaw('E. Comisión Técnica',
+            _dtTable(['Integrante','Nombre'], ct)) +
+          _dtBlockRaw('F. Comisión de Juzgamiento',
+            _dtTable(['Integrante','Nombre'], cj)) +
           (e.f1_aplica_paradeporte === 'si'
-            ? _dtSubBlock('G. Comisión Especializada / Paradeporte', _dtTable(['Integrante','Nombre'], cp) +
+            ? _dtBlockRaw('G. Comisión Especializada / Paradeporte',
+                _dtTable(['Integrante','Nombre'], cp) +
                 '<div class="ivc-data-grid">' + _dtCell('Fecha asamblea elección Comisión Paradeporte', _dtDate(e.f1_paradeporte_fecha_asamblea)) + '</div>')
-            : _dtSubBlock('G. Comisión Especializada / Paradeporte', '<p class="ivc-detail-empty">No aplica.</p>')
-          ) +
-        '</section>';
+            : _dtBlockRaw('G. Comisión Especializada / Paradeporte',
+                '<p class="ivc-detail-empty">No aplica.</p>'));
       }
       if (t.tipoOrganismo === 'asociacion') {
         var sec = (e.f2_seccionales || []).map(function(r){ return [r.nombre_seccional, r.nombre_directivo]; });
-        return '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Entidades seccionales (F2)</h3>' +
-          _dtTable(['Nombre seccional','Nombre directivo'], sec) + '</section>';
+        return _dtBlockRaw('Entidades seccionales',
+          _dtTable(['Nombre seccional','Nombre directivo'], sec));
       }
       if (t.tipoOrganismo === 'federacion') {
         var afi = (e.f3_afiliados || []).map(function(r){ return [r.nombre, r.no_res_reconocimiento]; });
         var oa3 = (e.f3_miembros_oa || []).map(function(r){ return [r.nombre, r.cargo, r.identificacion, _dtRadio(r.tiene_capacitacion), r.nombrado_por, _dtRadio(r.acepta_cargo)]; });
         var rf3 = (e.f3_revisor_fiscal || []).map(function(r){ return [r.display, r.nombre, r.identificacion, r.no_tarjeta_profesional, _dtRadio(r.acepta_cargo), _dtRadio(r.antecedentes_disciplinarios), _dtRadio(r.firma_revisoria)]; });
         var cd3 = (e.f3_comision_disciplinaria || []).map(function(r){ return [r.display, r.nombre, r.identificacion, _dtRadio(r.acepta)]; });
-        return '<section class="ivc-detail-block"><h3 class="ivc-detail-block__title">Estructura del organismo (F3)</h3>' +
-          _dtSubBlock('A. Afiliados constituyentes', _dtTable(['Nombre','N° Res. Reconocimiento Deportivo'], afi)) +
-          _dtSubBlock('B. Miembros del Órgano de Administración', _dtTable(['Nombre','Cargo','Identificación','¿Capacitación?','Nombrado por','¿Acepta cargo?'], oa3)) +
-          _dtSubBlock('B. Datos extra OA', '<div class="ivc-data-grid">' +
+        return _dtBlockRaw('A. Afiliados constituyentes',
+            _dtTable(['Nombre','N° Res. Reconocimiento Deportivo'], afi)) +
+          _dtBlockRaw('B. Miembros del Órgano de Administración',
+            _dtTable(['Nombre','Cargo','Identificación','¿Capacitación?','Nombrado por','¿Acepta cargo?'], oa3)) +
+          _dtBlock('B. Datos extra OA',
             _dtCell('Persona con discapacidad / grupo poblacional', e.f3_persona_discapacidad) +
             _dtCell('Fecha reunión electiva del OA', _dtDate(e.f3_fecha_reunion_electiva_oa)) +
             _dtCell('Fecha reunión asignación de cargos', _dtDate(e.f3_fecha_reunion_asignacion)) +
             _dtCell('¿Acredita Cert. Residencia OA?', _dtRadio(e.f3_acredita_cert_residencia_oa)) +
             _dtCell('Nombres cert. residencia OA', e.f3_nombres_cert_residencia_oa) +
-            _dtCell('Archivo cert. residencia OA', _dtArchivo(e.f3_archivo_cert_residencia_oa)) +
-          '</div>') +
-          _dtSubBlock('C. Órgano de Control (Revisor Fiscal)', _dtTable(['Cargo','Nombre','Identificación','N° Tarjeta','¿Acepta?','¿Antecedentes?','¿Firma revisoría?'], rf3)) +
-          _dtSubBlock('C. Datos extra OC', '<div class="ivc-data-grid">' +
+            _dtCell('Archivo cert. residencia OA', _dtArchivo(e.f3_archivo_cert_residencia_oa))) +
+          _dtBlockRaw('C. Órgano de Control (Revisor Fiscal)',
+            _dtTable(['Cargo','Nombre','Identificación','N° Tarjeta','¿Acepta?','¿Antecedentes?','¿Firma revisoría?'], rf3)) +
+          _dtBlock('C. Datos extra OC',
             _dtCell('¿Acredita Cert. Residencia OC?', _dtRadio(e.f3_acredita_cert_residencia_oc)) +
             _dtCell('Nombres cert. residencia OC', e.f3_nombres_cert_residencia_oc) +
-            _dtCell('Archivo cert. residencia OC', _dtArchivo(e.f3_archivo_cert_residencia_oc)) +
-          '</div>') +
-          _dtSubBlock('D. Comisión Disciplinaria', _dtTable(['Órgano electivo','Nombre','Identificación','¿Acepta?'], cd3)) +
-          '<div class="ivc-data-grid">' + _dtCell('Fecha reunión OA elección Miembro 3 CD', _dtDate(e.f3_fecha_reunion_oa_cd)) + '</div>' +
-        '</section>';
+            _dtCell('Archivo cert. residencia OC', _dtArchivo(e.f3_archivo_cert_residencia_oc))) +
+          _dtBlockRaw('D. Comisión Disciplinaria',
+            _dtTable(['Órgano electivo','Nombre','Identificación','¿Acepta?'], cd3) +
+            '<div class="ivc-data-grid">' + _dtCell('Fecha reunión OA elección Miembro 3 CD', _dtDate(e.f3_fecha_reunion_oa_cd)) + '</div>');
       }
       return '<p class="ivc-detail-empty">Sin datos de estructura diligenciados.</p>';
     }
 
     /* ── TAB 5 · Cierre: F1 (cert. conjunta) / F3 (3 certs) + cierre común ── */
     function _renderTabCierre(t, d) {
-      if (!d.cierre) return '<p class="ivc-detail-empty">Sin información de cierre diligenciada.</p>';
+      if (!d.cierre || !Object.values(d.cierre).some(function(v){ return v !== '' && v != null; })) {
+        return '<p class="ivc-detail-empty">Sin información de cierre diligenciada todavía.</p>';
+      }
       var c2 = d.cierre;
       var cierre = '';
       if (t.tipoOrganismo === 'liga') {
