@@ -24,9 +24,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/components.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.0">
 
   <style>
     * { box-sizing: border-box; }
@@ -534,6 +534,61 @@
       box-shadow: 0 2px 8px rgba(215, 64, 9, 0.4);
     }
 
+    /* v1.11.0: CTA Renuncia a términos — sólo aparece para NotifElectronica.
+       Layout vertical con 2 botones (No renuncio | Sí renuncio). Mirror del
+       subsanar-cta visualmente para coherencia. */
+    .renuncia-cta {
+      padding: 28px 32px;
+      background: linear-gradient(135deg, #eef5ff 0%, #fff 100%);
+      border: 2px solid #1f78d1;
+      border-radius: var(--radius-xl, 20px);
+      margin: 0 0 24px;
+    }
+    .renuncia-cta__head {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .renuncia-cta__icon {
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: #1f78d1;
+      color: #fff;
+      padding: 10px;
+      box-shadow: 0 4px 12px rgba(31, 120, 209, 0.3);
+    }
+    .renuncia-cta__title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 6px;
+      line-height: 1.3;
+    }
+    .renuncia-cta__sub {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.55;
+    }
+    .renuncia-cta__actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(31, 120, 209, 0.2);
+      justify-content: flex-end;
+    }
+    @media (max-width: 700px) {
+      .renuncia-cta__actions {
+        flex-direction: column-reverse;
+      }
+      .renuncia-cta__actions > * {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
     /* v1.9.0: Modal subsanación — file uploader canónico (patrón .wz-file-drop
        del formulario) + textarea canónico DS + helper--negative para overflow. */
     .subsanar-doc-list {
@@ -740,8 +795,8 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.10.5"></script>
-  <script src="../shared/ivc-store.js?v=1.10.5"></script>
+  <script src="../shared/data.js?v=1.11.0"></script>
+  <script src="../shared/ivc-store.js?v=1.11.0"></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -910,12 +965,18 @@
         ? 'Hace ' + Math.abs(plazo) + ' días hábiles'
         : 'hábiles restantes';
 
-      var isTerminal = (t.estado === 'Cumple' || t.estado === 'NoCumple' || t.estado === 'Parcial');
-      /* v1.9.8: NoCumple es terminal DEFINITIVO (al menos un doc fue marcado
-         como No Cumple por el profesional → no admite subsanación).
-         Sólo Parcial (docs con observaciones, ningún No Cumple) habilita el
-         flujo de subsanación. */
+      /* v1.11.0: estados "terminal" para mostrar resultado de la validación.
+         Incluyen los post-firma del Director (Firmado, NotifElectronica, Vigente)
+         que renderizan el acto firmado + bloque de renuncia a términos cuando aplica. */
+      var isTerminal = (
+        t.estado === 'Cumple'   || t.estado === 'NoCumple'         || t.estado === 'Parcial' ||
+        t.estado === 'Firmado'  || t.estado === 'NotifElectronica' || t.estado === 'Vigente'
+      );
       var canSubsanar = (t.estado === 'Parcial');
+      /* v1.11.0: la pregunta de renuncia a términos sólo aparece cuando el
+         Director eligió notificación electrónica. La oficinas-flow espera a
+         Atención al Usuario o GIT Comunicaciones (v1.11.1). */
+      var canResponderRenuncia = (t.estado === 'NotifElectronica');
 
       /* v1.8.9: caution siempre visible al cargar — dismiss sólo afecta la
          vista actual (no persiste). Antes usaba sessionStorage y confundía
@@ -953,6 +1014,10 @@
             /* CTA SUBSANAR (solo NoCumple / Parcial) */
             (canSubsanar ? renderCTASubsanar() : '') +
 
+            /* v1.11.0: CTA RENUNCIA — solo cuando state es NotifElectronica.
+               Pregunta al organismo si renuncia a términos. Sí → Vigente D+1. */
+            (canResponderRenuncia ? renderCTARenuncia(t) : '') +
+
             /* HISTÓRICO */
             renderHistorico(t) +
 
@@ -979,15 +1044,21 @@
       /* v1.8.9: sin persistencia. Hard refresh / navegación → caution vuelve. */
     };
 
-    /* ─── Resultado (cuando hay veredicto) ───────────────────────────── */
+    /* ─── Resultado (cuando hay veredicto) ─────────────────────────────
+       v1.11.0: añadidos estados post-firma del Director.
+       · Firmado / NotifElectronica → acto firmado, esperando interacción del organismo
+       · Vigente → trámite cerrado positivamente (renunció a términos) */
     function renderResultado(t) {
       var cfg = ({
-        Cumple:   { variant: 'positive', icon: MSG_ICON_CHECK, title: 'CUMPLE',                desc: 'Su trámite fue aprobado. El acto administrativo de Otorgamiento está pendiente de firma por el Director IVC.', file: 'acto-otorgamiento-' + t.id + '.pdf' },
-        Parcial:  { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'CUMPLIMIENTO PARCIAL',  desc: 'Su trámite presenta observaciones subsanables. Tiene 30 días hábiles desde la notificación para radicar la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
+        Cumple:           { variant: 'positive', icon: MSG_ICON_CHECK, title: 'CUMPLE',                       desc: 'Su trámite fue aprobado. El acto administrativo de Otorgamiento está pendiente de firma por el Director IVC.', file: 'acto-otorgamiento-' + t.id + '.pdf' },
+        Firmado:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'ACTO FIRMADO',                 desc: 'Su acto administrativo fue firmado electrónicamente por el Director del IVC. Se procederá con la notificación.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        NotifElectronica: { variant: 'positive', icon: MSG_ICON_CHECK, title: 'NOTIFICADO ELECTRÓNICAMENTE',  desc: 'Su acto administrativo firmado fue enviado por canal electrónico. Por favor responda si renuncia a los términos para que su acto entre en vigencia el día siguiente.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        Vigente:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'TRÁMITE VIGENTE',              desc: 'Su acto administrativo está vigente desde el día siguiente a la notificación. El organismo ha sido inscrito en el Registro Nacional Deportivo.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        Parcial:          { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'CUMPLIMIENTO PARCIAL',         desc: 'Su trámite presenta observaciones subsanables. Tiene 30 días hábiles desde la notificación para radicar la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
         /* v1.9.8: NoCumple es terminal en firme — al menos un documento fue
            marcado como No Cumple. No admite subsanación; el organismo puede
            presentar un nuevo trámite si así lo decide. */
-        NoCumple: { variant: 'negative', icon: MSG_ICON_X,     title: 'NO CUMPLE',             desc: 'Su trámite no cumple con los requisitos establecidos y quedó cerrado en firme. No admite subsanación. Si desea continuar, puede presentar un nuevo trámite.', file: 'acto-no-cumplimiento-' + t.id + '.pdf' }
+        NoCumple:         { variant: 'negative', icon: MSG_ICON_X,     title: 'NO CUMPLE',                    desc: 'Su trámite no cumple con los requisitos establecidos y quedó cerrado en firme. No admite subsanación. Si desea continuar, puede presentar un nuevo trámite.', file: 'acto-no-cumplimiento-' + t.id + '.pdf' }
       })[t.estado] || null;
       if (!cfg) return '';
 
@@ -1083,12 +1154,15 @@
     function renderEnTramite(t) {
       /* v1.10.0: PendienteCOO es estado intermedio post-veredicto Cumple —
          el profesional ya generó el acto y el Coordinador IVC lo está
-         revisando antes de pasarlo al Director para firma. */
+         revisando antes de pasarlo al Director para firma.
+         v1.11.0: añadidos estados del flujo Director + notificación. */
       var msg = ({
-        'No asignada':   { variant: 'informative', title: 'EN REMISIÓN',    desc: 'Su trámite fue recibido y está pendiente de ser asignado a un profesional IVC.' },
-        'Asignada':      { variant: 'informative', title: 'EN ASIGNACIÓN', desc: 'Su trámite ya fue asignado a un profesional. Pronto iniciará la revisión.' },
-        'En validación': { variant: 'caution',     title: 'EN VALIDACIÓN', desc: 'Un profesional del IVC está revisando la documentación de su trámite.' },
-        'PendienteCOO':  { variant: 'caution',     title: 'EN APROBACIÓN COO', desc: 'Su acto administrativo fue generado por el profesional IVC y está en revisión del Coordinador. Una vez aprobado, pasará al Director del IVC para firma electrónica.' }
+        'No asignada':      { variant: 'informative', title: 'EN REMISIÓN',         desc: 'Su trámite fue recibido y está pendiente de ser asignado a un profesional IVC.' },
+        'Asignada':         { variant: 'informative', title: 'EN ASIGNACIÓN',       desc: 'Su trámite ya fue asignado a un profesional. Pronto iniciará la revisión.' },
+        'En validación':    { variant: 'caution',     title: 'EN VALIDACIÓN',       desc: 'Un profesional del IVC está revisando la documentación de su trámite.' },
+        'PendienteCOO':     { variant: 'caution',     title: 'EN APROBACIÓN COO',   desc: 'Su acto administrativo fue generado por el profesional IVC y está en revisión del Coordinador. Una vez aprobado, pasará al Director del IVC para firma electrónica.' },
+        'PendienteFirma':   { variant: 'caution',     title: 'PENDIENTE FIRMA DEL DIRECTOR', desc: 'Su acto administrativo fue aprobado por el Coordinador IVC. Está en cola del Director del IVC para firma electrónica.' },
+        'NotifOficinas':    { variant: 'caution',     title: 'DEBE ASISTIR A OFICINAS', desc: 'Su acto administrativo fue firmado por el Director del IVC. Debe asistir a las oficinas del IVC en los próximos 5 días hábiles para recibir la notificación presencial.' }
       })[t.estado] || { variant: 'informative', title: t.estado, desc: 'Su trámite se encuentra en proceso.' };
 
       var msgIcon = msg.variant === 'caution' ? MSG_ICON_WARN : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
@@ -1116,6 +1190,45 @@
         '<button class="btn-loud-glow" onclick="_openSubsanarModal()">Radicar subsanación</button>' +
       '</div>';
     }
+
+    /* v1.11.0: CTA RENUNCIA — solo aparece cuando state es NotifElectronica.
+       El organismo responde si renuncia a términos:
+       · Sí → state = Vigente (acto vigente desde el día siguiente, D+1)
+       · No → estado pendiente recursos (placeholder hasta v1.11.1: aún sin handler) */
+    function renderCTARenuncia(t) {
+      return '<div class="renuncia-cta">' +
+        '<div class="renuncia-cta__head">' +
+          '<svg class="renuncia-cta__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          '<div>' +
+            '<h3 class="renuncia-cta__title">¿Renuncia a términos?</h3>' +
+            '<p class="renuncia-cta__sub">Al renunciar a los términos legales de notificación, su acto administrativo entrará en vigencia desde el día siguiente (D+1). Si no renuncia, los términos legales continúan corriendo y dispone de la opción de interponer recursos.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="renuncia-cta__actions">' +
+          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--large" onclick="_responderRenuncia(\'no\')">No renuncio · continuar términos</button>' +
+          '<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--large" onclick="_responderRenuncia(\'si\')">Sí, renuncio a términos</button>' +
+        '</div>' +
+      '</div>';
+    }
+    window._responderRenuncia = function (resp) {
+      var t = IVCState.tramite;
+      if (!t) return;
+      var actorOrg = (t.organismo || 'Organismo') + ' (Organismo externo)';
+      if (resp === 'si') {
+        IVCStore.actualizarEstado(t.id, 'Vigente', actorOrg, 'Organismo renunció a términos. Acto administrativo vigente desde el día siguiente (D+1).');
+        _showSnackbar('Renuncia registrada. Su trámite quedó vigente desde el día siguiente.', 'success');
+      } else {
+        /* v1.11.0: por scope, marcamos "No renuncia" en el historico pero el
+           flujo de recursos (apelación/reposición) se cierra en v1.11.1+. */
+        IVCStore.actualizarEstado(t.id, 'NotifElectronica', actorOrg, 'Organismo NO renunció a términos. Los términos legales continúan corriendo. Pendiente flujo de recursos (Apelación / Reposición).');
+        _showSnackbar('Respuesta registrada. Los términos legales continúan corriendo. Próximamente podrá interponer recursos.', 'success');
+      }
+      setTimeout(function () {
+        IVCState.tramite = IVCStore.getTramite(t.id);
+        route();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 400);
+    };
 
     /* ─── Histórico timeline ─────────────────────────────────────────── */
     function renderHistorico(t) {

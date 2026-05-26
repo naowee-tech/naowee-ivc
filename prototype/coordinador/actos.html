@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/components.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.0">
 
   <style>
     /* ═══════════════════════════════════════════════════════════════════
@@ -633,10 +633,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.10.5"></script>
-  <script src="../shared/shell.js?v=1.10.5"></script>
-  <script src="../shared/ivc-store.js?v=1.10.5"></script>
-  <script src="../shared/naowee-footer.js?v=1.10.5" defer></script>
+  <script src="../shared/data.js?v=1.11.0"></script>
+  <script src="../shared/shell.js?v=1.11.0"></script>
+  <script src="../shared/ivc-store.js?v=1.11.0"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.0" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -648,7 +648,7 @@
        · actos.html?id=…    → DETAIL (acto en viewport + aside + CTAs)
 
        Acciones del coordinador en DETAIL:
-       · Aprobar  → estado pasa a 'Cumple' (= aprobado COO, pendiente firma Director)
+       · Aprobar  → estado pasa a 'PendienteFirma' (aprobado COO, pendiente firma Director)
        · Corregir → modal con causales → estado vuelve a 'En validación'
                     con observación que indica que es para regenerar versión
                     del acto. El profesional asignado recibe el trámite y
@@ -713,7 +713,7 @@
       var activeTab = params.get('tab') === 'aprobados' ? 'aprobados' : 'por-aprobar';
 
       var pendientes = state.tramites.filter(function (t) { return t.estado === 'PendienteCOO'; });
-      var aprobados  = state.tramites.filter(function (t) { return t.estado === 'Cumple'; });
+      var aprobados  = state.tramites.filter(function (t) { return t.estado === 'PendienteFirma'; });
 
       /* Stats */
       var enSegunda = pendientes.filter(function (t) { return _versionActo(t) >= 2; }).length;
@@ -883,8 +883,10 @@
       var profesionalNombre = t.profesionalNombre || (evActo && (evActo.actor || '').replace(/\s*\([^)]*\)\s*$/, '')) || '—';
       var version = _versionActo(t);
 
-      /* v1.10.2: state-aware — PendienteCOO requiere acción, Cumple es read-only. */
-      var isReadOnly = t.estado === 'Cumple';
+      /* v1.10.2: state-aware — PendienteCOO requiere acción, PendienteFirma es read-only.
+         v1.11.0: PendienteFirma reemplaza al antiguo 'Cumple' como estado intermedio
+         entre aprobación COO y firma Director. */
+      var isReadOnly = t.estado === 'PendienteFirma';
       var estadoBadge = isReadOnly
         ? '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Aprobado · pendiente firma Director</span>'
         : '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">En aprobación COO</span>';
@@ -1112,7 +1114,9 @@
       var actor = 'Ana Martínez (Coordinador IVC)';
       var version = _versionActo(t);
       var detalle = 'Acto v' + version + ' aprobado (COO). Enviado al Director del IVC para firma electrónica.';
-      IVCStore.actualizarEstado(t.id, 'Cumple', actor, detalle);
+      /* v1.11.0: tras aprobación COO, estado pasa a PendienteFirma (no Cumple).
+         El Director recibe el trámite en su bandeja y al firmar lo lleva a Firmado. */
+      IVCStore.actualizarEstado(t.id, 'PendienteFirma', actor, detalle);
       _showSnackbar('Acto administrativo aprobado. Enviado al Director del IVC para firma electrónica.', 'success');
       setTimeout(function () { window.location.href = 'actos.html'; }, 1200);
     };

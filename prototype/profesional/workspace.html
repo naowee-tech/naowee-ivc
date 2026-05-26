@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/components.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.0">
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
        Hero card (info + plazo) + naowee-tabs--animated + sticky decision footer.
@@ -1086,10 +1086,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.10.5"></script>
-  <script src="../shared/shell.js?v=1.10.5"></script>
-  <script src="../shared/ivc-store.js?v=1.10.5"></script>
-  <script src="../shared/naowee-footer.js?v=1.10.5" defer></script>
+  <script src="../shared/data.js?v=1.11.0"></script>
+  <script src="../shared/shell.js?v=1.11.0"></script>
+  <script src="../shared/ivc-store.js?v=1.11.0"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.0" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1178,10 +1178,15 @@
     /* v1.10.0: PendienteCOO también bloquea — el trámite salió de manos del
        profesional y está en el flujo del Coordinador. Si el Coordinador
        devuelve para corrección, el estado vuelve a 'En validación' (con
-       version++ en el historico) y el lock se libera automáticamente. */
+       version++ en el historico) y el lock se libera automáticamente.
+       v1.11.0: PendienteFirma / Firmado / NotifElectronica / NotifOficinas /
+       Vigente también son view-only para el Profesional — están en manos del
+       Director, Sistema, u Organismo. */
     function isTramiteFinalizado() {
       var e = state.tramite && state.tramite.estado;
-      return e === 'Cumple' || e === 'NoCumple' || e === 'Parcial' || e === 'PendienteCOO';
+      return e === 'Cumple' || e === 'NoCumple' || e === 'Parcial' ||
+             e === 'PendienteCOO' || e === 'PendienteFirma' || e === 'Firmado' ||
+             e === 'NotifElectronica' || e === 'NotifOficinas' || e === 'Vigente';
     }
     function applyLockState() {
       document.body.classList.toggle('ivc-tramite-locked', isTramiteFinalizado());
@@ -1200,12 +1205,19 @@
       /* v1.9.3: variants mapean a .convo-status-cenefa canónico del módulo Project.
          v1.9.8: copy del NoCumple ya no menciona "puede subsanar" — es terminal en firme.
          v1.10.0: nuevo estado intermedio PendienteCOO — el acto está en revisión del
-         Coordinador IVC; si éste lo devuelve para corrección, el lock se libera. */
+         Coordinador IVC; si éste lo devuelve para corrección, el lock se libera.
+         v1.11.0: añadidos estados post-firma del flujo Director: PendienteFirma,
+         Firmado, NotifElectronica, NotifOficinas, Vigente (terminal positivo final). */
       var cfg = {
-        PendienteCOO: { variant: 'caution',  icon: iconWarn,  title: 'Acto en revisión del Coordinador IVC', sub: 'El acto administrativo fue generado y enviado al Coordinador para su aprobación (COO). Quedará habilitado nuevamente si el Coordinador solicita correcciones.' },
-        Cumple:       { variant: 'positive', icon: iconCheck, title: 'Trámite cerrado · CUMPLE',           sub: 'Acto administrativo de Otorgamiento aprobado por el Coordinador IVC. Pendiente firma del Director IVC.' },
-        Parcial:      { variant: 'caution',  icon: iconWarn,  title: 'Trámite devuelto · CUMPLIMIENTO PARCIAL', sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando radique la subsanación.' },
-        NoCumple:     { variant: 'negative', icon: iconError, title: 'Trámite cerrado · NO CUMPLE',         sub: 'Acto de no cumplimiento generado. El trámite quedó cerrado en firme y no admite subsanación.' }
+        PendienteCOO:     { variant: 'caution',  icon: iconWarn,  title: 'Acto en revisión del Coordinador IVC',  sub: 'El acto administrativo fue generado y enviado al Coordinador para su aprobación (COO). Quedará habilitado nuevamente si el Coordinador solicita correcciones.' },
+        PendienteFirma:   { variant: 'caution',  icon: iconWarn,  title: 'Acto aprobado COO · pendiente firma del Director', sub: 'El Coordinador aprobó el acto. Está en cola del Director del IVC para firma electrónica.' },
+        Firmado:          { variant: 'positive', icon: iconCheck, title: 'Acto firmado por el Director IVC',      sub: 'El acto administrativo fue firmado electrónicamente. Sistema procediendo con la notificación al organismo.' },
+        NotifElectronica: { variant: 'positive', icon: iconCheck, title: 'Notificación electrónica al organismo', sub: 'El acto firmado fue enviado al organismo por canal electrónico. Esperando respuesta sobre renuncia a términos.' },
+        NotifOficinas:    { variant: 'caution',  icon: iconWarn,  title: 'Notificación en oficinas (5 días hábiles)', sub: 'El organismo fue alertado para asistir a las oficinas del IVC. Notificación queda en manos de Atención al Usuario / GIT Comunicaciones.' },
+        Vigente:          { variant: 'positive', icon: iconCheck, title: 'Trámite vigente · CERRADO',             sub: 'El organismo renunció a términos. Acto administrativo vigente desde el día siguiente. Trámite cerrado satisfactoriamente.' },
+        Cumple:           { variant: 'positive', icon: iconCheck, title: 'Trámite cerrado · CUMPLE',              sub: 'Acto administrativo de Otorgamiento aprobado por el Coordinador IVC. Pendiente firma del Director IVC.' },
+        Parcial:          { variant: 'caution',  icon: iconWarn,  title: 'Trámite devuelto · CUMPLIMIENTO PARCIAL', sub: 'Devuelto al organismo para subsanación. Quedará reabierto cuando radique la subsanación.' },
+        NoCumple:         { variant: 'negative', icon: iconError, title: 'Trámite cerrado · NO CUMPLE',           sub: 'Acto de no cumplimiento generado. El trámite quedó cerrado en firme y no admite subsanación.' }
       }[e];
       /* v1.9.8: sólo Parcial habilita la reapertura por subsanación.
          NoCumple es terminal definitivo — el organismo debe presentar un nuevo trámite.
@@ -2031,8 +2043,13 @@
       if (estado === 'No asignada') return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">En remisión</span>';
       if (estado === 'Asignada')    return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Pendiente</span>';
       if (estado === 'En validación') return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">En validación</span>';
-      /* v1.10.0: nuevo estado intermedio entre veredicto Cumple y firma Director. */
-      if (estado === 'PendienteCOO') return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">En aprobación COO</span>';
+      /* v1.10.0+v1.11.0: estados intermedios del flujo COO → firma Director → notificación. */
+      if (estado === 'PendienteCOO')     return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">En aprobación COO</span>';
+      if (estado === 'PendienteFirma')   return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Pendiente firma Director</span>';
+      if (estado === 'Firmado')          return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Firmado</span>';
+      if (estado === 'NotifElectronica') return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet">Notif. electrónica</span>';
+      if (estado === 'NotifOficinas')    return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Notif. en oficinas</span>';
+      if (estado === 'Vigente')          return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Vigente</span>';
       if (estado === 'Cumple')      return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet">Cumple</span>';
       if (estado === 'NoCumple')    return '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet">No cumple</span>';
       if (estado === 'Parcial')     return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet">Parcial</span>';

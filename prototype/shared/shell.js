@@ -33,7 +33,9 @@
     logoutSm: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
     /* v1.10.0: icono para "Aprobación de actos" — documento con sello/check
        superpuesto. Comunica "documento que requiere visto bueno". */
-    approval: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><polyline points="9 13 11 15 15 11"/></svg>'
+    approval: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><polyline points="9 13 11 15 15 11"/></svg>',
+    /* v1.11.0: icono para "Mi firma" del Director — pluma estilizada. */
+    firma:    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17v3h3"/><path d="M3 17l9-9 4 4-9 9"/><path d="M14 6l1.5-1.5a2.12 2.12 0 0 1 3 3L17 9"/><path d="M3 22h18"/></svg>'
   };
 
   /* ───── Nav items por perfil ───── */
@@ -64,8 +66,11 @@
     'profesional': [
       { id: 'bandeja-prof', label: 'Mi bandeja', icon: ICONS.bandeja, href: 'bandeja.html', badge: '4' }
     ],
+    /* v1.11.0: Director con bandeja de trámites pendientes firma + perfil
+       para subir su firma electrónica (preset reutilizable). */
     'director': [
-      { id: 'firma',   label: 'Por firmar', icon: ICONS.tramites, href: '#' }
+      { id: 'bandeja-director', label: 'Por firmar', icon: ICONS.approval, href: 'bandeja.html' },
+      { id: 'perfil-director',  label: 'Mi firma',   icon: ICONS.firma,    href: 'perfil.html' }
     ]
   };
 

@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/components.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.10.5">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.10.5">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.0">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.0">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -941,11 +941,15 @@
                 <div class="naowee-dropdown__option" role="option" data-val="No asignada" tabindex="-1">En remisión</div>
                 <div class="naowee-dropdown__option" role="option" data-val="Asignada" tabindex="-1">Asignada</div>
                 <div class="naowee-dropdown__option" role="option" data-val="En validación" tabindex="-1">En validación</div>
-                <!-- v1.10.0: PendienteCOO — visible para visibilidad. La acción
-                     real (aprobar/corregir) vive en "Aprobación de actos". -->
+                <!-- v1.10.0+v1.11.0: estados intermedios del flujo COO + firma Director.
+                     Acciones reales viven en /coordinador/actos.html y /director/bandeja.html. -->
                 <div class="naowee-dropdown__option" role="option" data-val="PendienteCOO" tabindex="-1">En aprobación COO</div>
+                <div class="naowee-dropdown__option" role="option" data-val="PendienteFirma" tabindex="-1">Pendiente firma Director</div>
+                <div class="naowee-dropdown__option" role="option" data-val="Firmado" tabindex="-1">Firmado</div>
+                <div class="naowee-dropdown__option" role="option" data-val="NotifElectronica" tabindex="-1">Notif. electrónica</div>
+                <div class="naowee-dropdown__option" role="option" data-val="NotifOficinas" tabindex="-1">Notif. en oficinas</div>
+                <div class="naowee-dropdown__option" role="option" data-val="Vigente" tabindex="-1">Vigente</div>
                 <div class="naowee-dropdown__option" role="option" data-val="No cumple" tabindex="-1">No cumple</div>
-                <div class="naowee-dropdown__option" role="option" data-val="Cumple" tabindex="-1">Cumple</div>
                 <div class="naowee-dropdown__option" role="option" data-val="Cumplimiento parcial" tabindex="-1">Cumplimiento parcial</div>
               </div>
             </div>
@@ -1241,14 +1245,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.10.5"></script>
-  <script src="../shared/shell.js?v=1.10.5"></script>
-  <script src="../shared/demo-tour.js?v=1.10.5"></script>
-  <script src="../shared/ivc-store.js?v=1.10.5"></script>
+  <script src="../shared/data.js?v=1.11.0"></script>
+  <script src="../shared/shell.js?v=1.11.0"></script>
+  <script src="../shared/demo-tour.js?v=1.11.0"></script>
+  <script src="../shared/ivc-store.js?v=1.11.0"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.10.5" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.11.0" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1488,9 +1492,25 @@
         return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">En validación</span>';
       }
       /* v1.5.9: badges para estados finales con variant semántico.
-         v1.10.0: PendienteCOO — estado intermedio en aprobación del Coordinador. */
+         v1.10.0: PendienteCOO — estado intermedio en aprobación del Coordinador.
+         v1.11.0: nuevos estados del flujo Director + notificación. */
       if (estado === 'PendienteCOO') {
         return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">En aprobación COO</span>';
+      }
+      if (estado === 'PendienteFirma') {
+        return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Pendiente firma Director</span>';
+      }
+      if (estado === 'Firmado') {
+        return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Firmado · notificando</span>';
+      }
+      if (estado === 'NotifElectronica') {
+        return '<span class="naowee-badge naowee-badge--informative naowee-badge--quiet naowee-badge--small">Notificación electrónica</span>';
+      }
+      if (estado === 'NotifOficinas') {
+        return '<span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Notificación en oficinas</span>';
+      }
+      if (estado === 'Vigente') {
+        return '<span class="naowee-badge naowee-badge--positive naowee-badge--quiet naowee-badge--small">Vigente</span>';
       }
       if (estado === 'No cumple' || estado === 'NoCumple') {
         return '<span class="naowee-badge naowee-badge--negative naowee-badge--quiet naowee-badge--small">No cumple</span>';
