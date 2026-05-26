@@ -6,6 +6,29 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.6.0] — 2026-05-26
+
+> 🪟 **Modal "Ver detalle del trámite" del Coordinador refinado: ancho a 1320px, tabs DS canónicos sin overrides hardcodeados, títulos de sección pequeños/grises, grid auto-fit 3 columnas, alto fijo 65vh para que no salte al cambiar de tab.**
+
+### Coordinador · Bandeja (`coordinador/bandeja.html`) · Modal Ver detalle
+
+#### Changed
+- **Width 1200 → 1320px**: tabs ya no se sienten pegados al borde derecho del modal cuando hay 5 tabs (General · Personería · Asamblea · Estructura · Cierre).
+- **Tabs canónicos del DS sin overrides hardcodeados**: removidos los `!important` que reseteaban `background`, `background-color`, `box-shadow`, `border`, `border-radius` y `color` sobre `.naowee-tab`. Ahora el wrapper `.ivc-detalle-tabs-wrap` sólo aporta padding lateral (32px) y `background: var(--surface)`. El `.naowee-tabs.naowee-tabs--animated` + `.naowee-tab--selected` + `.naowee-tabs__indicator` del DS v1.8.0 se respetan as-is.
+- **Section titles más pequeños y gris claro**: `.ivc-detail-block__title` y `.ivc-detail-subblock__title` pasaron de **13px bold negro** a **11px gris letterspaced** (`.6px`), siguiendo la misma convención de `.ivc-data-grid__label`. Antes competían visualmente con los tabs y se sentían pesados.
+- **Grid auto-fit 3 columnas con `minmax(0, 1fr)`**: gap aumentado a `18px 32px` (era `16px 24px`). El `minmax(0, 1fr)` permite que celdas con valores largos hagan word-break sin romper la grilla. Responsive: 2 cols ≤1200px, 1 col ≤700px.
+- **Padding del body del modal subido a `28px 32px`** (era 24px 28px) para que el contenido respire dentro del nuevo ancho.
+
+#### Fixed
+- **Alto del modal saltaba al cambiar de tab**: tabs con poca info (ej. Cierre con 3 campos) hacían que el modal se encogiera; tabs con mucha info (Estructura F3) lo expandían a 85vh. Ahora `#modalDetalleOverlay .naowee-modal__body { height: 65vh; max-height: 65vh; }` mantiene el alto fijo y solo el contenido interno scrollea.
+
+### Bloqueantes activos
+- Plantillas Word/PDF de actos administrativos.
+- Lista cerrada y final de roles.
+- HUs faltantes pasos 7-12.
+
+---
+
 ## [ivc-v1.5.9] — 2026-05-25
 
 > 🎛️ **Modal "Ver detalle del trámite" en bandeja del Coordinador: tabs canónicos del DS, grid de 3 columnas, modal a 1200px y refactor del render por tab. Tab Datos del workspace del Profesional enriquecida con toda la información diligenciada.**
