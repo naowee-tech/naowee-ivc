@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.4">
-  <link rel="stylesheet" href="../shared/components.css?v=1.11.4">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.11.4">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.4">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.11.5">
+  <link rel="stylesheet" href="../shared/components.css?v=1.11.5">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.11.5">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.11.5">
 
   <style>
     /* ═══════════════════════════════════════════════════════════════════
@@ -210,6 +210,13 @@
       font-size: 13px;
       font-weight: 600;
       color: var(--green, #1f8923);
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    /* v1.11.5: cuando hay status + CTAs en el footer (estado Firmado con
+       link al portal), alinear como el footer normal de PendienteFirma. */
+    .acto-viewport-card__footer:has(.acto-viewport-card__footer-status) .acto-viewport-card__footer-actions {
+      flex-shrink: 0;
     }
 
     /* ── Documento del acto ─────────────────────────────────────────── */
@@ -887,10 +894,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.11.4"></script>
-  <script src="../shared/shell.js?v=1.11.4"></script>
-  <script src="../shared/ivc-store.js?v=1.11.4"></script>
-  <script src="../shared/naowee-footer.js?v=1.11.4" defer></script>
+  <script src="../shared/data.js?v=1.11.5"></script>
+  <script src="../shared/shell.js?v=1.11.5"></script>
+  <script src="../shared/ivc-store.js?v=1.11.5"></script>
+  <script src="../shared/naowee-footer.js?v=1.11.5" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -1246,12 +1253,23 @@
           t.estado === 'NotifOficinas'    ? 'Notificación en oficinas (esperando asistencia del organismo)' :
           t.estado === 'Vigente'          ? 'Trámite vigente · cerrado satisfactoriamente' :
                                             'Acto firmado · pendiente medio de notificación';
+        /* v1.11.5: shortcut al portal público del organismo — el Director
+           puede verificar cómo ve el organismo el acto firmado + responder
+           si renuncia a términos (canal electrónico). Pattern mirror del
+           workspace.html del Profesional. */
+        var verPortalBtn =
+          (t.estado === 'NotifElectronica' || t.estado === 'NotifOficinas') ?
+          '<a href="../usuario-externo/consultar.html?rad=' + encodeURIComponent(t.id) + '" target="_blank" rel="noopener" class="naowee-btn naowee-btn--mute naowee-btn--small" style="text-decoration: none;">' +
+            'Ver portal del organismo →' +
+          '</a>' : '';
+
         footerHtml =
           '<div class="acto-viewport-card__footer">' +
             '<span class="acto-viewport-card__footer-status">' +
               '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
               medioTxt +
             '</span>' +
+            (verPortalBtn ? '<div class="acto-viewport-card__footer-actions">' + verPortalBtn + '</div>' : '') +
           '</div>';
       } else {
         footerHtml = '';
