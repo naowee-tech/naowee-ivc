@@ -54,11 +54,44 @@
       area: 'Deporte Aficionado',
       avatar: 'MR',
       etapa: 'Fase 5',
-      /* v1.11.1: habilitado para el role switcher tras entregar /director/.
-         Antes era enabled:false → no aparecía como opción, por eso era
-         imposible llegar a la bandeja del Director desde el chip "Cambiar perfil". */
+      /* v1.11.1: habilitado para el role switcher tras entregar /director/. */
       enabled: true,
       color: '#d74009'
+    },
+    /* v1.12.0: 3 nuevos roles complementarios del flujo V4.
+       Lane "Roles compl." en el diagrama IVC-FLUJO-V4. */
+    'atu': {
+      id: 'atu',
+      nombre: 'Sofía Quintero',
+      cedula: '52.123.456',
+      rol: 'Atención al Usuario · plantilla 5d',
+      area: 'Atención al Usuario',
+      avatar: 'SQ',
+      etapa: 'Fase 5.5',
+      enabled: true,
+      color: '#1f78d1'
+    },
+    'git': {
+      id: 'git',
+      nombre: 'Diego Sandoval',
+      cedula: '79.987.654',
+      rol: 'GIT Comunicaciones · aviso +5d',
+      area: 'GIT Comunicaciones',
+      avatar: 'DS',
+      etapa: 'Fase 5.5',
+      enabled: true,
+      color: '#7c3aed'
+    },
+    'juridica': {
+      id: 'juridica',
+      nombre: 'Laura Restrepo',
+      cedula: '41.234.567',
+      rol: 'Jurídica · apelación',
+      area: 'Jurídica',
+      avatar: 'LR',
+      etapa: 'Fase 6',
+      enabled: true,
+      color: '#7c3aed'
     }
   };
 
@@ -372,7 +405,11 @@
     notifyChange('wizard-step');
   }
 
-  /* ───── Full reset (botón "Reiniciar demo") ───── */
+  /* ───── Full reset (botón "Reiniciar demo")
+     v1.12.0: ahora también limpia el store del IVC (ivc:store), la firma
+     preset del Director (ivc-director-firma), y cualquier estado de demo
+     persistido cross-perfil. Antes solo limpiaba IVCData keys → los
+     trámites del store y la firma del Director sobrevivían al reset. */
   function fullReset() {
     remove(K_PERFIL);
     remove(K_TRAMITE);
@@ -380,6 +417,11 @@
     remove(K_SIDEBAR_COLLAPSED);
     remove(K_WIZARD_STEP);
     remove(K_TRAMITE_FOCAL);
+    /* v1.12.0: limpiar todo el state del IVCStore + assets del Director. */
+    try {
+      localStorage.removeItem('ivc:store');
+      localStorage.removeItem('ivc-director-firma');
+    } catch (e) { /* private mode, IE — noop */ }
     notifyChange('full-reset');
   }
 

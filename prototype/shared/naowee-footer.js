@@ -15,7 +15,7 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 (function mountNaoweeFooter() {
-  var IVC_VERSION = 'v1.11.5';
+  var IVC_VERSION = 'v1.12.0';
   var REPO = 'naowee-tech/naowee-ivc';
   var MODULE_NAME = 'IVC';
 
@@ -25,7 +25,7 @@
        el logo vive en /prototype/shared/logos/naowee.svg → 2 niveles arriba. */
     var path = window.location.pathname;
     /* coordinador/, profesional/, usuario-externo/ → ../shared/ */
-    if (/\/(coordinador|profesional|usuario-externo|director|juridica)\/[^/]*$/.test(path)) {
+    if (/\/(coordinador|profesional|usuario-externo|director|juridica|atu|git)\/[^/]*$/.test(path)) {
       return '../shared/';
     }
     /* fallback: si estamos en /prototype/file.html o /shared/file.html */

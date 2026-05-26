@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apelaciones · Jurídica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.0">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.0">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.0">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.0">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       Jurídica — Apelaciones (Fase 6 del flujo V4)
+       v1.12.0 (2026-05-26)
+
+       Jurídica recibe trámites en estado EnApelacion. Resuelve cada caso
+       con un fallo: favorable (acto queda vigente) o desfavorable (trámite
+       cerrado en firme · NoCumple). Lane "FIN externo · JUR" en el diagrama.
+       ═══════════════════════════════════════════════════════════════════ */
+    .page-title-block { margin-bottom: 4px; }
+    .page-title { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.5px; color: var(--text-primary); line-height: 1.2; }
+    .page-subtitle { margin: 6px 0 0; font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+    .page-inner { max-width: 1480px !important; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+    @media (max-width: 900px) { .stat-grid { grid-template-columns: 1fr; } }
+    @media (min-width: 901px) and (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .naowee-table tbody tr.row-clickable { cursor: pointer; transition: background var(--duration-fast, .12s) ease; }
+    .naowee-table tbody tr.row-clickable:hover { background: #fafbfd; }
+    .naowee-table-card > div:last-child { padding-bottom: 8px; }
+    .row-radicado { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; }
+
+    .actos-empty { padding: 64px 24px; text-align: center; color: var(--text-secondary); }
+    .actos-empty__icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: #f7f0ff; color: #7c3aed;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+    }
+    .actos-empty__title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .actos-empty__sub { font-size: 13.5px; max-width: 420px; margin: 0 auto; line-height: 1.55; }
+
+    /* Modal resolver apelación — 2 opciones tipo card */
+    .resolucion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+    @media (max-width: 600px) { .resolucion-grid { grid-template-columns: 1fr; } }
+    .resolucion-card {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 20px 18px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      cursor: pointer; text-align: left; font-family: inherit;
+      transition: border-color .15s, background .15s, transform .08s;
+    }
+    .resolucion-card:hover { background: #fafbfd; transform: translateY(-1px); }
+    .resolucion-card.is-selected { border-color: var(--accent, #d74009); background: var(--orange-bg, #fff3e6); }
+    .resolucion-card--favorable.is-selected { border-color: var(--green, #1f8923); background: var(--green-bg, #e6f4e7); }
+    .resolucion-card--desfavorable.is-selected { border-color: #c01818; background: #fff0ee; }
+    .resolucion-card__title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+    .resolucion-card__desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+    .resolucion-card__chip {
+      align-self: flex-start; font-size: 10.5px; font-weight: 700;
+      letter-spacing: .3px; padding: 4px 10px; border-radius: 999px;
+      text-transform: uppercase;
+    }
+    .resolucion-card__chip--green { background: var(--green-bg, #e6f4e7); color: var(--green, #1f8923); }
+    .resolucion-card__chip--red   { background: #fff0ee; color: #c01818; }
+
+    .notif-modal-body__row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .notif-modal-body__row:last-child { border-bottom: 0; }
+    .notif-modal-body__key { color: var(--text-secondary); flex: 0 0 160px; }
+    .notif-modal-body__val { color: var(--text-primary); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="shell" id="app-shell"></div>
+  <template id="page-content"><div class="page-inner" id="pageInner"></div></template>
+
+  <div class="naowee-modal-overlay" id="modalResolver" role="dialog" aria-modal="true">
+    <div class="naowee-modal" style="width:95vw; max-width: 720px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title">Resolver apelación</h2>
+          <p class="naowee-modal__subtitle" id="resolverSub">Determine si el recurso prospera o no.</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" onclick="window._closeResolver()" aria-label="Cerrar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body">
+        <div id="resolverDetails" style="margin-bottom: 16px;"></div>
+        <div class="resolucion-grid" id="resolverGrid">
+          <button type="button" class="resolucion-card resolucion-card--favorable" data-res="favorable">
+            <div class="resolucion-card__title">Apelación favorable</div>
+            <div class="resolucion-card__desc">El recurso de apelación prospera. El acto administrativo queda vigente y el organismo es inscrito en el Registro Nacional Deportivo.</div>
+            <span class="resolucion-card__chip resolucion-card__chip--green">→ Vigente</span>
+          </button>
+          <button type="button" class="resolucion-card resolucion-card--desfavorable" data-res="desfavorable">
+            <div class="resolucion-card__title">Apelación NO prospera</div>
+            <div class="resolucion-card__desc">El recurso de apelación no prospera. El trámite queda cerrado en firme y el acto de no cumplimiento se mantiene vigente.</div>
+            <span class="resolucion-card__chip resolucion-card__chip--red">→ No cumple (firme)</span>
+          </button>
+        </div>
+        <div class="naowee-textfield naowee-textfield--textarea" style="margin-top: 14px;">
+          <label class="naowee-textfield__label" for="resolverObs">Fundamento del fallo <span style="color:#c01818;">*</span></label>
+          <div class="naowee-textfield__input-wrap" style="height:auto; padding: 10px 12px;">
+            <textarea class="naowee-textfield__input" id="resolverObs" maxlength="800" rows="4" placeholder="Describa el fundamento jurídico de la resolución…" style="min-height:96px; resize:vertical; line-height:1.55; border:0; outline:none; width:100%; background:transparent; font-family:inherit; font-size:14px; color:inherit;"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end" style="gap: 10px;">
+        <button type="button" class="naowee-btn naowee-btn--mute" onclick="window._closeResolver()">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="resolverBtn" disabled>Resolver apelación</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/data.js?v=1.12.0"></script>
+  <script src="../shared/shell.js?v=1.12.0"></script>
+  <script src="../shared/ivc-store.js?v=1.12.0"></script>
+  <script src="../shared/naowee-footer.js?v=1.12.0" defer></script>
+
+  <script>
+    var state = { tramites: [], resolverId: null, selectedRes: null };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      window.IVCData.setPerfil('juridica');
+      var template = document.getElementById('page-content');
+      var shellRoot = document.getElementById('app-shell');
+      shellRoot.innerHTML = template.innerHTML;
+      window.IVCShell.init({ title: null, activeNav: 'bandeja-jur' });
+
+      IVCStore.init();
+      load();
+      IVCStore.on('store:changed-external', function () { load(); render(); });
+      IVCStore.on('tramite:estado-cambiado',  function () { load(); render(); });
+
+      wireResolver();
+      render();
+    });
+
+    function load() {
+      var todas = IVCStore.getTramites({ area: 'aficionado' }) || [];
+      state.tramites = todas.filter(function (t) { return t.estado === 'EnApelacion'; });
+    }
+
+    function render() {
+      var host = document.getElementById('pageInner');
+      var todas = IVCStore.getTramites({ area: 'aficionado' }) || [];
+      var resueltos = todas.filter(function (t) {
+        var ev = (t.historico || []).slice().reverse()
+          .find(function (h) { return (h.actor || '').indexOf('Jurídica') >= 0 && (h.observacion || '').match(/(prospera|FAVOR|favorable)/i); });
+        return !!ev;
+      });
+      var hoy = new Date().toISOString().slice(0, 10);
+      var resueltosHoy = resueltos.filter(function (t) {
+        var ev = (t.historico || []).slice().reverse()
+          .find(function (h) { return (h.actor || '').indexOf('Jurídica') >= 0 && h.fecha === hoy; });
+        return !!ev;
+      }).length;
+
+      host.innerHTML =
+        '<header class="page-title-block">' +
+          '<h1 class="page-title">Apelaciones</h1>' +
+          '<p class="page-subtitle">Recursos de apelación interpuestos por organismos sobre actos administrativos del IVC. Resuelva con fallo favorable o desfavorable conforme a derecho.</p>' +
+        '</header>' +
+
+        '<section class="stat-grid">' +
+          '<div class="naowee-stat-card naowee-stat-card--accent">' +
+            '<span class="naowee-stat-card__label">Por resolver</span>' +
+            '<span class="naowee-stat-card__value">' + state.tramites.length + '</span>' +
+            '<span class="naowee-stat-card__hint">Apelaciones pendientes de fallo</span>' +
+          '</div>' +
+          '<div class="naowee-stat-card naowee-stat-card--success">' +
+            '<span class="naowee-stat-card__label">Resueltas hoy</span>' +
+            '<span class="naowee-stat-card__value">' + resueltosHoy + '</span>' +
+            '<span class="naowee-stat-card__hint">Fallos jurídicos emitidos</span>' +
+          '</div>' +
+          '<div class="naowee-stat-card naowee-stat-card--info">' +
+            '<span class="naowee-stat-card__label">Total acumulado</span>' +
+            '<span class="naowee-stat-card__value">' + resueltos.length + '</span>' +
+            '<span class="naowee-stat-card__hint">Fallos emitidos</span>' +
+          '</div>' +
+        '</section>' +
+
+        '<section class="naowee-table-card">' +
+          '<div class="naowee-table-card__head">' +
+            '<div class="naowee-table-card__head-text">' +
+              '<h2 class="naowee-table-card__title">Apelaciones por resolver</h2>' +
+              '<p class="naowee-table-card__subtitle">' + state.tramites.length + ' recursos · FIN externo · JUR</p>' +
+            '</div>' +
+          '</div>' +
+          (state.tramites.length === 0
+            ? '<div class="actos-empty">' +
+                '<div class="actos-empty__icon">' +
+                  '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+                '</div>' +
+                '<div class="actos-empty__title">Sin apelaciones por resolver</div>' +
+                '<div class="actos-empty__sub">Cuando los organismos interpongan recursos de apelación tras una notificación electrónica, aparecerán aquí para que el área jurídica del Ministerio resuelva con fallo favorable o desfavorable.</div>' +
+              '</div>'
+            : renderTable())+
+        '</section>';
+    }
+
+    function renderTable() {
+      return '<div style="overflow-x:auto;"><table class="naowee-table"><thead><tr>' +
+        '<th>Radicado</th><th>Tipo</th><th>Organismo</th><th>Profesional IVC</th><th>Fecha apelación</th><th style="text-align:center;">Acciones</th>' +
+      '</tr></thead><tbody>' +
+        state.tramites.map(function (t) {
+          var evApel = (t.historico || []).slice().reverse().find(function (h) { return h.estado === 'EnApelacion'; }) || {};
+          var fechaApel = evApel.fecha ? evApel.fecha + ' · ' + (evApel.hora || '') : '—';
+          return '<tr>' +
+            '<td><span class="row-radicado">' + escHtml(t.id) + '</span></td>' +
+            '<td>' + escHtml(t.tipoTramite || 'Otorgamiento') + '</td>' +
+            '<td><div style="font-weight:500;">' + escHtml(t.organismo) + '</div>' +
+                '<div style="font-size:11.5px;color:var(--text-secondary);font-family:ui-monospace,monospace;margin-top:2px;">NIT ' + escHtml(t.nit || '—') + '</div></td>' +
+            '<td>' + escHtml(t.profesionalNombre || '—') + '</td>' +
+            '<td>' + fechaApel + '</td>' +
+            '<td style="text-align:center;">' +
+              '<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="window._openResolver(\'' + escHtml(t.id) + '\')">Resolver apelación</button>' +
+            '</td>' +
+          '</tr>';
+        }).join('') +
+      '</tbody></table></div>';
+    }
+
+    window._openResolver = function (id) {
+      state.resolverId = id;
+      state.selectedRes = null;
+      var t = state.tramites.find(function (x) { return x.id === id; });
+      if (!t) return;
+      document.getElementById('resolverSub').textContent = t.id + ' · ' + t.organismo;
+      document.getElementById('resolverDetails').innerHTML =
+        '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Radicado</span><span class="notif-modal-body__val">' + escHtml(t.id) + '</span></div>' +
+        '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Organismo</span><span class="notif-modal-body__val">' + escHtml(t.organismo) + '</span></div>' +
+        '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Tipo trámite</span><span class="notif-modal-body__val">' + escHtml(t.tipoTramite || '—') + '</span></div>' +
+        '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Profesional IVC</span><span class="notif-modal-body__val">' + escHtml(t.profesionalNombre || '—') + '</span></div>';
+
+      /* Reset modal state */
+      var cards = document.querySelectorAll('#resolverGrid .resolucion-card');
+      for (var i = 0; i < cards.length; i++) cards[i].classList.remove('is-selected');
+      document.getElementById('resolverObs').value = '';
+      document.getElementById('resolverBtn').disabled = true;
+
+      document.getElementById('modalResolver').classList.add('open');
+    };
+    window._closeResolver = function () {
+      document.getElementById('modalResolver').classList.remove('open');
+      state.resolverId = null;
+      state.selectedRes = null;
+    };
+
+    function wireResolver() {
+      var cards = document.querySelectorAll('#resolverGrid .resolucion-card');
+      var obsEl = document.getElementById('resolverObs');
+      var btn = document.getElementById('resolverBtn');
+
+      function updateBtnState() {
+        var hasSelection = !!state.selectedRes;
+        var hasObs = obsEl.value.trim().length >= 10;
+        btn.disabled = !(hasSelection && hasObs);
+      }
+
+      for (var i = 0; i < cards.length; i++) {
+        (function (card) {
+          card.addEventListener('click', function () {
+            for (var j = 0; j < cards.length; j++) cards[j].classList.remove('is-selected');
+            card.classList.add('is-selected');
+            state.selectedRes = card.getAttribute('data-res');
+            updateBtnState();
+          });
+        })(cards[i]);
+      }
+
+      obsEl.addEventListener('input', updateBtnState);
+
+      btn.addEventListener('click', function () {
+        if (!state.resolverId || !state.selectedRes) return;
+        var perfil = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['juridica']) || {};
+        var actor = (perfil.nombre || 'Jurídica') + ' (Jurídica)';
+        var obs = obsEl.value.trim();
+        IVCStore.resolverApelacion(state.resolverId, state.selectedRes, actor, obs);
+        window._closeResolver();
+        var msg = state.selectedRes === 'favorable'
+          ? 'Apelación resuelta a FAVOR. Acto administrativo queda vigente.'
+          : 'Apelación NO PROSPERA. Trámite queda cerrado en firme.';
+        _showSnackbar(msg, 'success');
+      });
+
+      document.getElementById('modalResolver').addEventListener('click', function (ev) {
+        if (ev.target === this) window._closeResolver();
+      });
+    }
+
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+      });
+    }
+    function _showSnackbar(msg, variant) {
+      if (window.IVCShell && typeof window.IVCShell.showSnackbar === 'function') {
+        window.IVCShell.showSnackbar(msg, variant || 'success');
+        return;
+      }
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#282834; color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; z-index:9999;';
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 3000);
+    }
+  </script>
+</body>
+</html>

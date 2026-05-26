@@ -21,7 +21,7 @@
   'use strict';
 
   var KEY = 'ivc:store';
-  var SEED_VERSION = 2;            /* v1.7.3: bump por mocks completos (datos.f1/f2/f3 + asamblea + estructura + cierre) */
+  var SEED_VERSION = 3;            /* v1.12.0: bump para forzar reseed con trámites en TODOS los estados del flujo (PendienteCOO, PendienteFirma, Firmado, NotifElectronica, NotifOficinas, Vigente, EnApelacion, EnReposicion + child). */
 
   /* ─── Seed inicial ───────────────────────────────────────────────────
      v1.5.3 FIX (25/05/2026): bug crítico — antes mkSeed referenciaba
@@ -242,18 +242,140 @@
     return base;
   }
 
+  /* v1.12.0: estados "post-veredicto" — los seeds con estos estados generan
+     historico extendido para simular el journey end-to-end (asignación →
+     validación → veredicto → acto → firma → notificación → renuncia/recursos). */
+  var ESTADOS_POST_VEREDICTO = {
+    'PendienteCOO':     1,
+    'PendienteFirma':   2,
+    'Firmado':          3,
+    'NotifElectronica': 4,
+    'NotifOficinas':    4,
+    'EnApelacion':      5,
+    'EnReposicion':     5,
+    'Vigente':          5
+  };
+
   function mkSeed(id, tipoOrg, tipoTramite, organismo, nit, fechaIso, plazoDias, estado, profId) {
     var prof = profId && PROFESIONALES.find(function(p){ return p.id === profId; });
     var hist = [
       { fecha: fechaIso, hora: '08:15', actor: organismo + ' (demo)', accion: 'Radicado' },
       { fecha: fechaIso, hora: '08:15', actor: 'Sistema', accion: 'Remisión automática a Deporte Aficionado' }
     ];
-    if (estado === 'Asignada' || estado === 'En validación') {
-      hist.push({ fecha: fechaIso, hora: '10:32', actor: 'Carolina Méndez (Coordinador)', accion: 'Asignada a ' + (prof ? prof.nombre : 'Profesional') });
+
+    var nivelPost = ESTADOS_POST_VEREDICTO[estado] || 0;
+    var asignado = estado === 'Asignada' || estado === 'En validación' || nivelPost > 0;
+    var enValidacion = estado === 'En validación' || nivelPost > 0;
+
+    if (asignado) {
+      hist.push({ fecha: fechaIso, hora: '10:32', actor: 'Carolina Méndez (Coordinador IVC)', accion: 'Asignada a ' + (prof ? prof.nombre : 'Profesional') });
     }
-    if (estado === 'En validación') {
+    if (enValidacion) {
       hist.push({ fecha: fechaIso, hora: '14:18', actor: prof ? prof.nombre + ' (Profesional)' : 'Profesional', accion: 'Inicio de validación' });
     }
+
+    /* v1.12.0: historico extendido para estados post-veredicto (nivel >= 1). */
+    if (nivelPost >= 1) {
+      hist.push({
+        fecha: fechaIso, hora: '16:05',
+        actor: (prof ? prof.nombre : 'Profesional') + ' (Profesional)',
+        accion: 'Estado: En validación → PendienteCOO · Acto administrativo generado y enviado al Coordinador IVC para revisión.',
+        estado: 'PendienteCOO',
+        observacion: 'Acto administrativo generado y enviado al Coordinador IVC para revisión.'
+      });
+    }
+    if (nivelPost >= 2) {
+      hist.push({
+        fecha: fechaIso, hora: '17:20',
+        actor: 'Carolina Méndez (Coordinador IVC)',
+        accion: 'Estado: PendienteCOO → PendienteFirma · Acto v1 aprobado (COO). Enviado al Director del IVC para firma electrónica.',
+        estado: 'PendienteFirma',
+        observacion: 'Acto v1 aprobado (COO). Enviado al Director del IVC para firma electrónica.'
+      });
+    }
+    if (nivelPost >= 3) {
+      hist.push({
+        fecha: fechaIso, hora: '18:10',
+        actor: 'María Helena Ramos (Director IVC)',
+        accion: 'Estado: PendienteFirma → Firmado · Acto administrativo firmado electrónicamente con firma preset del Director.',
+        estado: 'Firmado',
+        observacion: 'Acto administrativo firmado electrónicamente con firma preset del Director.'
+      });
+    }
+    if (nivelPost >= 4) {
+      /* Bifurca según el estado final deseado. */
+      if (estado === 'NotifOficinas' || estado === 'EnApelacion' || estado === 'EnReposicion' || estado === 'Vigente') {
+        /* Para EnApelacion/EnReposicion/Vigente con plazo > 5 → simulamos NotifElectronica.
+           Para NotifOficinas → ese es el estado final aquí. */
+        if (estado === 'NotifOficinas') {
+          hist.push({
+            fecha: fechaIso, hora: '18:30',
+            actor: 'María Helena Ramos (Director IVC)',
+            accion: 'Estado: Firmado → NotifOficinas · Alerta de notificación en oficinas (5 días hábiles) emitida al organismo.',
+            estado: 'NotifOficinas',
+            observacion: 'Alerta de notificación en oficinas (5 días hábiles) emitida al organismo.'
+          });
+        } else {
+          hist.push({
+            fecha: fechaIso, hora: '18:30',
+            actor: 'María Helena Ramos (Director IVC)',
+            accion: 'Estado: Firmado → NotifElectronica · Notificación electrónica enviada al organismo.',
+            estado: 'NotifElectronica',
+            observacion: 'Notificación electrónica enviada al organismo. Esperando respuesta sobre renuncia a términos.'
+          });
+        }
+      } else {
+        /* estado === NotifElectronica */
+        hist.push({
+          fecha: fechaIso, hora: '18:30',
+          actor: 'María Helena Ramos (Director IVC)',
+          accion: 'Estado: Firmado → NotifElectronica · Notificación electrónica enviada al organismo.',
+          estado: 'NotifElectronica',
+          observacion: 'Notificación electrónica enviada al organismo. Esperando respuesta sobre renuncia a términos.'
+        });
+      }
+    }
+    if (nivelPost >= 5) {
+      var actorOrg = organismo + ' (Organismo externo)';
+      if (estado === 'Vigente') {
+        hist.push({
+          fecha: fechaIso, hora: '19:00', actor: actorOrg,
+          accion: 'Estado: NotifElectronica → Vigente · Organismo renunció a términos. Acto administrativo vigente desde el día siguiente (D+1).',
+          estado: 'Vigente',
+          observacion: 'Organismo renunció a términos. Acto administrativo vigente desde el día siguiente (D+1).'
+        });
+      }
+      if (estado === 'EnApelacion') {
+        hist.push({
+          fecha: fechaIso, hora: '19:00', actor: actorOrg,
+          accion: 'Estado: NotifElectronica → PendienteRecursos · Organismo NO renunció a términos.',
+          estado: 'PendienteRecursos', observacion: 'NO renunció a términos. Términos legales corriendo.'
+        });
+        hist.push({
+          fecha: fechaIso, hora: '19:05', actor: actorOrg,
+          accion: 'Estado: PendienteRecursos → PendienteRecursoTipo · Organismo interpone recursos.',
+          estado: 'PendienteRecursoTipo', observacion: 'Organismo interpone recursos.'
+        });
+        hist.push({
+          fecha: fechaIso, hora: '19:10', actor: actorOrg,
+          accion: 'Estado: PendienteRecursoTipo → EnApelacion · Recurso de Apelación interpuesto. Remitido al área jurídica.',
+          estado: 'EnApelacion', observacion: 'Recurso de Apelación interpuesto. Remitido al área jurídica del Ministerio para revisión y fallo.'
+        });
+      }
+      if (estado === 'EnReposicion') {
+        hist.push({
+          fecha: fechaIso, hora: '19:00', actor: actorOrg,
+          accion: 'Estado: NotifElectronica → PendienteRecursos · Organismo NO renunció a términos.',
+          estado: 'PendienteRecursos', observacion: 'NO renunció a términos.'
+        });
+        hist.push({
+          fecha: fechaIso, hora: '19:05', actor: actorOrg,
+          accion: 'Estado: PendienteRecursos → EnReposicion · Recurso de Reposición interpuesto. Se creó trámite hijo.',
+          estado: 'EnReposicion', observacion: 'Recurso de Reposición interpuesto. Se creó trámite hijo con FK al original.'
+        });
+      }
+    }
+
     return {
       id: id,
       organismo: organismo,
@@ -272,8 +394,13 @@
     };
   }
 
-  /* SEED construido AFTER mkSeed está definido. Las 12 filas raw como tuplas. */
+  /* SEED construido AFTER mkSeed está definido. Las 12 filas raw como tuplas.
+     v1.12.0: seed extendido con trámites en TODOS los estados del flujo post-firma
+     para que las bandejas de los nuevos roles (Director, ATU, GIT, Jurídica)
+     tengan datos al primer load — el usuario puede probar cada caso sin tener
+     que correr el flujo end-to-end desde cero. */
   var SEED_TRAMITES_RAW = [
+    /* Estados iniciales — flujo asignación */
     ['IVC-2026-001', 'liga',       'Otorgamiento',  'Liga de Atletismo de Bolívar',        '800.245.678-3', '2026-05-21', 15, 'No asignada'],
     ['IVC-2026-002', 'liga',       'Renovación',    'Liga de Voleibol de Cundinamarca',    '800.456.789-1', '2026-05-20', 12, 'No asignada'],
     ['IVC-2026-003', 'asociacion', 'Otorgamiento',  'Asociación de Patinaje del Valle',    '901.234.567-2', '2026-05-19',  3, 'Asignada',      'cp-001'],
@@ -285,13 +412,25 @@
     ['IVC-2026-009', 'liga',       'Renovación',    'Liga de Karate del Quindío',          '900.123.456-7', '2026-05-15',  2, 'Asignada',      'cp-001'],
     ['IVC-2026-010', 'liga',       'Otorgamiento',  'Liga de Baloncesto de Risaralda',     '800.345.678-2', '2026-05-14', 10, 'No asignada'],
     ['IVC-2026-011', 'asociacion', 'Otorgamiento',  'Asociación de Esgrima del Meta',      '901.789.012-1', '2026-05-13',  4, 'En validación','mg-002'],
-    ['IVC-2026-012', 'federacion', 'Renovación',    'Federación Colombiana de Atletismo',  '900.987.654-3', '2026-05-12', 25, 'No asignada']
+    ['IVC-2026-012', 'federacion', 'Renovación',    'Federación Colombiana de Atletismo',  '900.987.654-3', '2026-05-12', 25, 'No asignada'],
+    /* v1.12.0: presets demo del flujo post-firma. Cada uno simula un caso
+       distinto que el usuario puede probar end-to-end desde la bandeja del rol
+       correspondiente. profId, fecha y plazo elegidos para que el contexto sea
+       creíble (las fechas son anteriores al "ahora" mock). */
+    ['IVC-2026-013', 'liga',       'Otorgamiento',  'Liga de Patinaje del Cauca',          '900.111.222-3', '2026-05-10', 25, 'PendienteCOO',     'cp-001'],
+    ['IVC-2026-014', 'asociacion', 'Otorgamiento',  'Asociación de Squash del Huila',      '901.555.666-7', '2026-05-09', 24, 'PendienteFirma',   'mg-002'],
+    ['IVC-2026-015', 'liga',       'Renovación',    'Liga de Bádminton del Magdalena',     '800.777.888-1', '2026-05-08', 23, 'NotifElectronica','al-003'],
+    ['IVC-2026-016', 'asociacion', 'Otorgamiento',  'Asociación de Tiro con Arco Nariño',  '901.888.999-2', '2026-05-07', 22, 'NotifOficinas',    'lr-004'],
+    ['IVC-2026-017', 'liga',       'Renovación',    'Liga de Rugby de Bogotá',             '800.222.333-4', '2026-05-06',  3, 'NotifOficinas',    'cp-001'],
+    ['IVC-2026-018', 'liga',       'Otorgamiento',  'Liga de Vóleibol Playa Córdoba',      '900.333.444-5', '2026-05-05', 20, 'EnApelacion',      'mg-002'],
+    ['IVC-2026-019', 'asociacion', 'Otorgamiento',  'Asociación de Hockey San Andrés',     '901.666.777-8', '2026-05-04', 19, 'Vigente',          'al-003'],
+    ['IVC-2026-020', 'liga',       'Renovación',    'Liga de Bolos del Chocó',             '800.444.555-6', '2026-05-03', 18, 'EnReposicion',     'lr-004']
   ];
 
   function buildSeed() {
     return {
       seedVersion: SEED_VERSION,
-      ultimoRadicado: 12,
+      ultimoRadicado: 20,
       mode: 'demo',
       profesionales: JSON.parse(JSON.stringify(PROFESIONALES)),
       tramites: SEED_TRAMITES_RAW.map(function (row) { return mkSeed.apply(null, row); })
@@ -450,6 +589,38 @@
       write(s);
       emit('tramite:asignado', t);
       return t;
+    },
+
+    /* v1.12.0: ATU/GIT marca al organismo como notificado en oficinas.
+       Estado pasa de NotifOficinas → NotifElectronica (mismo semantic: org
+       ya recibió la notificación, pendiente respuesta de renuncia). El canal
+       (plantilla/aviso) queda registrado en el historico para trazabilidad. */
+    marcarNotificadoOficinas: function (tramiteId, canal, actor) {
+      var s = this.init();
+      var t = s.tramites.find(function (x) { return x.id === tramiteId; });
+      if (!t) return null;
+      if (t.estado !== 'NotifOficinas') return null;
+      var detalle = canal === 'plantilla'
+        ? 'Organismo notificado por plantilla (Atención al Usuario · dentro de 5 días hábiles).'
+        : 'Organismo notificado por aviso (GIT Comunicaciones · CPACA Art 67-69 · vencido 5 días).';
+      return this.actualizarEstado(t.id, 'NotifElectronica', actor || 'Sistema', detalle);
+    },
+
+    /* v1.12.0: Jurídica resuelve un recurso de apelación.
+       Resolución 'favorable' → Vigente (organismo gana, acto queda vigente).
+       Resolución 'desfavorable' → NoCumple (acto se mantiene rechazado por Jurídica). */
+    resolverApelacion: function (tramiteId, resolucion, actor, observacion) {
+      var s = this.init();
+      var t = s.tramites.find(function (x) { return x.id === tramiteId; });
+      if (!t) return null;
+      if (t.estado !== 'EnApelacion') return null;
+      if (resolucion !== 'favorable' && resolucion !== 'desfavorable') return null;
+      var newEstado = resolucion === 'favorable' ? 'Vigente' : 'NoCumple';
+      var detalle = (observacion ? observacion + ' · ' : '') +
+        (resolucion === 'favorable'
+          ? 'Apelación FALLA A FAVOR del organismo. Acto administrativo queda vigente.'
+          : 'Apelación NO PROSPERA. Trámite queda cerrado en firme.');
+      return this.actualizarEstado(t.id, newEstado, actor || 'Jurídica', detalle);
     },
 
     /* v1.11.4: crear trámite por REPOSICIÓN — clona los datos básicos del

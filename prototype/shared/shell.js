@@ -35,7 +35,11 @@
        superpuesto. Comunica "documento que requiere visto bueno". */
     approval: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><polyline points="9 13 11 15 15 11"/></svg>',
     /* v1.11.0: icono para "Mi firma" del Director — pluma estilizada. */
-    firma:    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17v3h3"/><path d="M3 17l9-9 4 4-9 9"/><path d="M14 6l1.5-1.5a2.12 2.12 0 0 1 3 3L17 9"/><path d="M3 22h18"/></svg>'
+    firma:    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17v3h3"/><path d="M3 17l9-9 4 4-9 9"/><path d="M14 6l1.5-1.5a2.12 2.12 0 0 1 3 3L17 9"/><path d="M3 22h18"/></svg>',
+    /* v1.12.0: iconos para los 3 nuevos roles complementarios. */
+    plantilla:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/><path d="M9 4v16"/></svg>',
+    aviso:    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    juridica: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M12 3v18"/><path d="M5 7l7-3 7 3"/><path d="M5 7l-2 7c0 1.5 1 3 3 3s3-1.5 3-3l-2-7"/><path d="M19 7l-2 7c0 1.5 1 3 3 3s3-1.5 3-3l-2-7"/></svg>'
   };
 
   /* ───── Nav items por perfil ───── */
@@ -71,6 +75,16 @@
     'director': [
       { id: 'bandeja-director', label: 'Por firmar', icon: ICONS.approval, href: 'bandeja.html' },
       { id: 'perfil-director',  label: 'Mi firma',   icon: ICONS.firma,    href: 'perfil.html' }
+    ],
+    /* v1.12.0: 3 nuevos roles complementarios (Fase 5.5 - 6 del flujo V4). */
+    'atu': [
+      { id: 'bandeja-atu', label: 'Por notificar', icon: ICONS.plantilla, href: 'bandeja.html' }
+    ],
+    'git': [
+      { id: 'bandeja-git', label: 'Avisos', icon: ICONS.aviso, href: 'bandeja.html' }
+    ],
+    'juridica': [
+      { id: 'bandeja-jur', label: 'Apelaciones', icon: ICONS.juridica, href: 'bandeja.html' }
     ]
   };
 
@@ -79,7 +93,11 @@
     'usuario-externo': 'MI ORGANISMO',
     'coordinador':     'COORDINACIÓN',
     'profesional':     'OPERACIÓN',
-    'director':        'DIRECCIÓN'
+    'director':        'DIRECCIÓN',
+    /* v1.12.0: roles complementarios. */
+    'atu':             'ATENCIÓN AL USUARIO',
+    'git':             'COMUNICACIONES',
+    'juridica':        'JURÍDICA'
   };
 
   function el(html) {
@@ -117,7 +135,11 @@
       'usuario-externo': 'usuario-externo/',
       'coordinador':     'coordinador/',
       'profesional':     'profesional/',
-      'director':        'director/'
+      'director':        'director/',
+      /* v1.12.0: subdirs nuevos para los 3 roles complementarios. */
+      'atu':             'atu/',
+      'git':             'git/',
+      'juridica':        'juridica/'
     };
     var perfilSubdir = perfilSubdirs[perfilId] || 'usuario-externo/';
 
@@ -375,7 +397,11 @@
           'usuario-externo': 'usuario-externo/dashboard.html',
           'coordinador':     'coordinador/bandeja.html',
           'profesional':     'profesional/bandeja.html',
-          'director':        'director/bandeja.html'
+          'director':        'director/bandeja.html',
+          /* v1.12.0: landings para los 3 roles complementarios. */
+          'atu':             'atu/bandeja.html',
+          'git':             'git/bandeja.html',
+          'juridica':        'juridica/bandeja.html'
         };
         var landing = landings[next];
         if (landing) {
