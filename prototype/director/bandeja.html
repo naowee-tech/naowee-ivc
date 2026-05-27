@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.18">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.18">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.18">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.18">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.19">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.19">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.19">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.19">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -465,38 +465,8 @@
        components.css#v1.12.7 (icono 40×40 + tipografía DS). */
 
     /* ── Firma button (green loud) + Devolver (mute) ────────────────── */
-    /* v1.13.15 (Doug 27/05/2026): hover ya NO cambia el fill, ahora aplica
-       un glow verde sutil (box-shadow ring) — mismo lenguaje que los CTA
-       semánticos del DS. Doug: "el cta firmar acto no tiene los estilos
-       glow hover". */
-    .btn-firmar {
-      background: var(--green, #1f8923);
-      color: #fff;
-      border: 0;
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex; align-items: center; gap: 8px;
-      transition: box-shadow .18s ease, transform .08s ease;
-    }
-    .btn-firmar:hover {
-      background: var(--green, #1f8923);
-      box-shadow: 0 0 0 4px rgba(31, 137, 35, 0.18), 0 4px 14px rgba(31, 137, 35, 0.25);
-    }
-    .btn-firmar:focus-visible {
-      outline: none;
-      box-shadow: 0 0 0 4px rgba(31, 137, 35, 0.28), 0 4px 14px rgba(31, 137, 35, 0.32);
-    }
-    .btn-firmar:active { transform: translateY(1px); }
-    .btn-firmar:disabled {
-      background: var(--border, #e7e9f3);
-      color: var(--text-secondary);
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-    .btn-firmar:disabled:hover { background: var(--border); box-shadow: none; }
+    /* v1.13.19: estilos de .btn-firmar promovidos a shared/components.css
+       como CTA verde canónico con glow (single source of truth). */
 
     /* Version pill */
     .row-version-pill {
@@ -859,10 +829,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.18"></script>
-  <script src="../shared/shell.js?v=1.13.18"></script>
-  <script src="../shared/ivc-store.js?v=1.13.18"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.18" defer></script>
+  <script src="../shared/data.js?v=1.13.19"></script>
+  <script src="../shared/shell.js?v=1.13.19"></script>
+  <script src="../shared/ivc-store.js?v=1.13.19"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.19" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════

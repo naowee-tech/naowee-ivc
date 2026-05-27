@@ -1213,6 +1213,69 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   v1.13.19 (Doug 27/05/2026): CTA verde canónico con GLOW en hover —
+   patrón unificado para acciones positivas críticas (firmar acto,
+   aprobar acto, vigente, etc). Doug: "todos los botones verdes
+   ponles ese estilo que ya sea canónico no tenga que volver a repetirlo".
+
+   El fill verde NO cambia en hover (igual que el DS pattern para
+   botones loud); el feedback visual lo da el box-shadow ring + sombra
+   suave. Active aplica translateY(1px) para press feedback.
+
+   Aplica a 3 clases legacy del prototype (.btn-firmar, .btn-aprobar,
+   .btn-success-glow) mediante una sola regla con selectores múltiples. */
+.btn-success-glow,
+.btn-firmar,
+.btn-aprobar {
+  background: var(--green, #1f8923);
+  color: #fff;
+  border: 0;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: box-shadow .18s ease, transform .08s ease;
+}
+.btn-success-glow:hover,
+.btn-firmar:hover,
+.btn-aprobar:hover {
+  background: var(--green, #1f8923);
+  box-shadow: 0 0 0 4px rgba(31, 137, 35, 0.18),
+              0 4px 14px rgba(31, 137, 35, 0.25);
+}
+.btn-success-glow:focus-visible,
+.btn-firmar:focus-visible,
+.btn-aprobar:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(31, 137, 35, 0.28),
+              0 4px 14px rgba(31, 137, 35, 0.32);
+}
+.btn-success-glow:active,
+.btn-firmar:active,
+.btn-aprobar:active {
+  transform: translateY(1px);
+}
+.btn-success-glow:disabled,
+.btn-firmar:disabled,
+.btn-aprobar:disabled {
+  background: var(--border, #e7e9f3);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn-success-glow:disabled:hover,
+.btn-firmar:disabled:hover,
+.btn-aprobar:disabled:hover {
+  background: var(--border);
+  box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    v1.13.12 (Doug 27/05/2026): iconos a la izquierda del label en TABS
    (.naowee-tab y .actos-tab). El icono hereda el color del tab (gris en
    idle, naranja en .naowee-tab--selected / .actos-tab.is-selected),
