@@ -642,12 +642,13 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: none;        /* sin elevation — Doug feedback #3 */
-  /* v1.13.28 (Doug 27/05/2026): de `overflow: hidden` → `visible` para
-     que el glow elevation de los .naowee-btn--loud en la columna
-     Acciones no quede clipped por el border del card. La thead usa
-     border-radius propio (6px) sobre cells y la tabla está inset 14px
-     horizontal, así que nada toca los corners del card. */
-  overflow: visible;
+  /* v1.13.31 (Doug 27/05/2026): REVERT v1.13.28 — el overflow:visible
+     reintrodujo el bug "acciones no accionan en todas las páginas"
+     reportado ayer (mismo síntoma del v1.12.5 footer pointer-events).
+     Mantenemos overflow:hidden para garantizar que clicks funcionen
+     en TODAS las bandejas. El glow del botón hover se sacrifica como
+     trade-off — más importante es que las acciones funcionen. */
+  overflow: hidden;
   padding: 0;
 }
 
