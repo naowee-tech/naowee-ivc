@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.10">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.10">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.10">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.10">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.11">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.11">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.11">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.11">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
@@ -310,6 +310,18 @@
     }
     .ivc-ra-item:last-child { border-bottom: 0; }
     .ivc-ra-item:hover { background: #fafbff; }
+    /* v1.13.11 (Doug 27/05/2026): aplicar border-radius explícito a primera
+       y última row para que el hover bg respete las esquinas del container.
+       Antes el container tenía overflow:hidden pero el hover se veía cuadrado
+       en las esquinas superiores cuando el usuario hovereaba la primera row. */
+    .ivc-ra-item:first-child {
+      border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg);
+    }
+    .ivc-ra-item:last-child {
+      border-bottom-left-radius: var(--radius-lg);
+      border-bottom-right-radius: var(--radius-lg);
+    }
     .ivc-ra-item__num {
       width: 28px;
       height: 28px;
@@ -328,8 +340,10 @@
     .ivc-ra-item.is-obs      .ivc-ra-item__num { background: var(--orange-bg); color: var(--accent); }
 
     .ivc-ra-item__main { min-width: 0; }
+    /* v1.13.11: title con peso 600 para mejor jerarquía sobre el ref/meta. */
     .ivc-ra-item__text {
       font-size: 13.5px;
+      font-weight: 600;
       line-height: 1.45;
       color: var(--text-primary);
       display: flex;
@@ -1095,10 +1109,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.10"></script>
-  <script src="../shared/shell.js?v=1.13.10"></script>
-  <script src="../shared/ivc-store.js?v=1.13.10"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.10" defer></script>
+  <script src="../shared/data.js?v=1.13.11"></script>
+  <script src="../shared/shell.js?v=1.13.11"></script>
+  <script src="../shared/ivc-store.js?v=1.13.11"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.11" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1372,9 +1386,12 @@
         else if (d.validacion === 'obs') cls = 'is-obs';
         else if (d.validacion === 'no') cls = 'is-nocumple';
 
-        var optionalBadge = !d.obligatorio
-          ? ' <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Opcional</span>'
-          : '';
+        /* v1.13.11 (Doug 27/05/2026): badge simétrico — Obligatorio (caution
+           peach naranja) o Opcional (neutral gris). Antes solo se marcaban
+           los opcionales → no había forma de saber cuáles eran obligatorios. */
+        var tipoBadge = d.obligatorio
+          ? ' <span class="naowee-badge naowee-badge--caution naowee-badge--quiet naowee-badge--small">Obligatorio</span>'
+          : ' <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet naowee-badge--small">Opcional</span>';
 
         var obsValue = (d.observacion || '').replace(/"/g, '&quot;');
         var refTxt = 'Decreto 1387/1970 · Art 2.1.1.2';
@@ -1382,7 +1399,7 @@
         return '<div class="ivc-ra-item ' + cls + '" data-doc-id="' + d.id + '">' +
           '<div class="ivc-ra-item__num">' + d.orden + '</div>' +
           '<div class="ivc-ra-item__main">' +
-            '<div class="ivc-ra-item__text">' + d.titulo + optionalBadge + '</div>' +
+            '<div class="ivc-ra-item__text">' + d.titulo + tipoBadge + '</div>' +
             '<div class="ivc-ra-item__ref">' + refTxt + ' · PDF · 245 KB</div>' +
             /* v1.5.4: ghost button, "Descargar documento" con icono */
             '<a href="#" class="ivc-ra-item__viewlink" aria-label="Descargar documento">' +
