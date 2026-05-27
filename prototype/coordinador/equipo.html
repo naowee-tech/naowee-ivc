@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.38">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.38">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.38">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.38">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.39">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.39">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.39">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.39">
   <style>.naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -176,13 +176,10 @@
     .naowee-tooltip__content {
       z-index: 9999 !important;
     }
-    /* Tooltip en la última columna — ancla a la derecha del botón
-       para que se extienda hacia la izquierda y no se enmascare. */
-    .row-actions .naowee-tooltip__content {
-      left: auto !important;
-      right: 0 !important;
-      transform: none !important;
-    }
+    /* v1.13.39 (Doug): tooltip centrado con la flecha del DS apuntando
+       al botón. Removí el override de right:0 que desalineaba la flecha.
+       El overflow:visible en los padres (row-actions, table wrap)
+       garantiza que no se clipee. */
     .naowee-tooltip:hover .naowee-tooltip__content,
     .naowee-tooltip:focus-within .naowee-tooltip__content {
       opacity: 1 !important;
@@ -193,6 +190,23 @@
     .naowee-table th.col-acciones,
     .naowee-table td.col-acciones {
       text-align: center !important;
+    }
+
+    /* v1.13.39: dropdown options con nowrap — evita que labels largos
+       como "Pendiente confirmación" se rompan en 2 líneas. */
+    .naowee-dropdown__menu .naowee-dropdown__option {
+      white-space: nowrap;
+    }
+
+    /* v1.13.39: modal body con overflow visible para que el menu del
+       dropdown no quede enmascarado al abrirse. El z-index del menu
+       sube a 2000 para asegurar que está sobre cualquier otro layer
+       del modal (header, body, footer). */
+    .naowee-modal .naowee-modal__body {
+      overflow: visible !important;
+    }
+    .naowee-modal .naowee-dropdown[data-mod] .naowee-dropdown__menu {
+      z-index: 2000 !important;
     }
 
     /* Estado badge — forzar nowrap para que "Pendiente confirmación"
@@ -418,7 +432,7 @@
         </div>
       </div>
       <div class="naowee-modal__footer naowee-modal__footer--end" style="gap: 10px;">
-        <button type="button" class="naowee-btn naowee-btn--mute" id="invitarCancel">Cancelar</button>
+        <!-- v1.13.39 (Doug): Cancelar removido — el usuario cierra con X o ESC. -->
         <button type="button" class="naowee-btn naowee-btn--loud" id="invitarSubmit" disabled>Enviar invitación</button>
       </div>
     </div>
@@ -456,10 +470,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.38"></script>
-  <script src="../shared/shell.js?v=1.13.38"></script>
-  <script src="../shared/ivc-store.js?v=1.13.38"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.38" defer></script>
+  <script src="../shared/data.js?v=1.13.39"></script>
+  <script src="../shared/shell.js?v=1.13.39"></script>
+  <script src="../shared/ivc-store.js?v=1.13.39"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.39" defer></script>
 
   <script>
     var state = {
@@ -1055,9 +1069,8 @@
     }
 
     function wireModals() {
-      /* Invitar modal */
+      /* Invitar modal — solo X dismiss y click-outside (v1.13.39: removido Cancelar). */
       document.getElementById('invitarDismiss').addEventListener('click', closeInvitar);
-      document.getElementById('invitarCancel').addEventListener('click', closeInvitar);
       document.getElementById('modalInvitar').addEventListener('click', function (ev) {
         if (ev.target === this) closeInvitar();
       });
