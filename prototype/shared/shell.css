@@ -83,8 +83,10 @@ a { color: inherit; text-decoration: none; }
 
 .nav-row {
   flex-shrink: 0;
-  display: flex; align-items: center; gap: 12px; height: 44px;
-  padding: 0 20px 0 0; border-radius: var(--radius-sm); cursor: pointer;
+  display: flex; align-items: center; gap: 10px; height: 44px;
+  /* v1.13.8: padding-right 20→12 + icon margin-left 28→16 para liberar
+     espacio horizontal y evitar que "Aprobación de actos" se corte. */
+  padding: 0 12px 0 0; border-radius: var(--radius-sm); cursor: pointer;
   margin: 0 10px;
   transition: background .12s, padding .25s cubic-bezier(.4,0,.2,1), margin .28s cubic-bezier(.32,.72,0,1);
   position: relative;
@@ -95,14 +97,18 @@ a { color: inherit; text-decoration: none; }
 .nav-row .icon {
   width: 24px; height: 24px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  margin-left: 28px;
+  margin-left: 16px;
   color: var(--text-secondary);
   transition: margin-left .25s cubic-bezier(.4,0,.2,1), color .25s ease;
 }
 .nav-row .lbl {
   flex: 1; font-size: 14px; font-weight: 600; color: var(--text-primary);
-  white-space: nowrap; overflow: hidden;
-  max-width: 200px; opacity: 1;
+  /* v1.13.8: removida max-width 200 que truncaba "Aprobación de actos".
+     Conservamos overflow:hidden + white-space:nowrap por defensa, pero
+     el flex:1 ya garantiza que use todo el espacio disponible. */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+  opacity: 1;
   transition: opacity .2s ease .18s, max-width .36s cubic-bezier(.32,.72,0,1) .04s;
 }
 
@@ -132,14 +138,26 @@ a { color: inherit; text-decoration: none; }
 .nav-row.is-active .icon svg polyline,
 .nav-row.is-active .icon svg polygon { stroke: var(--accent); transition: stroke .25s ease; }
 
-/* Badge en nav row (notificaciones, etc.) */
+/* v1.13.8 (Doug 27/05/2026): badge en bajo contraste — fondo gris claro
+   + texto primary negro. Doug: "mejor en bajo contraste gris claro con
+   label primary negro". Reemplaza el solid orange anterior, que competía
+   visualmente con la barra activa naranja del nav. */
 .nav-row__badge {
-  margin-right: 8px;
+  flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 22px; height: 22px; padding: 0 7px;
-  background: var(--accent); color: #fff;
+  min-width: 24px; height: 20px; padding: 0 7px;
+  background: #eef0f6;
+  color: var(--text-primary);
   border-radius: var(--radius-full);
-  font-size: 11px; font-weight: 800;
+  font-size: 11px; font-weight: 700;
+  font-feature-settings: 'tnum';
+  letter-spacing: .2px;
+}
+.nav-row.is-active .nav-row__badge {
+  /* Cuando el item está activo (texto naranja), el badge sube un toque
+     a fondo peach naranja muy sutil para mantener jerarquía. */
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
 }
 
 .sidebar-bottom {
