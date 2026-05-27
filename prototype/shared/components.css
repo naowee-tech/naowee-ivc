@@ -1103,8 +1103,11 @@
   .ivc-info-grid { grid-template-columns: 1fr; }
 }
 .ivc-info-box {
-  background: #f7f8fc;
-  border: 1px solid var(--border, #e7e9f3);
+  /* v1.13.25 (Doug 27/05/2026): "quítale el stroke a las cajas y haz el
+     gris más claro". Removed border + lifted gray fill a touch lighter
+     (#fafbfd) para una sensación más limpia y plana. */
+  background: #fafbfd;
+  border: 0;
   border-radius: 10px;
   padding: 12px 14px;
   display: flex;
