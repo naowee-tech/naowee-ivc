@@ -1241,24 +1241,27 @@
   gap: 8px;
   transition: box-shadow .18s ease, transform .08s ease;
 }
+/* v1.13.20 (Doug 27/05/2026): glow elevation puro (sin ring spread) —
+   mirror del patrón DS canónico que usa el btn loud naranja con
+   --naowee-shadow-loud-md / xs. Es una drop-shadow soft, no un stroke
+   transparente alrededor del botón. */
 .btn-success-glow:hover,
 .btn-firmar:hover,
 .btn-aprobar:hover {
   background: var(--green, #1f8923);
-  box-shadow: 0 0 0 4px rgba(31, 137, 35, 0.18),
-              0 4px 14px rgba(31, 137, 35, 0.25);
+  box-shadow: 0 6px 16px rgba(31, 137, 35, 0.22);
 }
 .btn-success-glow:focus-visible,
 .btn-firmar:focus-visible,
 .btn-aprobar:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(31, 137, 35, 0.28),
-              0 4px 14px rgba(31, 137, 35, 0.32);
+  box-shadow: 0 6px 16px rgba(31, 137, 35, 0.28);
 }
 .btn-success-glow:active,
 .btn-firmar:active,
 .btn-aprobar:active {
   transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(31, 137, 35, 0.14);
 }
 .btn-success-glow:disabled,
 .btn-firmar:disabled,
