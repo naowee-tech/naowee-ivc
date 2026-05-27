@@ -24,9 +24,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.22">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.22">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.22">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.23">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.23">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.23">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -444,34 +444,174 @@
       font-style: italic;
     }
 
-    /* ── Histórico timeline ──────────────────────────────────── */
-    .timeline { list-style: none; padding: 0; margin: 0; position: relative; }
-    .timeline::before {
+    /* ── Histórico timeline v1.13.23 — UX Pro Max refactor ─────────────
+       Storytelling-style timeline para la página pública. Cada evento es
+       una tarjeta con jerarquía visual clara:
+         • Punto semántico (color según tipo de evento)
+         • Título humanizado + badge cromático
+         • Descripción narrativa (cuando exista)
+         • Chip técnico de transición de estado (cuando aplique)
+         • Footer separado con fecha + actor
+       Reemplaza el diseño anterior monolítico de un solo párrafo. */
+    .ctx-timeline {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      position: relative;
+    }
+    .ctx-timeline::before {
       content: '';
       position: absolute;
-      left: 6px; top: 12px; bottom: 12px;
+      left: 11px;
+      top: 14px;
+      bottom: 14px;
       width: 2px;
-      background: var(--border);
+      background: linear-gradient(180deg,
+        var(--border, #e7e9f3) 0%,
+        var(--border, #e7e9f3) 92%,
+        transparent 100%);
     }
-    .timeline__item {
+    .ctx-timeline__item {
       position: relative;
-      padding: 0 0 18px 28px;
+      padding: 0 0 18px 40px;
     }
-    .timeline__item:last-child { padding-bottom: 0; }
-    .timeline__dot {
+    .ctx-timeline__item:last-child { padding-bottom: 0; }
+
+    /* Dot semántico — usa box-shadow para anillo blanco que tape el rail */
+    .ctx-timeline__dot {
       position: absolute;
-      left: 0; top: 6px;
-      width: 14px; height: 14px;
+      left: 5px;
+      top: 8px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      background: var(--accent);
-      border: 3px solid var(--surface);
-      box-shadow: 0 0 0 1px var(--border);
+      background: var(--accent, #d74009);
+      box-shadow: 0 0 0 3px var(--surface, #fff), 0 0 0 4px var(--accent, #d74009);
+      z-index: 1;
     }
-    .timeline__item--muted .timeline__dot {
-      background: var(--border-dark);
+    .ctx-timeline__item--positive .ctx-timeline__dot {
+      background: var(--green, #1f8923);
+      box-shadow: 0 0 0 3px var(--surface, #fff), 0 0 0 4px var(--green, #1f8923);
     }
-    .timeline__title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); display: block; line-height: 1.3; }
-    .timeline__meta  { font-size: 12px; color: var(--text-secondary); display: block; margin-top: 3px; }
+    .ctx-timeline__item--caution .ctx-timeline__dot {
+      background: var(--accent, #d74009);
+      box-shadow: 0 0 0 3px var(--surface, #fff), 0 0 0 4px var(--accent, #d74009);
+    }
+    .ctx-timeline__item--negative .ctx-timeline__dot {
+      background: #c01818;
+      box-shadow: 0 0 0 3px var(--surface, #fff), 0 0 0 4px #c01818;
+    }
+    .ctx-timeline__item--info .ctx-timeline__dot {
+      background: var(--blue-info, #1f78d1);
+      box-shadow: 0 0 0 3px var(--surface, #fff), 0 0 0 4px var(--blue-info, #1f78d1);
+    }
+    .ctx-timeline__item--muted .ctx-timeline__dot {
+      background: var(--text-muted, #9ca3af);
+      box-shadow: 0 0 0 3px var(--surface, #fff), 0 0 0 4px var(--border-dark, #d0d4e6);
+    }
+
+    /* Card del evento */
+    .ctx-timeline__card {
+      background: var(--surface, #fff);
+      border: 1px solid var(--border, #e7e9f3);
+      border-radius: var(--radius-lg, 12px);
+      padding: 14px 16px 12px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .ctx-timeline__item:first-child .ctx-timeline__card {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+      border-color: var(--border-dark, #d0d4e6);
+    }
+
+    /* Header: título + badge */
+    .ctx-timeline__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .ctx-timeline__title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary, #282834);
+      line-height: 1.35;
+      letter-spacing: -.005em;
+      flex: 1;
+      min-width: 0;
+    }
+    .ctx-timeline__badge {
+      flex-shrink: 0;
+      align-self: flex-start;
+    }
+
+    /* Descripción narrativa */
+    .ctx-timeline__desc {
+      font-size: 13px;
+      color: var(--text-secondary, #646587);
+      line-height: 1.5;
+      margin: 4px 0 0;
+    }
+
+    /* Chip técnico de transición de estado */
+    .ctx-timeline__transition {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 4px 10px;
+      background: var(--bg-soft, #f5f6fa);
+      border: 1px solid var(--border, #e7e9f3);
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-secondary, #646587);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      line-height: 1.2;
+    }
+    .ctx-timeline__transition-from {
+      color: var(--text-secondary, #646587);
+    }
+    .ctx-timeline__transition-arrow {
+      color: var(--text-muted, #9ca3af);
+      font-size: 11px;
+    }
+    .ctx-timeline__transition-to {
+      color: var(--text-primary, #282834);
+      font-weight: 600;
+    }
+
+    /* Footer: fecha + actor */
+    .ctx-timeline__foot {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border, #e7e9f3);
+      font-size: 11.5px;
+      color: var(--text-secondary, #646587);
+    }
+    .ctx-timeline__date {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-weight: 500;
+    }
+    .ctx-timeline__sep {
+      color: var(--text-muted, #9ca3af);
+    }
+    .ctx-timeline__actor {
+      font-weight: 500;
+    }
+
+    @media (max-width: 600px) {
+      .ctx-timeline__head {
+        flex-direction: column;
+      }
+      .ctx-timeline__badge {
+        order: -1;
+      }
+    }
 
     /* ── CTA subsanar (v1.8.5: protagonismo + glow) ─────────── */
     .subsanar-cta {
@@ -896,8 +1036,8 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.22"></script>
-  <script src="../shared/ivc-store.js?v=1.13.22"></script>
+  <script src="../shared/data.js?v=1.13.23"></script>
+  <script src="../shared/ivc-store.js?v=1.13.23"></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -1528,23 +1668,196 @@
       }
     };
 
-    /* ─── Histórico timeline ─────────────────────────────────────────── */
+    /* ─── Histórico timeline — UX Pro Max v1.13.23 ────────────────────
+       Refactor de legibilidad: cada evento se representa como una tarjeta
+       con título humanizado, badge semántico, descripción narrativa y
+       (cuando aplique) un chip técnico con la transición de estado. */
+
+    /* Diccionario de nombres humanizados para los estados internos del
+       state machine. Si no está en la tabla, se devuelve el original. */
+    var STATE_LABELS_PUB = {
+      'No asignada':          'No asignada',
+      'Asignada':             'Asignada',
+      'En validación':        'En validación',
+      'Cumple':               'Cumple',
+      'Parcial':              'Cumplimiento parcial',
+      'NoCumple':             'No cumple',
+      'PendienteCOO':         'Pendiente revisión Coordinador',
+      'PendienteFirma':       'Pendiente firma Director',
+      'Firmado':              'Acto firmado',
+      'NotifElectronica':     'Notificación electrónica',
+      'NotifOficinas':        'Notificación en oficinas',
+      'Vigente':              'Acto vigente',
+      'PendienteRecursos':    'Pendiente recursos',
+      'PendienteRecursoTipo': 'Tipo de recurso',
+      'EnApelacion':          'En apelación',
+      'EnReposicion':         'En reposición'
+    };
+
+    /* Parsea "Estado: X → Y · descripción" en sus 3 partes; cuando no
+       coincide el patrón, devuelve null para evitar mostrar ruido. */
+    function _parseAccion(text) {
+      if (!text) return null;
+      var m = String(text).match(/^Estado:\s*(.+?)\s*→\s*(.+?)(?:\s*·\s*(.+))?$/);
+      if (!m) return null;
+      return {
+        from: (m[1] || '').trim(),
+        to:   (m[2] || '').trim(),
+        desc: (m[3] || '').trim()
+      };
+    }
+
+    /* Devuelve { label, variant } para el badge semántico del evento.
+       Variant mapea a las clases canónicas del DS (positive/caution/
+       negative/informative). */
+    function _eventoBadge(accion) {
+      var a = (accion || '').toLowerCase();
+      if (a.indexOf('subsanación') >= 0)                            return { label: 'Subsanación',  variant: 'informative' };
+      if (a.indexOf('no cumple') >= 0 || a.indexOf('rechaz') >= 0) return { label: 'No cumple',    variant: 'negative' };
+      if (a.indexOf('cumplimiento parcial') >= 0 || a.indexOf('parcial') >= 0 || a.indexOf('devuelt') >= 0)
+                                                                    return { label: 'Parcial',      variant: 'caution' };
+      if (a.indexOf('apelaci') >= 0)                                return { label: 'Apelación',    variant: 'caution' };
+      if (a.indexOf('reposici') >= 0)                               return { label: 'Reposición',   variant: 'caution' };
+      if (a.indexOf('recurso') >= 0)                                return { label: 'Recurso',      variant: 'caution' };
+      if (a.indexOf('renunc') >= 0)                                 return { label: 'Renuncia',     variant: 'positive' };
+      if (a.indexOf('vigente') >= 0)                                return { label: 'Vigente',      variant: 'positive' };
+      if (a.indexOf('firma') >= 0)                                  return { label: 'Firmado',      variant: 'positive' };
+      if (a.indexOf('aprob') >= 0)                                  return { label: 'Aprobado',     variant: 'positive' };
+      if (a.indexOf('acto') >= 0 && a.indexOf('generado') >= 0)    return { label: 'Acto generado',variant: 'positive' };
+      if (a.indexOf('notificad') >= 0 || a.indexOf('notificación') >= 0)
+                                                                    return { label: 'Notificación', variant: 'informative' };
+      if (a.indexOf('asignad') >= 0)                                return { label: 'Asignación',   variant: 'informative' };
+      if (a.indexOf('inicio de validaci') >= 0)                    return { label: 'En validación',variant: 'informative' };
+      if (a.indexOf('remisi') >= 0)                                 return { label: 'Remisión',     variant: 'informative' };
+      if (a.indexOf('radicad') >= 0)                                return { label: 'Radicado',     variant: 'informative' };
+      return { label: 'Evento', variant: 'neutral' };
+    }
+
+    /* Variant del dot del timeline en base al badge. */
+    function _eventoDotVariant(badge) {
+      if (!badge) return 'muted';
+      if (badge.variant === 'positive')    return 'positive';
+      if (badge.variant === 'caution')     return 'caution';
+      if (badge.variant === 'negative')    return 'negative';
+      if (badge.variant === 'informative') return 'info';
+      return 'muted';
+    }
+
+    /* Devuelve un título humanizado y una descripción narrativa para
+       el evento. El título es corto y orientado a usuario público; la
+       descripción es la oración explicativa (sin la transición técnica). */
+    function _eventoTitulo(accion, badge, parsed) {
+      var a = (accion || '').toLowerCase();
+      /* Casos especiales con título narrativo más amable. */
+      if (a.indexOf('subsanación radicada') >= 0)        return 'Subsanación radicada por el organismo';
+      if (a.indexOf('subsanación') >= 0)                  return 'Subsanación';
+      if (a.indexOf('no cumple') >= 0)                    return 'Los documentos no cumplen los requisitos';
+      if (a.indexOf('cumplimiento parcial') >= 0 || a.indexOf('parcial') >= 0)
+                                                          return 'Cumplimiento parcial — requiere subsanación';
+      if (a.indexOf('acto') >= 0 && a.indexOf('generado') >= 0)
+                                                          return 'Acto administrativo generado';
+      if (a.indexOf('aprob') >= 0 && a.indexOf('coordinador') >= 0)
+                                                          return 'Acto aprobado por el Coordinador';
+      if (a.indexOf('firma') >= 0 && a.indexOf('firmado electrónicamente') >= 0)
+                                                          return 'Acto firmado por el Director';
+      if (a.indexOf('firma') >= 0)                        return 'Acto firmado por el Director';
+      if (a.indexOf('notificación electrónica') >= 0)    return 'Notificación electrónica enviada';
+      if (a.indexOf('notificación en oficinas') >= 0 || a.indexOf('alerta de notificación en oficinas') >= 0)
+                                                          return 'Alerta de notificación en oficinas';
+      if (a.indexOf('renunció a términos') >= 0)         return 'Organismo renunció a términos';
+      if (a.indexOf('no renunció') >= 0)                  return 'Organismo no renunció a términos';
+      if (a.indexOf('vigente') >= 0)                      return 'Acto administrativo vigente';
+      if (a.indexOf('apelaci') >= 0)                      return 'Recurso de apelación interpuesto';
+      if (a.indexOf('reposici') >= 0)                     return 'Recurso de reposición interpuesto';
+      if (a.indexOf('interpone recursos') >= 0)          return 'Organismo interpone recursos';
+      if (a.indexOf('inicio de validaci') >= 0)          return 'Inicio de validación';
+      if (a.indexOf('asignad') >= 0)                      return accion;          /* "Asignada a Carlos Pérez" */
+      if (a.indexOf('remisi') >= 0)                       return accion;          /* "Remisión automática a..." */
+      if (a.indexOf('radicado') >= 0)                     return 'Trámite radicado';
+      /* Fallback: si parseamos transición, usar el label del badge;
+         si no, devolvemos el texto crudo. */
+      if (parsed && badge) return badge.label;
+      return accion || 'Evento';
+    }
+
+    /* Extrae la descripción narrativa, eliminando el prefijo técnico
+       "Estado: X → Y · " si está presente. */
+    function _eventoDesc(accion, parsed) {
+      if (!accion) return '';
+      if (parsed && parsed.desc) return parsed.desc;
+      /* Si no hubo prefijo de Estado pero hay "·" en el texto, devolver
+         lo que viene después del primer "·". */
+      var idx = accion.indexOf('·');
+      if (idx >= 0) return accion.slice(idx + 1).trim();
+      return '';
+    }
+
+    /* Devuelve el nombre humanizado de un estado interno. */
+    function _humanState(s) {
+      if (!s) return s;
+      return STATE_LABELS_PUB[s] || s;
+    }
+
     function renderHistorico(t) {
       var events = (t.historico || []).slice().reverse();
       if (events.length === 0) return '';
       return '<section class="section">' +
-        '<div class="section__header"><h3 class="section__title">Histórico del trámite</h3></div>' +
-        '<ul class="timeline">' +
+        '<div class="section__header">' +
+          '<h3 class="section__title">Histórico del trámite</h3>' +
+        '</div>' +
+        '<ol class="ctx-timeline">' +
           events.map(function (e, i) {
-            var muted = i === 0 ? '' : ' timeline__item--muted';
-            var meta = (e.fecha ? formatDate(e.fecha) : '') + (e.hora ? ' · ' + e.hora : '') + (e.actor ? ' · ' + e.actor : '');
-            return '<li class="timeline__item' + muted + '">' +
-              '<span class="timeline__dot"></span>' +
-              '<span class="timeline__title">' + escHtml(e.accion || 'Evento') + '</span>' +
-              (meta ? '<span class="timeline__meta">' + escHtml(meta) + '</span>' : '') +
+            var accion = e.accion || '';
+            var parsed = _parseAccion(accion);
+            var badge  = _eventoBadge(accion);
+            var titulo = _eventoTitulo(accion, badge, parsed);
+            var desc   = _eventoDesc(accion, parsed);
+            var variant = i === 0 ? _eventoDotVariant(badge) : 'muted';
+
+            var badgeHtml = badge
+              ? '<span class="ctx-timeline__badge">' +
+                  '<span class="naowee-badge naowee-badge--' + badge.variant + ' naowee-badge--quiet naowee-badge--small">' +
+                    escHtml(badge.label) +
+                  '</span>' +
+                '</span>'
+              : '';
+
+            var transitionHtml = (parsed && parsed.from && parsed.to)
+              ? '<span class="ctx-timeline__transition">' +
+                  '<span class="ctx-timeline__transition-from">' + escHtml(_humanState(parsed.from)) + '</span>' +
+                  '<span class="ctx-timeline__transition-arrow">→</span>' +
+                  '<span class="ctx-timeline__transition-to">' + escHtml(_humanState(parsed.to)) + '</span>' +
+                '</span>'
+              : '';
+
+            var descHtml = desc
+              ? '<p class="ctx-timeline__desc">' + escHtml(desc) + '</p>'
+              : '';
+
+            var fecha = e.fecha ? formatDate(e.fecha) : '';
+            var hora  = e.hora || '';
+            var actor = e.actor || '';
+            var footParts = [];
+            if (fecha) footParts.push('<span class="ctx-timeline__date">' + escHtml(fecha + (hora ? ' · ' + hora : '')) + '</span>');
+            if (actor) footParts.push('<span class="ctx-timeline__sep">·</span><span class="ctx-timeline__actor">' + escHtml(actor) + '</span>');
+            var footHtml = footParts.length
+              ? '<div class="ctx-timeline__foot">' + footParts.join('') + '</div>'
+              : '';
+
+            return '<li class="ctx-timeline__item ctx-timeline__item--' + variant + '">' +
+              '<span class="ctx-timeline__dot" aria-hidden="true"></span>' +
+              '<div class="ctx-timeline__card">' +
+                '<div class="ctx-timeline__head">' +
+                  '<div class="ctx-timeline__title">' + escHtml(titulo) + '</div>' +
+                  badgeHtml +
+                '</div>' +
+                descHtml +
+                transitionHtml +
+                footHtml +
+              '</div>' +
             '</li>';
           }).join('') +
-        '</ul>' +
+        '</ol>' +
       '</section>';
     }
 
