@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-helper, .naowee-tooltip. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.1">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.1">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.1">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.1">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.2">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.2">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.2">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.2">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: paridad con coordinador/bandeja.html. Sin invención de
@@ -96,13 +96,14 @@
       color: var(--text-primary);
     }
     .row-organismo { color: var(--text-primary); font-weight: 500; }
+    /* v1.13.2: Doug pidió que solo el radicado use monospace — el NIT y el
+       resto de la tabla vuelve a Inter para consistencia tipográfica. */
     .row-organismo__sub {
       display: block;
       font-size: 11.5px;
       color: var(--text-secondary);
       font-weight: 400;
       margin-top: 2px;
-      font-family: ui-monospace, SFMono-Regular, monospace;
     }
     .row-tipo { color: var(--text-secondary); }
     .row-plazo {
@@ -132,10 +133,20 @@
       font-size: 13px;
       font-feature-settings: 'tnum';
     }
+    /* v1.13.2: split asignador en nombre (arriba) + rol (abajo gris claro)
+       — mismo patrón que .row-organismo + __sub para consistencia visual. */
     .row-asignador {
+      display: block;
       color: var(--text-primary);
       font-size: 13px;
       font-weight: 500;
+    }
+    .row-asignador__sub {
+      display: block;
+      font-size: 11.5px;
+      color: var(--text-muted, #9ca3af);
+      font-weight: 400;
+      margin-top: 2px;
     }
     .row-actions {
       display: flex;
@@ -351,10 +362,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.1"></script>
-  <script src="../shared/shell.js?v=1.13.1"></script>
-  <script src="../shared/ivc-store.js?v=1.13.1"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.1" defer></script>
+  <script src="../shared/data.js?v=1.13.2"></script>
+  <script src="../shared/shell.js?v=1.13.2"></script>
+  <script src="../shared/ivc-store.js?v=1.13.2"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.2" defer></script>
   <script>
     /* Profesional activo: por simplicidad del demo, fijo a Carlos Pérez.
        Si en el futuro se identifica via session/auth, reemplazar acá. */
@@ -550,7 +561,9 @@
           '<td><span class="row-date">' + formatDate(t.fechaRadicacion) + '</span></td>' +
           '<td>' + badgePlazo + '</td>' +
           '<td>' + badgeEstado + '</td>' +
-          '<td><span class="row-asignador">' + coord + '</span></td>' +
+          '<td><span class="row-asignador">' + coord.nombre +
+            '<span class="row-asignador__sub">' + coord.rol + '</span>' +
+          '</span></td>' +
           '<td><div class="row-actions">' + histBtn + abrirBtn + '</div></td>' +
         '</tr>';
       }).join('');
@@ -559,13 +572,17 @@
       footer.textContent = 'Mostrando ' + visibles.length + ' de ' + state.tramites.length;
     }
 
+    /* v1.13.2: devuelve { nombre, rol } separados para renderizarlos
+       en 2 líneas en la columna ASIGNADO POR (nombre arriba, rol gris). */
     function coordinatorFromHistorico(t) {
-      /* Buscar el evento "Asignada a ..." en el histórico y devolver el actor */
       var asig = (t.historico || []).find(function (h) {
         return /asignad/i.test(h.accion || '') && (h.actor || '').toLowerCase().indexOf('coordinador') >= 0;
       });
-      if (asig) return asig.actor.replace(' (Coordinador)', '');
-      return 'Carolina Méndez';
+      var raw = asig ? asig.actor : 'Carolina Méndez (Coordinador IVC)';
+      /* Parsea "Nombre Apellido (Rol completo)" → { nombre, rol } */
+      var m = raw.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      if (m) return { nombre: m[1].trim(), rol: m[2].trim() };
+      return { nombre: raw, rol: 'Coordinador IVC' };
     }
 
     function badgeForEstado(estado) {
