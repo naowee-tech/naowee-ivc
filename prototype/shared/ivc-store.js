@@ -21,7 +21,7 @@
   'use strict';
 
   var KEY = 'ivc:store';
-  var SEED_VERSION = 6;            /* v1.13.26 (Doug 27/05/2026): bump fuerza reseed — agrega 024/025 NotifOficinas vencidos para que la bandeja GIT tenga mocks reales y no quede vacía. */
+  var SEED_VERSION = 7;            /* v1.13.33 (Doug 27/05/2026): bump fuerza reseed — agrega state.personas[] con todo el equipo IVC (profesionales + director + coord + ATU + GIT + jurídica) para la nueva página coordinador/equipo.html. */
 
   /* ─── Seed inicial ───────────────────────────────────────────────────
      v1.5.3 FIX (25/05/2026): bug crítico — antes mkSeed referenciaba
@@ -34,6 +34,31 @@
     { id: 'mg-002', nombre: 'María García',     area: 'aficionado', activos: 8  },
     { id: 'al-003', nombre: 'Andrés López',     area: 'aficionado', activos: 15 },
     { id: 'lr-004', nombre: 'Lucía Ramírez',    area: 'aficionado', activos: 5  }
+  ];
+
+  /* v1.13.33 (Doug 27/05/2026): nuevo array de PERSONAS del equipo IVC,
+     centraliza TODOS los miembros (no solo profesionales). El Coordinador
+     gestiona este equipo desde /coordinador/equipo.html.
+     PROFESIONALES queda como sub-vista (rol='profesional' + activo).
+     Roles: profesional | director | coordinador | atu | git | juridica.
+     Estados: activo | pendiente | inactivo. */
+  var PERSONAS = [
+    /* Coordinadores */
+    { id: 'co-001', nombre: 'Carolina Méndez',     email: 'carolina.mendez@deporte.gov.co',  cedula: 'CC 52.345.678', rol: 'coordinador', area: null,         estado: 'activo',    fechaInvitacion: '2024-01-15', fechaActivacion: '2024-01-15' },
+
+    /* Profesionales IVC — sincronizado con PROFESIONALES para back-compat. */
+    { id: 'cp-001', nombre: 'Carlos Pérez',        email: 'carlos.perez@deporte.gov.co',     cedula: 'CC 79.123.456', rol: 'profesional', area: 'aficionado', estado: 'activo',    fechaInvitacion: '2024-02-10', fechaActivacion: '2024-02-12' },
+    { id: 'mg-002', nombre: 'María García',        email: 'maria.garcia@deporte.gov.co',     cedula: 'CC 52.456.789', rol: 'profesional', area: 'aficionado', estado: 'activo',    fechaInvitacion: '2024-02-10', fechaActivacion: '2024-02-12' },
+    { id: 'al-003', nombre: 'Andrés López',        email: 'andres.lopez@deporte.gov.co',     cedula: 'CC 80.234.567', rol: 'profesional', area: 'aficionado', estado: 'activo',    fechaInvitacion: '2024-03-05', fechaActivacion: '2024-03-07' },
+    { id: 'lr-004', nombre: 'Lucía Ramírez',       email: 'lucia.ramirez@deporte.gov.co',    cedula: 'CC 43.345.678', rol: 'profesional', area: 'aficionado', estado: 'activo',    fechaInvitacion: '2024-04-01', fechaActivacion: '2024-04-03' },
+
+    /* Director IVC */
+    { id: 'dir-001', nombre: 'María Helena Ramos', email: 'mh.ramos@deporte.gov.co',         cedula: 'CC 41.567.890', rol: 'director',    area: null,         estado: 'activo',    fechaInvitacion: '2024-01-10', fechaActivacion: '2024-01-12' },
+
+    /* ATU · GIT · Jurídica — un titular por área. */
+    { id: 'atu-001', nombre: 'Patricia Sánchez',   email: 'p.sanchez@deporte.gov.co',        cedula: 'CC 52.678.901', rol: 'atu',        area: null,          estado: 'activo',    fechaInvitacion: '2024-03-15', fechaActivacion: '2024-03-15' },
+    { id: 'git-001', nombre: 'Roberto Castro',     email: 'r.castro@deporte.gov.co',         cedula: 'CC 79.789.012', rol: 'git',        area: null,          estado: 'activo',    fechaInvitacion: '2024-03-20', fechaActivacion: '2024-03-22' },
+    { id: 'jur-001', nombre: 'Diana Quintero',     email: 'd.quintero@deporte.gov.co',       cedula: 'CC 52.890.123', rol: 'juridica',   area: null,          estado: 'activo',    fechaInvitacion: '2024-04-05', fechaActivacion: '2024-04-07' }
   ];
 
   /* v1.7.3 (26/05/2026): factory de datos mock por tipo de organismo.
@@ -453,6 +478,9 @@
       ultimoRadicado: 25,
       mode: 'demo',
       profesionales: JSON.parse(JSON.stringify(PROFESIONALES)),
+      /* v1.13.33: nuevo state.personas[] — equipo IVC completo gestionado
+         por el Coordinador desde /coordinador/equipo.html. */
+      personas: JSON.parse(JSON.stringify(PERSONAS)),
       tramites: SEED_TRAMITES_RAW.map(function (row) { return mkSeed.apply(null, row); })
     };
   }
@@ -536,6 +564,116 @@
       return area
         ? s.profesionales.filter(function (p) { return p.area === area; })
         : s.profesionales.slice();
+    },
+
+    /* v1.13.33 (Doug 27/05/2026): API para gestión del equipo IVC desde
+       /coordinador/equipo.html. PERSONAS centraliza profesionales,
+       director, coord, ATU, GIT, jurídica con estado de invitación. */
+    getPersonas: function (filtros) {
+      var s = this.init();
+      var ps = (s.personas || []).slice();
+      if (!filtros) return ps;
+      if (filtros.rol)    ps = ps.filter(function (p) { return p.rol === filtros.rol; });
+      if (filtros.area)   ps = ps.filter(function (p) { return p.area === filtros.area; });
+      if (filtros.estado) ps = ps.filter(function (p) { return p.estado === filtros.estado; });
+      if (filtros.q) {
+        var q = String(filtros.q).toLowerCase();
+        ps = ps.filter(function (p) {
+          return (p.nombre || '').toLowerCase().indexOf(q) >= 0 ||
+                 (p.email  || '').toLowerCase().indexOf(q) >= 0;
+        });
+      }
+      return ps;
+    },
+
+    getPersona: function (id) {
+      var s = this.init();
+      return (s.personas || []).find(function (p) { return p.id === id; }) || null;
+    },
+
+    /* Carga actual = # trámites activos asignados al profesional. Solo
+       aplica a rol=profesional; otros roles devuelven 0. Estados que
+       cuentan como "activo": Asignada / En validación / Cumple / Parcial /
+       NoCumple / PendienteCOO (todavía en ciclo de revisión).
+       Estados que NO cuentan: PendienteFirma, Firmado, NotifElectronica,
+       NotifOficinas, Vigente, EnApelacion, EnReposicion (fuera del
+       backlog del profesional). */
+    getCargaPersona: function (personaId) {
+      var s = this.init();
+      var ESTADOS_ACTIVOS = ['Asignada', 'En validación', 'Cumple', 'Parcial', 'NoCumple', 'PendienteCOO'];
+      return s.tramites.filter(function (t) {
+        return t.profesionalId === personaId && ESTADOS_ACTIVOS.indexOf(t.estado) >= 0;
+      }).length;
+    },
+
+    /* Crear/invitar persona. Genera ID auto, estado='pendiente'. */
+    invitarPersona: function (data) {
+      if (!data || !data.nombre || !data.email || !data.rol) return null;
+      var s = this.init();
+      var prefix = ({ profesional: 'pf', director: 'dir', coordinador: 'co', atu: 'atu', git: 'git', juridica: 'jur' })[data.rol] || 'p';
+      /* Genera ID único basado en personas existentes con el mismo prefijo. */
+      var n = ((s.personas || []).filter(function (p) { return p.id.indexOf(prefix + '-') === 0; }).length + 1);
+      var id = prefix + '-' + String(n).padStart(3, '0');
+      var hoy = new Date().toISOString().slice(0, 10);
+      var nueva = {
+        id: id,
+        nombre: data.nombre,
+        email: data.email,
+        cedula: data.cedula || '',
+        rol: data.rol,
+        area: data.area || null,
+        estado: 'pendiente',
+        fechaInvitacion: hoy,
+        fechaActivacion: null,
+        mensajeInvitacion: data.mensaje || ''
+      };
+      s.personas = s.personas || [];
+      s.personas.push(nueva);
+      write(s);
+      emit('persona:invitada', nueva);
+      return nueva;
+    },
+
+    /* Simular aceptación de invitación (modo demo) → estado='activo'. */
+    aceptarInvitacion: function (personaId) {
+      var s = this.init();
+      var p = (s.personas || []).find(function (x) { return x.id === personaId; });
+      if (!p) return null;
+      if (p.estado !== 'pendiente') return p;
+      p.estado = 'activo';
+      p.fechaActivacion = new Date().toISOString().slice(0, 10);
+      /* Si es un profesional, también lo agregamos a s.profesionales para
+         back-compat con el código existente que consume getProfesionales(). */
+      if (p.rol === 'profesional') {
+        s.profesionales = s.profesionales || [];
+        if (!s.profesionales.find(function (x) { return x.id === p.id; })) {
+          s.profesionales.push({ id: p.id, nombre: p.nombre, area: p.area, activos: 0 });
+        }
+      }
+      write(s);
+      emit('persona:aceptada', p);
+      return p;
+    },
+
+    desactivarPersona: function (personaId) {
+      var s = this.init();
+      var p = (s.personas || []).find(function (x) { return x.id === personaId; });
+      if (!p) return null;
+      p.estado = 'inactivo';
+      write(s);
+      emit('persona:desactivada', p);
+      return p;
+    },
+
+    /* Reactivar una persona inactiva sin volver a invitar. */
+    reactivarPersona: function (personaId) {
+      var s = this.init();
+      var p = (s.personas || []).find(function (x) { return x.id === personaId; });
+      if (!p) return null;
+      p.estado = 'activo';
+      write(s);
+      emit('persona:reactivada', p);
+      return p;
     },
 
     getTramites: function (filtros) {

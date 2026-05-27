@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Equipo · Coordinador IVC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.33">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.33">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.33">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.33">
+  <style>.naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════
+       Coordinador — Gestión del Equipo IVC
+       v1.13.33 (2026-05-27)
+
+       Permite al Coordinador gestionar el equipo IVC del Ministerio:
+       invitar Profesionales, Director, otros Coordinadores, ATU, GIT,
+       Jurídica. Patrón inspirado en Project admin/usuarios.html pero
+       adaptado a personas internas (no entidades territoriales).
+       ═══════════════════════════════════════════════════════════════════ */
+    .page-title-block { margin-bottom: 4px; }
+    .page-title { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.5px; color: var(--text-primary); line-height: 1.2; }
+    .page-subtitle { margin: 6px 0 0; font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+    .page-inner { max-width: 1480px !important; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 24px 0; }
+    @media (max-width: 900px) { .stat-grid { grid-template-columns: 1fr; } }
+    @media (min-width: 901px) and (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* Toolbar dentro del card — searchbox + filtros + CTA */
+    .equipo-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-wrap: wrap;
+    }
+    .equipo-toolbar__search { flex: 0 1 320px; min-width: 240px; }
+    .equipo-toolbar__filters { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+    .equipo-toolbar__spacer { flex: 1 1 auto; }
+    .equipo-toolbar .naowee-dropdown { width: 170px; flex-shrink: 0; }
+
+    /* Avatar circular con iniciales (mock — sin foto real) */
+    .persona-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent, #d74009);
+      color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      flex-shrink: 0;
+      letter-spacing: -.2px;
+    }
+    .persona-avatar--coordinador { background: #1f78d1; }
+    .persona-avatar--director    { background: #7c3aed; }
+    .persona-avatar--profesional { background: var(--accent, #d74009); }
+    .persona-avatar--atu         { background: #0ea5e9; }
+    .persona-avatar--git         { background: #14b8a6; }
+    .persona-avatar--juridica    { background: #ec4899; }
+    .persona-avatar--pendiente   { background: var(--text-muted, #9ca3af); }
+
+    .persona-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .persona-cell__body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .persona-cell__name { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+    .persona-cell__cedula { font-size: 11.5px; color: var(--text-muted, #9ca3af); font-family: ui-monospace, monospace; }
+
+    .row-rol-label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .row-area-label { font-size: 13px; color: var(--text-secondary); }
+    .row-area-label--empty { font-style: italic; color: var(--text-muted, #9ca3af); }
+    .row-email { font-size: 12.5px; color: var(--text-secondary); font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+    /* Carga: semáforo */
+    .carga-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 11.5px; font-weight: 700;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    .carga-pill--low    { background: #e6f4e7; color: #1f8923; }
+    .carga-pill--medium { background: #fff3e6; color: var(--accent, #d74009); }
+    .carga-pill--high   { background: #fff0ee; color: #c01818; }
+    .carga-pill--zero   { background: var(--bg-soft, #f5f6fa); color: var(--text-muted, #9ca3af); }
+
+    /* Acciones row */
+    .row-actions { display: inline-flex; align-items: center; gap: 4px; justify-content: flex-end; }
+    .row-action-btn {
+      background: transparent;
+      border: 0;
+      padding: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      display: inline-flex;
+      transition: background .15s, color .15s;
+    }
+    .row-action-btn:hover { background: var(--bg-soft, #f5f6fa); color: var(--accent, #d74009); }
+
+    /* Form modal */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+    .form-grid__field--full { grid-column: 1 / -1; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .form-label__required { color: var(--accent, #d74009); margin-left: 2px; }
+    .form-helper {
+      display: block;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* Pending row highlight — sutil, no aggressive */
+    .row-pending td { background: rgba(255, 243, 230, .25); }
+
+    /* Áreas técnicas — cards */
+    .areas-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding: 18px 20px;
+    }
+    @media (max-width: 900px) { .areas-grid { grid-template-columns: 1fr; } }
+    .area-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 12px);
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .area-card:hover { border-color: var(--border-dark, #d0d4e6); }
+    .area-card__head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+    }
+    .area-card__title-group { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .area-card__title { font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 0; }
+    .area-card__subtitle { font-size: 12.5px; color: var(--text-secondary); }
+    .area-card__icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--orange-bg, #fff3e6);
+      color: var(--accent, #d74009);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .area-card__stats {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .area-card__stat-label { font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--text-muted, #9ca3af); margin-bottom: 4px; }
+    .area-card__stat-value { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -.4px; }
+    .area-card__profesionales-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .4px;
+      text-transform: uppercase; color: var(--text-muted, #9ca3af);
+      margin: 0;
+    }
+    .area-card__prof-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .area-card__prof-row:last-child { border-bottom: 0; }
+    .area-card__prof-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .area-card__prof-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+
+    /* Tabs canónico — usa pattern transversal de v1.13.24 */
+    .equipo-tabs-wrap {
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="shell" id="app-shell"></div>
+  <template id="page-content"><div class="page-inner" id="pageInner"></div></template>
+
+  <!-- Modal Invitar persona -->
+  <div class="naowee-modal-overlay" id="modalInvitar" role="dialog" aria-modal="true">
+    <div class="naowee-modal" style="width:95vw; max-width: 620px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title">Invitar persona al equipo IVC</h2>
+          <p class="naowee-modal__subtitle">Se enviará una invitación al correo institucional para que confirme su acceso.</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="invitarDismiss" aria-label="Cerrar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body">
+        <div class="form-grid" id="invitarForm">
+          <div class="form-grid__field--full" style="grid-column: 1 / -1;">
+            <label class="form-label" for="invNombre">Nombre completo<span class="form-label__required">*</span></label>
+            <input type="text" class="naowee-input" id="invNombre" placeholder="María García González" />
+          </div>
+
+          <div>
+            <label class="form-label" for="invCedula">Cédula</label>
+            <input type="text" class="naowee-input" id="invCedula" placeholder="CC 52.345.678" />
+            <span class="form-helper">Opcional — formato libre.</span>
+          </div>
+
+          <div>
+            <label class="form-label" for="invEmail">Correo institucional<span class="form-label__required">*</span></label>
+            <input type="email" class="naowee-input" id="invEmail" placeholder="nombre.apellido@deporte.gov.co" />
+          </div>
+
+          <div>
+            <label class="form-label" for="invRol">Rol en el sistema<span class="form-label__required">*</span></label>
+            <select class="naowee-input" id="invRol">
+              <option value="">Seleccionar rol…</option>
+              <option value="profesional">Profesional IVC</option>
+              <option value="coordinador">Coordinador IVC</option>
+              <option value="director">Director IVC</option>
+              <option value="atu">ATU · Atención al Usuario</option>
+              <option value="git">GIT · Comunicaciones</option>
+              <option value="juridica">Jurídica</option>
+            </select>
+          </div>
+
+          <div id="invAreaWrap" style="display:none;">
+            <label class="form-label" for="invArea">Área asignada<span class="form-label__required">*</span></label>
+            <select class="naowee-input" id="invArea">
+              <option value="">Seleccionar área…</option>
+              <option value="aficionado">Deporte Aficionado</option>
+              <option value="profesional">Deporte Profesional</option>
+            </select>
+            <span class="form-helper">Solo aplica para Profesionales IVC.</span>
+          </div>
+
+          <div class="form-grid__field--full" style="grid-column: 1 / -1;">
+            <label class="form-label" for="invMensaje">Mensaje personalizado</label>
+            <textarea class="naowee-input" id="invMensaje" rows="3" placeholder="Bienvenido al equipo IVC. Tu acceso te permitirá…"></textarea>
+            <span class="form-helper">Opcional — se incluirá en el correo de invitación.</span>
+          </div>
+        </div>
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end" style="gap: 10px;">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="invitarCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="invitarSubmit" disabled>Enviar invitación</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal confirmar desactivar -->
+  <div class="naowee-modal-overlay" id="modalDesactivar" role="dialog" aria-modal="true">
+    <div class="naowee-modal" style="width:95vw; max-width: 480px;">
+      <div class="naowee-modal__header">
+        <div class="naowee-modal__title-group">
+          <h2 class="naowee-modal__title">Desactivar acceso</h2>
+          <p class="naowee-modal__subtitle" id="desactivarSub">—</p>
+        </div>
+        <button type="button" class="naowee-modal__dismiss" id="desactivarDismiss" aria-label="Cerrar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="naowee-modal__body">
+        <div class="naowee-message naowee-message--caution" style="margin: 0;">
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <span class="naowee-message__title">La persona pierde acceso al sistema</span>
+          </div>
+          <div class="naowee-message__text">
+            Esta acción retira el acceso al módulo IVC. Los trámites asignados quedan visibles para reasignación, pero no se eliminan. Podrás reactivar el acceso después si es necesario.
+          </div>
+        </div>
+      </div>
+      <div class="naowee-modal__footer naowee-modal__footer--end" style="gap: 10px;">
+        <button type="button" class="naowee-btn naowee-btn--mute" id="desactivarCancel">Cancelar</button>
+        <button type="button" class="naowee-btn naowee-btn--loud" id="desactivarSubmit">Desactivar acceso</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/data.js?v=1.13.33"></script>
+  <script src="../shared/shell.js?v=1.13.33"></script>
+  <script src="../shared/ivc-store.js?v=1.13.33"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.33" defer></script>
+
+  <script>
+    var state = {
+      personas: [],
+      activeTab: 'personas',
+      filtros: { rol: '', area: '', estado: '', q: '' },
+      modalAction: null   /* { type: 'desactivar', personaId: '...' } */
+    };
+
+    /* Labels humanizados */
+    var ROL_LABELS = {
+      profesional: 'Profesional IVC',
+      coordinador: 'Coordinador IVC',
+      director:    'Director IVC',
+      atu:         'ATU',
+      git:         'GIT Comunicaciones',
+      juridica:    'Jurídica'
+    };
+    var AREA_LABELS = {
+      aficionado:  'Deporte Aficionado',
+      profesional: 'Deporte Profesional'
+    };
+    var ESTADO_LABELS = {
+      activo:    'Activo',
+      pendiente: 'Pendiente confirmación',
+      inactivo:  'Inactivo'
+    };
+    var ESTADO_VARIANT = {
+      activo:    'positive',
+      pendiente: 'caution',
+      inactivo:  'neutral'
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      window.IVCData.setPerfil('coordinador');
+      var template = document.getElementById('page-content');
+      var shellRoot = document.getElementById('app-shell');
+      shellRoot.innerHTML = template.innerHTML;
+      window.IVCShell.init({ title: null, activeNav: 'equipo-coord' });
+
+      IVCStore.init();
+      load();
+
+      /* Escuchar cambios cross-tab o internos. */
+      ['store:changed-external', 'persona:invitada', 'persona:aceptada', 'persona:desactivada', 'persona:reactivada'].forEach(function (ev) {
+        IVCStore.on(ev, function () { load(); render(); });
+      });
+
+      wireModals();
+      render();
+    });
+
+    function load() {
+      state.personas = IVCStore.getPersonas();
+    }
+
+    /* ─── Render ─────────────────────────────────────────────────────── */
+    function render() {
+      var host = document.getElementById('pageInner');
+      var stats = computeStats();
+
+      host.innerHTML =
+        '<header class="page-title-block">' +
+          '<h1 class="page-title">Equipo IVC</h1>' +
+          '<p class="page-subtitle">Gestiona quiénes participan en el módulo IVC: Profesionales que validan documentos, Director que firma actos, ATU/GIT/Jurídica que operan etapas posteriores, y otros Coordinadores.</p>' +
+        '</header>' +
+
+        '<section class="stat-grid">' +
+          renderStatCard('Total activos',     stats.totalActivos,     'Personas con acceso',     'accent') +
+          renderStatCard('Pendientes',        stats.totalPendientes,  'Sin confirmar invitación', 'caution') +
+          renderStatCard('Profesionales',     stats.totalProfes,      'Validan trámites',         'info') +
+          renderStatCard('Capacidad total',   stats.totalCarga + ' trámites',  'Activos en validación',   'success') +
+        '</section>' +
+
+        '<section class="naowee-table-card">' +
+          '<div class="naowee-table-card__head">' +
+            '<div class="naowee-table-card__head-text">' +
+              '<h2 class="naowee-table-card__title">Configuración del equipo</h2>' +
+              '<p class="naowee-table-card__subtitle">Invita personas al sistema, asigna áreas y gestiona accesos.</p>' +
+            '</div>' +
+          '</div>' +
+          /* Tabs canónicos */
+          '<nav class="equipo-tabs-wrap" role="tablist">' +
+            '<button type="button" class="actos-tab' + (state.activeTab === 'personas' ? ' is-selected' : '') + '" data-tab="personas" role="tab">' +
+              '<span>Personas IVC</span>' +
+              '<span class="actos-tab__count">' + state.personas.length + '</span>' +
+            '</button>' +
+            '<button type="button" class="actos-tab' + (state.activeTab === 'areas' ? ' is-selected' : '') + '" data-tab="areas" role="tab">' +
+              '<span>Áreas técnicas</span>' +
+              '<span class="actos-tab__count">2</span>' +
+            '</button>' +
+          '</nav>' +
+
+          (state.activeTab === 'personas' ? renderPersonasTab() : renderAreasTab()) +
+        '</section>';
+
+      wireTabs();
+      if (state.activeTab === 'personas') wirePersonasTab();
+    }
+
+    function computeStats() {
+      var totalActivos = state.personas.filter(function (p) { return p.estado === 'activo'; }).length;
+      var totalPendientes = state.personas.filter(function (p) { return p.estado === 'pendiente'; }).length;
+      var totalProfes = state.personas.filter(function (p) { return p.rol === 'profesional' && p.estado === 'activo'; }).length;
+      var totalCarga = state.personas
+        .filter(function (p) { return p.rol === 'profesional' && p.estado === 'activo'; })
+        .reduce(function (sum, p) { return sum + IVCStore.getCargaPersona(p.id); }, 0);
+      return { totalActivos: totalActivos, totalPendientes: totalPendientes, totalProfes: totalProfes, totalCarga: totalCarga };
+    }
+
+    function renderStatCard(label, value, hint, variant) {
+      return '<div class="naowee-stat-card naowee-stat-card--' + variant + '">' +
+        '<span class="naowee-stat-card__label">' + label + '</span>' +
+        '<span class="naowee-stat-card__value">' + value + '</span>' +
+        '<span class="naowee-stat-card__hint">' + hint + '</span>' +
+      '</div>';
+    }
+
+    /* ─── Tab Personas ───────────────────────────────────────────────── */
+    function renderPersonasTab() {
+      var filtered = applyFilters(state.personas);
+      return renderToolbar() + renderPersonasTable(filtered);
+    }
+
+    function renderToolbar() {
+      return '<div class="equipo-toolbar">' +
+        '<div class="equipo-toolbar__search">' +
+          '<div class="naowee-searchbox naowee-searchbox--medium">' +
+            '<div class="naowee-searchbox__input-wrap">' +
+              '<div class="naowee-searchbox__icon">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+              '</div>' +
+              '<input type="text" class="naowee-searchbox__input" placeholder="Buscar por nombre o correo" id="equipoSearch" value="' + escHtml(state.filtros.q) + '"/>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="equipo-toolbar__filters">' +
+          renderFiltroDropdown('Rol', 'rol', [
+            { value: '', label: 'Todos los roles' },
+            { value: 'profesional', label: 'Profesional IVC' },
+            { value: 'coordinador', label: 'Coordinador IVC' },
+            { value: 'director', label: 'Director IVC' },
+            { value: 'atu', label: 'ATU' },
+            { value: 'git', label: 'GIT Comunicaciones' },
+            { value: 'juridica', label: 'Jurídica' }
+          ], state.filtros.rol) +
+          renderFiltroDropdown('Área', 'area', [
+            { value: '', label: 'Todas las áreas' },
+            { value: 'aficionado', label: 'Deporte Aficionado' },
+            { value: 'profesional', label: 'Deporte Profesional' }
+          ], state.filtros.area) +
+          renderFiltroDropdown('Estado', 'estado', [
+            { value: '', label: 'Todos los estados' },
+            { value: 'activo', label: 'Activo' },
+            { value: 'pendiente', label: 'Pendiente confirmación' },
+            { value: 'inactivo', label: 'Inactivo' }
+          ], state.filtros.estado) +
+        '</div>' +
+        '<div class="equipo-toolbar__spacer"></div>' +
+        '<button type="button" class="naowee-btn naowee-btn--loud" id="btnInvitar">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+          'Invitar persona' +
+        '</button>' +
+      '</div>';
+    }
+
+    function renderFiltroDropdown(label, key, options, current) {
+      var selected = options.find(function (o) { return o.value === current; }) || options[0];
+      return '<select class="naowee-input" data-filtro="' + key + '" style="height:38px; padding:0 12px; font-size:13px;">' +
+        options.map(function (o) {
+          return '<option value="' + o.value + '"' + (o.value === current ? ' selected' : '') + '>' + o.label + '</option>';
+        }).join('') +
+      '</select>';
+    }
+
+    function renderPersonasTable(personas) {
+      if (personas.length === 0) {
+        return '<div class="naowee-empty-state">' +
+          '<div class="naowee-empty-state__icon">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+          '</div>' +
+          '<div class="naowee-empty-state__title">Sin coincidencias</div>' +
+          '<div class="naowee-empty-state__description">Ningún miembro del equipo coincide con los filtros aplicados. Ajusta los filtros o invita una persona nueva.</div>' +
+        '</div>';
+      }
+      return '<div style="overflow-x:auto;"><table class="naowee-table">' +
+        '<thead><tr>' +
+          '<th>Persona</th>' +
+          '<th>Rol</th>' +
+          '<th>Área</th>' +
+          '<th>Correo institucional</th>' +
+          '<th>Estado</th>' +
+          '<th style="text-align:center;">Carga actual</th>' +
+          '<th style="text-align:right;">Acciones</th>' +
+        '</tr></thead>' +
+        '<tbody>' +
+          personas.map(renderPersonaRow).join('') +
+        '</tbody>' +
+      '</table></div>';
+    }
+
+    function renderPersonaRow(p) {
+      var carga = p.rol === 'profesional' && p.estado === 'activo' ? IVCStore.getCargaPersona(p.id) : null;
+      var cargaCell = carga !== null ? renderCargaPill(carga) : '<span style="color:var(--text-muted, #9ca3af); font-size:12px;">—</span>';
+      var rowClass = p.estado === 'pendiente' ? 'row-pending' : '';
+      return '<tr class="' + rowClass + '">' +
+        '<td>' + renderPersonaCell(p) + '</td>' +
+        '<td><span class="row-rol-label">' + escHtml(ROL_LABELS[p.rol] || p.rol) + '</span></td>' +
+        '<td>' + (p.area
+          ? '<span class="row-area-label">' + escHtml(AREA_LABELS[p.area] || p.area) + '</span>'
+          : '<span class="row-area-label row-area-label--empty">—</span>') + '</td>' +
+        '<td><span class="row-email">' + escHtml(p.email) + '</span></td>' +
+        '<td>' + renderEstadoBadge(p.estado) + '</td>' +
+        '<td style="text-align:center;">' + cargaCell + '</td>' +
+        '<td style="text-align:right;">' + renderRowActions(p) + '</td>' +
+      '</tr>';
+    }
+
+    function renderPersonaCell(p) {
+      var inicials = (p.nombre || '?').split(/\s+/).slice(0, 2).map(function (s) { return s.charAt(0).toUpperCase(); }).join('');
+      var avatarClass = p.estado === 'pendiente' ? 'persona-avatar--pendiente' : ('persona-avatar--' + p.rol);
+      return '<div class="persona-cell">' +
+        '<div class="persona-avatar ' + avatarClass + '">' + escHtml(inicials) + '</div>' +
+        '<div class="persona-cell__body">' +
+          '<span class="persona-cell__name">' + escHtml(p.nombre) + '</span>' +
+          (p.cedula ? '<span class="persona-cell__cedula">' + escHtml(p.cedula) + '</span>' : '') +
+        '</div>' +
+      '</div>';
+    }
+
+    function renderEstadoBadge(estado) {
+      var variant = ESTADO_VARIANT[estado] || 'neutral';
+      var label = ESTADO_LABELS[estado] || estado;
+      return '<span class="naowee-badge naowee-badge--' + variant + ' naowee-badge--quiet naowee-badge--small">' + escHtml(label) + '</span>';
+    }
+
+    function renderCargaPill(n) {
+      var variant = n === 0 ? 'zero' : (n <= 5 ? 'low' : (n <= 12 ? 'medium' : 'high'));
+      return '<span class="carga-pill carga-pill--' + variant + '">' + n + ' activos</span>';
+    }
+
+    function renderRowActions(p) {
+      var btns = [];
+      if (p.estado === 'pendiente') {
+        btns.push(
+          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-action="aceptar" data-id="' + escHtml(p.id) + '" title="Simular que la persona aceptó la invitación (modo demo)">' +
+            'Simular aceptación' +
+          '</button>'
+        );
+      }
+      if (p.estado === 'inactivo') {
+        btns.push(
+          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-action="reactivar" data-id="' + escHtml(p.id) + '" title="Reactivar acceso">' +
+            'Reactivar' +
+          '</button>'
+        );
+      } else if (p.estado === 'activo') {
+        btns.push(
+          '<button type="button" class="row-action-btn" data-action="desactivar" data-id="' + escHtml(p.id) + '" title="Desactivar acceso">' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>' +
+          '</button>'
+        );
+      }
+      return '<div class="row-actions">' + btns.join('') + '</div>';
+    }
+
+    function applyFilters(personas) {
+      var f = state.filtros;
+      return personas.filter(function (p) {
+        if (f.rol    && p.rol    !== f.rol)    return false;
+        if (f.area   && p.area   !== f.area)   return false;
+        if (f.estado && p.estado !== f.estado) return false;
+        if (f.q) {
+          var q = f.q.toLowerCase();
+          if ((p.nombre || '').toLowerCase().indexOf(q) < 0 &&
+              (p.email  || '').toLowerCase().indexOf(q) < 0) return false;
+        }
+        return true;
+      });
+    }
+
+    /* ─── Tab Áreas técnicas ─────────────────────────────────────────── */
+    function renderAreasTab() {
+      var areas = [
+        { key: 'aficionado',  label: 'Deporte Aficionado', icon: '⚽' },
+        { key: 'profesional', label: 'Deporte Profesional', icon: '🏆' }
+      ];
+      return '<div class="areas-grid">' +
+        areas.map(renderAreaCard).join('') +
+      '</div>';
+    }
+
+    function renderAreaCard(area) {
+      var profes = state.personas.filter(function (p) { return p.rol === 'profesional' && p.area === area.key && p.estado === 'activo'; });
+      var totalCarga = profes.reduce(function (sum, p) { return sum + IVCStore.getCargaPersona(p.id); }, 0);
+      var profesList = profes.length === 0
+        ? '<p style="font-size:13px; color:var(--text-secondary); margin:0; font-style:italic;">Sin profesionales asignados todavía.</p>'
+        : profes.map(function (p) {
+            var carga = IVCStore.getCargaPersona(p.id);
+            var inicials = (p.nombre || '?').split(/\s+/).slice(0, 2).map(function (s) { return s.charAt(0).toUpperCase(); }).join('');
+            return '<div class="area-card__prof-row">' +
+              '<div class="area-card__prof-info">' +
+                '<div class="persona-avatar persona-avatar--profesional" style="width:28px;height:28px;font-size:11px;">' + escHtml(inicials) + '</div>' +
+                '<span class="area-card__prof-name">' + escHtml(p.nombre) + '</span>' +
+              '</div>' +
+              renderCargaPill(carga) +
+            '</div>';
+          }).join('');
+      return '<div class="area-card">' +
+        '<div class="area-card__head">' +
+          '<div class="area-card__title-group">' +
+            '<h3 class="area-card__title">' + escHtml(area.label) + '</h3>' +
+            '<span class="area-card__subtitle">Área técnica fija del Ministerio</span>' +
+          '</div>' +
+          '<div class="area-card__icon" style="font-size:22px;">' + area.icon + '</div>' +
+        '</div>' +
+        '<div class="area-card__stats">' +
+          '<div>' +
+            '<div class="area-card__stat-label">Profesionales</div>' +
+            '<div class="area-card__stat-value">' + profes.length + '</div>' +
+          '</div>' +
+          '<div>' +
+            '<div class="area-card__stat-label">Trámites activos</div>' +
+            '<div class="area-card__stat-value">' + totalCarga + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<h4 class="area-card__profesionales-title" style="margin-bottom:8px;">Profesionales asignados</h4>' +
+          profesList +
+        '</div>' +
+      '</div>';
+    }
+
+    /* ─── Wire interactions ──────────────────────────────────────────── */
+    function wireTabs() {
+      document.querySelectorAll('.equipo-tabs-wrap .actos-tab').forEach(function (t) {
+        t.addEventListener('click', function () {
+          state.activeTab = t.getAttribute('data-tab');
+          render();
+        });
+      });
+    }
+
+    function wirePersonasTab() {
+      /* Filtros */
+      document.querySelectorAll('[data-filtro]').forEach(function (s) {
+        s.addEventListener('change', function () {
+          state.filtros[s.getAttribute('data-filtro')] = s.value;
+          render();
+        });
+      });
+      /* Search */
+      var search = document.getElementById('equipoSearch');
+      if (search) {
+        search.addEventListener('input', function () {
+          state.filtros.q = search.value;
+          /* Render solo la tabla para preservar focus del input. */
+          var tableHost = document.querySelector('.naowee-table-card > div:last-child');
+          if (tableHost) {
+            var filtered = applyFilters(state.personas);
+            var newHtml = renderPersonasTable(filtered);
+            /* Reemplazar solo el wrapper de la tabla (último child del card). */
+            var prev = tableHost;
+            var div = document.createElement('div');
+            div.innerHTML = newHtml;
+            if (prev.parentNode && div.firstChild) {
+              prev.parentNode.replaceChild(div.firstChild, prev);
+            }
+            wireRowActions();
+          }
+        });
+      }
+      /* CTA Invitar */
+      var btn = document.getElementById('btnInvitar');
+      if (btn) btn.addEventListener('click', openInvitar);
+      wireRowActions();
+    }
+
+    function wireRowActions() {
+      document.querySelectorAll('[data-action]').forEach(function (b) {
+        if (b.__bound) return;
+        b.__bound = true;
+        b.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          var action = b.getAttribute('data-action');
+          var id = b.getAttribute('data-id');
+          if (action === 'aceptar')    { IVCStore.aceptarInvitacion(id);  showSnack('Invitación aceptada · acceso activado.', 'success'); }
+          if (action === 'reactivar')  { IVCStore.reactivarPersona(id);   showSnack('Acceso reactivado.', 'success'); }
+          if (action === 'desactivar') { openDesactivar(id); }
+        });
+      });
+    }
+
+    /* ─── Modal Invitar ──────────────────────────────────────────────── */
+    function openInvitar() {
+      /* Reset form */
+      ['invNombre','invCedula','invEmail','invMensaje'].forEach(function (id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
+      var rolSel = document.getElementById('invRol');
+      var areaSel = document.getElementById('invArea');
+      if (rolSel)  rolSel.value = '';
+      if (areaSel) areaSel.value = '';
+      document.getElementById('invAreaWrap').style.display = 'none';
+      document.getElementById('invitarSubmit').disabled = true;
+      document.getElementById('modalInvitar').classList.add('open');
+      setTimeout(function () { document.getElementById('invNombre').focus(); }, 50);
+    }
+
+    function closeInvitar() {
+      document.getElementById('modalInvitar').classList.remove('open');
+    }
+
+    function validateInvitar() {
+      var nombre = document.getElementById('invNombre').value.trim();
+      var email  = document.getElementById('invEmail').value.trim();
+      var rol    = document.getElementById('invRol').value;
+      var area   = document.getElementById('invArea').value;
+      var ok = nombre.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !!rol;
+      if (ok && rol === 'profesional' && !area) ok = false;
+      document.getElementById('invitarSubmit').disabled = !ok;
+    }
+
+    function wireModals() {
+      /* Invitar modal */
+      document.getElementById('invitarDismiss').addEventListener('click', closeInvitar);
+      document.getElementById('invitarCancel').addEventListener('click', closeInvitar);
+      document.getElementById('modalInvitar').addEventListener('click', function (ev) {
+        if (ev.target === this) closeInvitar();
+      });
+
+      /* Form bindings */
+      ['invNombre','invEmail','invRol','invArea'].forEach(function (id) {
+        document.getElementById(id).addEventListener('input', validateInvitar);
+        document.getElementById(id).addEventListener('change', validateInvitar);
+      });
+
+      /* Rol → mostrar/ocultar Área */
+      document.getElementById('invRol').addEventListener('change', function () {
+        var rol = this.value;
+        var wrap = document.getElementById('invAreaWrap');
+        wrap.style.display = rol === 'profesional' ? 'block' : 'none';
+        if (rol !== 'profesional') {
+          document.getElementById('invArea').value = '';
+        }
+      });
+
+      /* Submit */
+      document.getElementById('invitarSubmit').addEventListener('click', function () {
+        var nombre  = document.getElementById('invNombre').value.trim();
+        var cedula  = document.getElementById('invCedula').value.trim();
+        var email   = document.getElementById('invEmail').value.trim();
+        var rol     = document.getElementById('invRol').value;
+        var area    = document.getElementById('invArea').value || null;
+        var mensaje = document.getElementById('invMensaje').value.trim();
+
+        var nueva = IVCStore.invitarPersona({
+          nombre: nombre, cedula: cedula, email: email,
+          rol: rol, area: area, mensaje: mensaje
+        });
+        if (!nueva) { showSnack('No se pudo enviar la invitación. Verifica los datos.', 'error'); return; }
+        closeInvitar();
+        showSnack('Invitación enviada a ' + email + ' · estado: Pendiente confirmación.', 'success');
+      });
+
+      /* Desactivar modal */
+      document.getElementById('desactivarDismiss').addEventListener('click', closeDesactivar);
+      document.getElementById('desactivarCancel').addEventListener('click', closeDesactivar);
+      document.getElementById('modalDesactivar').addEventListener('click', function (ev) {
+        if (ev.target === this) closeDesactivar();
+      });
+      document.getElementById('desactivarSubmit').addEventListener('click', function () {
+        if (!state.modalAction) return;
+        IVCStore.desactivarPersona(state.modalAction.personaId);
+        closeDesactivar();
+        showSnack('Acceso desactivado.', 'success');
+      });
+
+      /* ESC global */
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'Escape') return;
+        var mi = document.getElementById('modalInvitar');
+        var md = document.getElementById('modalDesactivar');
+        if (mi.classList.contains('open'))  closeInvitar();
+        if (md.classList.contains('open'))  closeDesactivar();
+      });
+    }
+
+    function openDesactivar(personaId) {
+      var p = IVCStore.getPersona(personaId);
+      if (!p) return;
+      state.modalAction = { type: 'desactivar', personaId: personaId };
+      document.getElementById('desactivarSub').textContent = p.nombre + ' · ' + (ROL_LABELS[p.rol] || p.rol);
+      document.getElementById('modalDesactivar').classList.add('open');
+    }
+    function closeDesactivar() {
+      document.getElementById('modalDesactivar').classList.remove('open');
+      state.modalAction = null;
+    }
+
+    /* ─── Utils ──────────────────────────────────────────────────────── */
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+      });
+    }
+    function showSnack(msg, variant) {
+      if (window.IVCShell && typeof window.IVCShell.showSnackbar === 'function') {
+        window.IVCShell.showSnackbar(msg, variant || 'success');
+      } else {
+        console.log('[snack]', variant, msg);
+      }
+    }
+  </script>
+</body>
+</html>

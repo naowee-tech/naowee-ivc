@@ -39,7 +39,9 @@
     /* v1.12.0: iconos para los 3 nuevos roles complementarios. */
     plantilla:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/><path d="M9 4v16"/></svg>',
     aviso:    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-    juridica: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M12 3v18"/><path d="M5 7l7-3 7 3"/><path d="M5 7l-2 7c0 1.5 1 3 3 3s3-1.5 3-3l-2-7"/><path d="M19 7l-2 7c0 1.5 1 3 3 3s3-1.5 3-3l-2-7"/></svg>'
+    juridica: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M12 3v18"/><path d="M5 7l7-3 7 3"/><path d="M5 7l-2 7c0 1.5 1 3 3 3s3-1.5 3-3l-2-7"/><path d="M19 7l-2 7c0 1.5 1 3 3 3s3-1.5 3-3l-2-7"/></svg>',
+    /* v1.13.33: icono para "Equipo" del Coordinador — grupo de personas. */
+    team:     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
   };
 
   /* ───── Nav items por perfil ───── */
@@ -64,7 +66,10 @@
        en la tabla. Ahora se computa en computeBadge() abajo, usando el store. */
     'coordinador': [
       { id: 'bandeja-coord', label: 'Bandeja',              icon: ICONS.bandeja,  href: 'bandeja.html' },
-      { id: 'actos-coord',   label: 'Aprobación de actos',  icon: ICONS.approval, href: 'actos.html' }
+      { id: 'actos-coord',   label: 'Aprobación de actos',  icon: ICONS.approval, href: 'actos.html' },
+      /* v1.13.33: gestión del equipo IVC — coordinador puede invitar
+         profesionales, director, ATU, GIT, jurídica y otros coordinadores. */
+      { id: 'equipo-coord',  label: 'Equipo',               icon: ICONS.team,     href: 'equipo.html' }
     ],
     /* v1.2.0 — Fase 2 Sprint 1: Profesional habilitado (HU-4/HU-6)
        v1.5.4 (25/05/2026): bandeja-prof ahora apunta a bandeja.html (lista de
