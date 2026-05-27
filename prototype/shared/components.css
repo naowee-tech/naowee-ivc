@@ -648,7 +648,14 @@
 
 /* Head: title + subtitle + actions en una sola fila. Padding ajustado
    tight (Doug v1.1.4 #3) — subtitle ~8px sobre el divider, no 24px.
-   12px top / 10px bottom / 20px horizontal. */
+   12px top / 10px bottom / 20px horizontal.
+
+   v1.13.27 (Doug 27/05/2026): border-bottom canónico transversal.
+   El head pinta un divider edge-to-edge para separar el title block
+   del contenido siguiente (tabla / empty state). Se suprime cuando
+   el siguiente sibling YA provee su propio divider (.actos-tabs-wrap,
+   .naowee-tabs, .bandeja-toolbar) usando :has() para evitar doble
+   línea apilada. */
 .naowee-table-card__head {
   display: flex;
   align-items: flex-start;
@@ -656,6 +663,13 @@
   gap: 16px;
   padding: 12px 20px 10px;
   flex-wrap: wrap;
+  border-bottom: 1px solid var(--border, #e7e9f3);
+}
+.naowee-table-card__head:has(+ .actos-tabs-wrap),
+.naowee-table-card__head:has(+ .actos-tabs-wrap--in-card),
+.naowee-table-card__head:has(+ .naowee-tabs),
+.naowee-table-card__head:has(+ .bandeja-toolbar) {
+  border-bottom: 0;
 }
 .naowee-table-card__head-text {
   display: flex;
