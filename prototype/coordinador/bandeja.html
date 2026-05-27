@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.21">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.21">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.21">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.21">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.22">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.22">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.22">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.22">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
@@ -1350,14 +1350,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.21"></script>
-  <script src="../shared/shell.js?v=1.13.21"></script>
-  <script src="../shared/demo-tour.js?v=1.13.21"></script>
-  <script src="../shared/ivc-store.js?v=1.13.21"></script>
+  <script src="../shared/data.js?v=1.13.22"></script>
+  <script src="../shared/shell.js?v=1.13.22"></script>
+  <script src="../shared/demo-tour.js?v=1.13.22"></script>
+  <script src="../shared/ivc-store.js?v=1.13.22"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.13.21" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.13.22" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1588,7 +1588,18 @@
         /* v1.4.4 (23/05/2026): acciones con .naowee-btn--mute (Ghost canónico
            del DS: transparente idle, naranja claro en hover) — patrón correcto
            confirmado por Doug. El --quiet del DS tiene fill naranja desde idle. */
-        var accionLabel = (t.estado === 'No asignada') ? 'Asignar trámite' : 'Reasignar a otro profesional';
+        /* v1.13.22 (Doug 27/05/2026): reasignar profesional solo es posible
+           mientras el trámite NO haya pasado el veredicto del profesional.
+           Estados activos para reasignar: No asignada, Asignada, En validación.
+           Cualquier estado post-veredicto (Cumple/Parcial/NoCumple) o cualquier
+           downstream (PendienteCOO, PendienteFirma, Firmado, NotifElectronica,
+           NotifOficinas, Vigente, EnApelacion, EnReposicion, etc) → disabled. */
+        var canReasignar = (t.estado === 'No asignada' || t.estado === 'Asignada' || t.estado === 'En validación');
+        var accionLabel = (t.estado === 'No asignada')
+          ? 'Asignar trámite'
+          : (canReasignar
+              ? 'Reasignar a otro profesional'
+              : 'No se puede reasignar · el profesional ya emitió veredicto');
         var accionIcon = (t.estado === 'No asignada')
           /* user-plus icon — asignar */
           ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>'
@@ -1606,7 +1617,9 @@
           '<span class="naowee-tooltip">' +
             '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" ' +
               'data-asignar="' + safeId + '" ' +
-              'onclick="event.stopPropagation(); window.openModalIndividual(\'' + safeId + '\');" ' +
+              (canReasignar
+                ? 'onclick="event.stopPropagation(); window.openModalIndividual(\'' + safeId + '\');" '
+                : 'disabled aria-disabled="true" ') +
               'aria-label="' + accionLabel + '">' +
               accionIcon +
             '</button>' +
