@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.40">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.40">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.40">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.40">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.41">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.41">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.41">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.41">
   <style>.naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -256,8 +256,36 @@
       z-index: 1200 !important;
     }
 
-    /* Pending row highlight — sutil, no aggressive */
-    .row-pending td { background: rgba(255, 243, 230, .25); }
+    /* v1.13.41 (Doug): row-pending sin tint — el badge "Pendiente
+       confirmación" ya es indicador suficiente. El hover canónico de
+       fila (#fafbfd) viene de shared/components.css L783. */
+
+    /* Padding bottom del table-card para que la última fila no quede
+       pegada al borde inferior del card. Aplica al wrapper de tabla
+       (último child del card) y también al empty-state. */
+    .naowee-table-card > div:last-child { padding-bottom: 10px !important; }
+    .naowee-table-card > div[style*="overflow-x"] { padding-bottom: 10px !important; }
+
+    /* Limpiar filtros — link sutil, aparece solo cuando hay filtros
+       activos. */
+    .equipo-toolbar__clear {
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--accent, #d74009);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Inter', sans-serif;
+      transition: background .15s;
+    }
+    .equipo-toolbar__clear:hover {
+      background: var(--orange-bg, #fff3e6);
+    }
 
     /* Áreas técnicas — cards */
     .areas-grid {
@@ -470,10 +498,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.40"></script>
-  <script src="../shared/shell.js?v=1.13.40"></script>
-  <script src="../shared/ivc-store.js?v=1.13.40"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.40" defer></script>
+  <script src="../shared/data.js?v=1.13.41"></script>
+  <script src="../shared/shell.js?v=1.13.41"></script>
+  <script src="../shared/ivc-store.js?v=1.13.41"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.41" defer></script>
 
   <script>
     var state = {
@@ -631,6 +659,15 @@
             { value: 'pendiente', label: 'Pendiente confirmación' },
             { value: 'inactivo', label: 'Inactivo' }
           ], state.filtros.estado) +
+          /* v1.13.41 (Doug): link "Limpiar filtros" aparece solo cuando
+             alguno de los 3 filtros está activo. Resetea todos a default
+             pero NO el searchbox (es su propio control con clear). */
+          (hasAnyFilter()
+            ? '<button type="button" class="equipo-toolbar__clear" id="btnClearFiltros" title="Restablecer filtros a default">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                'Limpiar filtros' +
+              '</button>'
+            : '') +
         '</div>' +
         '<div class="equipo-toolbar__spacer"></div>' +
         '<button type="button" class="naowee-btn naowee-btn--loud" id="btnInvitar">' +
@@ -690,8 +727,9 @@
     function renderPersonaRow(p) {
       var carga = p.rol === 'profesional' && p.estado === 'activo' ? IVCStore.getCargaPersona(p.id) : null;
       var cargaCell = carga !== null ? renderCargaLabel(carga) : '<span style="color:var(--text-muted, #9ca3af); font-size:12px;">—</span>';
-      var rowClass = p.estado === 'pendiente' ? 'row-pending' : '';
-      return '<tr class="' + rowClass + '">' +
+      /* v1.13.41: removida la clase row-pending (orange tint). El badge
+         de estado "Pendiente confirmación" ya identifica visualmente. */
+      return '<tr>' +
         '<td>' + renderPersonaCell(p) + '</td>' +
         '<td><span class="row-rol-label">' + escHtml(ROL_LABELS[p.rol] || p.rol) + '</span></td>' +
         '<td>' + (p.area
@@ -785,6 +823,19 @@
         }
         return true;
       });
+    }
+
+    /* v1.13.41: ¿hay algún filtro activo? — usado para mostrar el link
+       "Limpiar filtros". El searchbox tiene su propio clear, así que
+       lo excluimos de esta detección. */
+    function hasAnyFilter() {
+      return !!(state.filtros.rol || state.filtros.area || state.filtros.estado);
+    }
+    function clearAllFilters() {
+      state.filtros.rol = '';
+      state.filtros.area = '';
+      state.filtros.estado = '';
+      render();
     }
 
     /* ─── Tab Áreas técnicas ─────────────────────────────────────────── */
@@ -904,6 +955,9 @@
       /* CTA Invitar */
       var btn = document.getElementById('btnInvitar');
       if (btn) btn.addEventListener('click', openInvitar);
+      /* v1.13.41: link "Limpiar filtros". */
+      var btnClear = document.getElementById('btnClearFiltros');
+      if (btnClear) btnClear.addEventListener('click', clearAllFilters);
       wireRowActions();
     }
 
