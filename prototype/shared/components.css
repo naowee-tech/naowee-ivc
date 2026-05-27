@@ -642,13 +642,14 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: none;        /* sin elevation — Doug feedback #3 */
-  /* v1.13.31 (Doug 27/05/2026): REVERT v1.13.28 — el overflow:visible
-     reintrodujo el bug "acciones no accionan en todas las páginas"
-     reportado ayer (mismo síntoma del v1.12.5 footer pointer-events).
-     Mantenemos overflow:hidden para garantizar que clicks funcionen
-     en TODAS las bandejas. El glow del botón hover se sacrifica como
-     trade-off — más importante es que las acciones funcionen. */
-  overflow: hidden;
+  /* v1.13.32 (Doug 27/05/2026): RESTORE overflow:visible — el bug
+     "clicks no funcionan globalmente" reportado en v1.13.31 NO era por
+     overflow. La causa real era una Chrome flag corrupta en el browser
+     del usuario ("Accelerated 2D canvas: Habilitado" + posiblemente
+     otros experimentos). Reset de chrome://flags resolvió el issue.
+     Restauramos overflow:visible para que el glow del botón hover en
+     la columna Acciones se vea sin clipping. */
+  overflow: visible;
   padding: 0;
 }
 
