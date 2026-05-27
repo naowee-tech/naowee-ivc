@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.33">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.33">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.33">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.33">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.34">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.34">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.34">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.34">
   <style>.naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -45,7 +45,42 @@
     .equipo-toolbar__search { flex: 0 1 320px; min-width: 240px; }
     .equipo-toolbar__filters { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
     .equipo-toolbar__spacer { flex: 1 1 auto; }
-    .equipo-toolbar .naowee-dropdown { width: 170px; flex-shrink: 0; }
+    .equipo-toolbar .naowee-dropdown { width: 180px; flex-shrink: 0; }
+    @media (max-width: 900px) {
+      .equipo-toolbar__filters { flex-wrap: wrap; }
+      .equipo-toolbar .naowee-dropdown { width: auto; min-width: 160px; flex: 1 1 160px; }
+    }
+
+    /* v1.13.34: el DS usa CSS variables para la transition del menu que
+       en este contexto no resuelve (var(--naowee-transition-smooth)).
+       Forzamos valores concretos para que el menu se muestre al --open. */
+    .naowee-dropdown__menu {
+      transition: max-height .22s cubic-bezier(.4,0,.2,1), opacity .18s ease !important;
+    }
+    .naowee-dropdown--open .naowee-dropdown__menu {
+      max-height: 320px !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      overflow-y: auto !important;
+      padding: 4px !important;
+    }
+    /* Dropdown menu options — hover canónico DS */
+    .naowee-dropdown__menu .naowee-dropdown__option {
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 6px;
+      margin: 2px 0;
+    }
+    .naowee-dropdown__menu .naowee-dropdown__option:hover {
+      background: var(--orange-bg, #fff3e6);
+      color: var(--accent, #d74009);
+    }
+    .naowee-dropdown__menu .naowee-dropdown__option--selected {
+      background: var(--orange-bg, #fff3e6);
+      color: var(--accent, #d74009);
+      font-weight: 600;
+    }
 
     /* Avatar circular con iniciales (mock — sin foto real) */
     .persona-avatar {
@@ -208,48 +243,88 @@
       </div>
       <div class="naowee-modal__body">
         <div class="form-grid" id="invitarForm">
+          <!-- Nombre — full width -->
           <div class="form-grid__field--full" style="grid-column: 1 / -1;">
-            <label class="form-label" for="invNombre">Nombre completo<span class="form-label__required">*</span></label>
-            <input type="text" class="naowee-input" id="invNombre" placeholder="María García González" />
+            <div class="naowee-textfield">
+              <label class="naowee-textfield__label" for="invNombre">Nombre completo <span style="color:#c01818;">*</span></label>
+              <div class="naowee-textfield__input-wrap">
+                <input type="text" class="naowee-textfield__input" id="invNombre" placeholder="María García González" />
+              </div>
+            </div>
           </div>
 
+          <!-- Cédula -->
           <div>
-            <label class="form-label" for="invCedula">Cédula</label>
-            <input type="text" class="naowee-input" id="invCedula" placeholder="CC 52.345.678" />
+            <div class="naowee-textfield">
+              <label class="naowee-textfield__label" for="invCedula">Cédula</label>
+              <div class="naowee-textfield__input-wrap">
+                <input type="text" class="naowee-textfield__input" id="invCedula" placeholder="CC 52.345.678" />
+              </div>
+            </div>
             <span class="form-helper">Opcional — formato libre.</span>
           </div>
 
+          <!-- Email -->
           <div>
-            <label class="form-label" for="invEmail">Correo institucional<span class="form-label__required">*</span></label>
-            <input type="email" class="naowee-input" id="invEmail" placeholder="nombre.apellido@deporte.gov.co" />
+            <div class="naowee-textfield">
+              <label class="naowee-textfield__label" for="invEmail">Correo institucional <span style="color:#c01818;">*</span></label>
+              <div class="naowee-textfield__input-wrap">
+                <input type="email" class="naowee-textfield__input" id="invEmail" placeholder="nombre.apellido@deporte.gov.co" />
+              </div>
+            </div>
           </div>
 
+          <!-- Rol — dropdown canónico -->
           <div>
-            <label class="form-label" for="invRol">Rol en el sistema<span class="form-label__required">*</span></label>
-            <select class="naowee-input" id="invRol">
-              <option value="">Seleccionar rol…</option>
-              <option value="profesional">Profesional IVC</option>
-              <option value="coordinador">Coordinador IVC</option>
-              <option value="director">Director IVC</option>
-              <option value="atu">ATU · Atención al Usuario</option>
-              <option value="git">GIT · Comunicaciones</option>
-              <option value="juridica">Jurídica</option>
-            </select>
+            <label class="naowee-textfield__label" style="display:block; margin-bottom:6px;">Rol en el sistema <span style="color:#c01818;">*</span></label>
+            <div class="naowee-dropdown naowee-dropdown--medium" data-mod="rol" id="ddInvRol" style="width:100%;">
+              <button type="button" class="naowee-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="naowee-dropdown__value" data-value-label>Seleccionar rol…</span>
+                <span class="naowee-dropdown__controls">
+                  <span class="naowee-dropdown__chevron">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </span>
+              </button>
+              <div class="naowee-dropdown__menu" role="listbox">
+                <div class="naowee-dropdown__option" role="option" data-val="profesional" tabindex="-1">Profesional IVC</div>
+                <div class="naowee-dropdown__option" role="option" data-val="coordinador" tabindex="-1">Coordinador IVC</div>
+                <div class="naowee-dropdown__option" role="option" data-val="director" tabindex="-1">Director IVC</div>
+                <div class="naowee-dropdown__option" role="option" data-val="atu" tabindex="-1">ATU · Atención al Usuario</div>
+                <div class="naowee-dropdown__option" role="option" data-val="git" tabindex="-1">GIT · Comunicaciones</div>
+                <div class="naowee-dropdown__option" role="option" data-val="juridica" tabindex="-1">Jurídica</div>
+              </div>
+            </div>
           </div>
 
+          <!-- Área — dropdown canónico (solo si rol = profesional) -->
           <div id="invAreaWrap" style="display:none;">
-            <label class="form-label" for="invArea">Área asignada<span class="form-label__required">*</span></label>
-            <select class="naowee-input" id="invArea">
-              <option value="">Seleccionar área…</option>
-              <option value="aficionado">Deporte Aficionado</option>
-              <option value="profesional">Deporte Profesional</option>
-            </select>
+            <label class="naowee-textfield__label" style="display:block; margin-bottom:6px;">Área asignada <span style="color:#c01818;">*</span></label>
+            <div class="naowee-dropdown naowee-dropdown--medium" data-mod="area" id="ddInvArea" style="width:100%;">
+              <button type="button" class="naowee-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="naowee-dropdown__value" data-value-label>Seleccionar área…</span>
+                <span class="naowee-dropdown__controls">
+                  <span class="naowee-dropdown__chevron">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </span>
+              </button>
+              <div class="naowee-dropdown__menu" role="listbox">
+                <div class="naowee-dropdown__option" role="option" data-val="aficionado" tabindex="-1">Deporte Aficionado</div>
+                <div class="naowee-dropdown__option" role="option" data-val="profesional" tabindex="-1">Deporte Profesional</div>
+              </div>
+            </div>
             <span class="form-helper">Solo aplica para Profesionales IVC.</span>
           </div>
 
+          <!-- Mensaje — textarea canónico full width -->
           <div class="form-grid__field--full" style="grid-column: 1 / -1;">
-            <label class="form-label" for="invMensaje">Mensaje personalizado</label>
-            <textarea class="naowee-input" id="invMensaje" rows="3" placeholder="Bienvenido al equipo IVC. Tu acceso te permitirá…"></textarea>
+            <div class="naowee-textfield naowee-textfield--textarea">
+              <label class="naowee-textfield__label" for="invMensaje">Mensaje personalizado</label>
+              <div class="naowee-textfield__input-wrap" style="height:auto; padding:10px 12px;">
+                <textarea class="naowee-textfield__input" id="invMensaje" rows="3" placeholder="Bienvenido al equipo IVC. Tu acceso te permitirá…" style="min-height:78px; resize:vertical; line-height:1.55; border:0; outline:none; width:100%; background:transparent; font-family:inherit; font-size:14px; color:inherit;"></textarea>
+              </div>
+            </div>
             <span class="form-helper">Opcional — se incluirá en el correo de invitación.</span>
           </div>
         </div>
@@ -293,17 +368,20 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.33"></script>
-  <script src="../shared/shell.js?v=1.13.33"></script>
-  <script src="../shared/ivc-store.js?v=1.13.33"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.33" defer></script>
+  <script src="../shared/data.js?v=1.13.34"></script>
+  <script src="../shared/shell.js?v=1.13.34"></script>
+  <script src="../shared/ivc-store.js?v=1.13.34"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.34" defer></script>
 
   <script>
     var state = {
       personas: [],
       activeTab: 'personas',
       filtros: { rol: '', area: '', estado: '', q: '' },
-      modalAction: null   /* { type: 'desactivar', personaId: '...' } */
+      modalAction: null,  /* { type: 'desactivar', personaId: '...' } */
+      /* Modal Invitar state — antes vivía en el DOM (selects nativos);
+         ahora vive aquí porque los .naowee-dropdown son custom. */
+      invitarForm: { rol: '', area: '' }
     };
 
     /* Labels humanizados */
@@ -434,7 +512,7 @@
           '</div>' +
         '</div>' +
         '<div class="equipo-toolbar__filters">' +
-          renderFiltroDropdown('Rol', 'rol', [
+          renderFiltroDropdown('rol', [
             { value: '', label: 'Todos los roles' },
             { value: 'profesional', label: 'Profesional IVC' },
             { value: 'coordinador', label: 'Coordinador IVC' },
@@ -443,12 +521,12 @@
             { value: 'git', label: 'GIT Comunicaciones' },
             { value: 'juridica', label: 'Jurídica' }
           ], state.filtros.rol) +
-          renderFiltroDropdown('Área', 'area', [
+          renderFiltroDropdown('area', [
             { value: '', label: 'Todas las áreas' },
             { value: 'aficionado', label: 'Deporte Aficionado' },
             { value: 'profesional', label: 'Deporte Profesional' }
           ], state.filtros.area) +
-          renderFiltroDropdown('Estado', 'estado', [
+          renderFiltroDropdown('estado', [
             { value: '', label: 'Todos los estados' },
             { value: 'activo', label: 'Activo' },
             { value: 'pendiente', label: 'Pendiente confirmación' },
@@ -463,13 +541,25 @@
       '</div>';
     }
 
-    function renderFiltroDropdown(label, key, options, current) {
+    /* Render canonical naowee-dropdown for a filter. The first option in
+       the list is the "all" reset option; data-val="" represents no filter. */
+    function renderFiltroDropdown(key, options, current) {
       var selected = options.find(function (o) { return o.value === current; }) || options[0];
-      return '<select class="naowee-input" data-filtro="' + key + '" style="height:38px; padding:0 12px; font-size:13px;">' +
-        options.map(function (o) {
-          return '<option value="' + o.value + '"' + (o.value === current ? ' selected' : '') + '>' + o.label + '</option>';
-        }).join('') +
-      '</select>';
+      return '<div class="naowee-dropdown naowee-dropdown--medium" data-filtro="' + key + '">' +
+        '<button type="button" class="naowee-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">' +
+          '<span class="naowee-dropdown__value" data-value-label>' + escHtml(selected.label) + '</span>' +
+          '<span class="naowee-dropdown__controls">' +
+            '<span class="naowee-dropdown__chevron">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '</span>' +
+          '</span>' +
+        '</button>' +
+        '<div class="naowee-dropdown__menu" role="listbox">' +
+          options.map(function (o) {
+            return '<div class="naowee-dropdown__option' + (o.value === current ? ' naowee-dropdown__option--selected' : '') + '" role="option" data-val="' + escHtml(o.value) + '" tabindex="-1">' + escHtml(o.label) + '</div>';
+          }).join('') +
+        '</div>' +
+      '</div>';
     }
 
     function renderPersonasTable(personas) {
@@ -641,13 +731,8 @@
     }
 
     function wirePersonasTab() {
-      /* Filtros */
-      document.querySelectorAll('[data-filtro]').forEach(function (s) {
-        s.addEventListener('change', function () {
-          state.filtros[s.getAttribute('data-filtro')] = s.value;
-          render();
-        });
-      });
+      /* Filter dropdowns — canónico naowee-dropdown */
+      wireFilterDropdowns();
       /* Search */
       var search = document.getElementById('equipoSearch');
       if (search) {
@@ -658,7 +743,6 @@
           if (tableHost) {
             var filtered = applyFilters(state.personas);
             var newHtml = renderPersonasTable(filtered);
-            /* Reemplazar solo el wrapper de la tabla (último child del card). */
             var prev = tableHost;
             var div = document.createElement('div');
             div.innerHTML = newHtml;
@@ -674,6 +758,120 @@
       if (btn) btn.addEventListener('click', openInvitar);
       wireRowActions();
     }
+
+    /* ─── Dropdown canónico — wireup compartido ──────────────────────
+       Patrón: cada .naowee-dropdown tiene un __trigger que toggle la
+       clase --open en el wrap. Clicks en __option seleccionan y cierran.
+       Click fuera cierra todos. Soporta ESC. */
+    function setDropdownValue(wrap, value, label) {
+      var valueLabel = wrap.querySelector('[data-value-label]');
+      if (valueLabel) valueLabel.textContent = label;
+      wrap.querySelectorAll('.naowee-dropdown__option').forEach(function (o) {
+        o.classList.toggle('naowee-dropdown__option--selected', o.getAttribute('data-val') === value);
+      });
+      wrap.setAttribute('data-current-value', value);
+    }
+
+    function openDropdown(wrap) {
+      closeAllDropdowns(wrap);
+      wrap.classList.add('naowee-dropdown--open');
+      var trg = wrap.querySelector('.naowee-dropdown__trigger');
+      if (trg) trg.setAttribute('aria-expanded', 'true');
+    }
+    function closeDropdown(wrap) {
+      wrap.classList.remove('naowee-dropdown--open');
+      var trg = wrap.querySelector('.naowee-dropdown__trigger');
+      if (trg) trg.setAttribute('aria-expanded', 'false');
+    }
+    function closeAllDropdowns(exceptWrap) {
+      document.querySelectorAll('.naowee-dropdown.naowee-dropdown--open').forEach(function (w) {
+        if (w !== exceptWrap) closeDropdown(w);
+      });
+    }
+
+    /* Wire UP filter dropdowns (data-filtro="rol/area/estado"). */
+    function wireFilterDropdowns() {
+      document.querySelectorAll('.equipo-toolbar .naowee-dropdown[data-filtro]').forEach(function (wrap) {
+        var key = wrap.getAttribute('data-filtro');
+        var trg = wrap.querySelector('.naowee-dropdown__trigger');
+        if (trg && !trg.__bound) {
+          trg.__bound = true;
+          trg.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            if (wrap.classList.contains('naowee-dropdown--open')) closeDropdown(wrap);
+            else openDropdown(wrap);
+          });
+        }
+        wrap.querySelectorAll('.naowee-dropdown__option').forEach(function (opt) {
+          if (opt.__bound) return;
+          opt.__bound = true;
+          opt.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            var val = opt.getAttribute('data-val');
+            var label = opt.textContent;
+            setDropdownValue(wrap, val, label);
+            state.filtros[key] = val;
+            closeDropdown(wrap);
+            render();
+          });
+        });
+      });
+    }
+
+    /* Wire modal dropdowns (data-mod="rol/area") — one-time init. */
+    function wireModalDropdowns() {
+      ['ddInvRol', 'ddInvArea'].forEach(function (id) {
+        var wrap = document.getElementById(id);
+        if (!wrap || wrap.__wired) return;
+        wrap.__wired = true;
+        var key = wrap.getAttribute('data-mod');
+        var trg = wrap.querySelector('.naowee-dropdown__trigger');
+        trg.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          if (wrap.classList.contains('naowee-dropdown--open')) closeDropdown(wrap);
+          else openDropdown(wrap);
+        });
+        wrap.querySelectorAll('.naowee-dropdown__option').forEach(function (opt) {
+          opt.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            var val = opt.getAttribute('data-val');
+            var label = opt.textContent;
+            setDropdownValue(wrap, val, label);
+            state.invitarForm[key] = val;
+            closeDropdown(wrap);
+            /* Mostrar/ocultar área si rol cambia */
+            if (key === 'rol') {
+              var areaWrap = document.getElementById('invAreaWrap');
+              areaWrap.style.display = val === 'profesional' ? 'block' : 'none';
+              if (val !== 'profesional') {
+                state.invitarForm.area = '';
+                resetDropdown(document.getElementById('ddInvArea'), 'Seleccionar área…');
+              }
+            }
+            validateInvitar();
+          });
+        });
+      });
+    }
+
+    /* Reset dropdown a su estado vacío. */
+    function resetDropdown(wrap, defaultLabel) {
+      if (!wrap) return;
+      var valueLabel = wrap.querySelector('[data-value-label]');
+      if (valueLabel) valueLabel.textContent = defaultLabel;
+      wrap.querySelectorAll('.naowee-dropdown__option').forEach(function (o) {
+        o.classList.remove('naowee-dropdown__option--selected');
+      });
+      wrap.removeAttribute('data-current-value');
+    }
+
+    /* Click global afuera cierra todos los dropdowns. */
+    document.addEventListener('click', function (ev) {
+      if (!ev.target.closest('.naowee-dropdown')) closeAllDropdowns(null);
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') closeAllDropdowns(null);
+    });
 
     function wireRowActions() {
       document.querySelectorAll('[data-action]').forEach(function (b) {
@@ -692,29 +890,31 @@
 
     /* ─── Modal Invitar ──────────────────────────────────────────────── */
     function openInvitar() {
-      /* Reset form */
+      /* Reset campos text. */
       ['invNombre','invCedula','invEmail','invMensaje'].forEach(function (id) {
         var el = document.getElementById(id); if (el) el.value = '';
       });
-      var rolSel = document.getElementById('invRol');
-      var areaSel = document.getElementById('invArea');
-      if (rolSel)  rolSel.value = '';
-      if (areaSel) areaSel.value = '';
+      /* Reset dropdowns canónicos + state. */
+      state.invitarForm = { rol: '', area: '' };
+      resetDropdown(document.getElementById('ddInvRol'),  'Seleccionar rol…');
+      resetDropdown(document.getElementById('ddInvArea'), 'Seleccionar área…');
       document.getElementById('invAreaWrap').style.display = 'none';
       document.getElementById('invitarSubmit').disabled = true;
       document.getElementById('modalInvitar').classList.add('open');
+      wireModalDropdowns();
       setTimeout(function () { document.getElementById('invNombre').focus(); }, 50);
     }
 
     function closeInvitar() {
       document.getElementById('modalInvitar').classList.remove('open');
+      closeAllDropdowns(null);
     }
 
     function validateInvitar() {
       var nombre = document.getElementById('invNombre').value.trim();
       var email  = document.getElementById('invEmail').value.trim();
-      var rol    = document.getElementById('invRol').value;
-      var area   = document.getElementById('invArea').value;
+      var rol    = state.invitarForm.rol;
+      var area   = state.invitarForm.area;
       var ok = nombre.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !!rol;
       if (ok && rol === 'profesional' && !area) ok = false;
       document.getElementById('invitarSubmit').disabled = !ok;
@@ -728,20 +928,9 @@
         if (ev.target === this) closeInvitar();
       });
 
-      /* Form bindings */
-      ['invNombre','invEmail','invRol','invArea'].forEach(function (id) {
+      /* Text field bindings — solo nombre/email (cédula/mensaje no requieren validar). */
+      ['invNombre','invEmail'].forEach(function (id) {
         document.getElementById(id).addEventListener('input', validateInvitar);
-        document.getElementById(id).addEventListener('change', validateInvitar);
-      });
-
-      /* Rol → mostrar/ocultar Área */
-      document.getElementById('invRol').addEventListener('change', function () {
-        var rol = this.value;
-        var wrap = document.getElementById('invAreaWrap');
-        wrap.style.display = rol === 'profesional' ? 'block' : 'none';
-        if (rol !== 'profesional') {
-          document.getElementById('invArea').value = '';
-        }
       });
 
       /* Submit */
@@ -749,8 +938,8 @@
         var nombre  = document.getElementById('invNombre').value.trim();
         var cedula  = document.getElementById('invCedula').value.trim();
         var email   = document.getElementById('invEmail').value.trim();
-        var rol     = document.getElementById('invRol').value;
-        var area    = document.getElementById('invArea').value || null;
+        var rol     = state.invitarForm.rol;
+        var area    = state.invitarForm.area || null;
         var mensaje = document.getElementById('invMensaje').value.trim();
 
         var nueva = IVCStore.invitarPersona({
