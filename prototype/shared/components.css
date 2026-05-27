@@ -1130,13 +1130,31 @@
    v1.13.18 (Doug 27/05/2026): tabs in-card de actos (coordinador y
    director). Promovido desde duplicación local → shared.
 
-   Hover canónico DS Naowee:
-     · idle:       text-primary (gris/negro normal)
-     · hover:      peach naranja bg + accent text (mute fill hover pattern)
-     · selected:   accent text + accent underline 2px (no bg)
-     · hover sobre selected: mantiene accent + peach bg sutil
+   v1.13.24 (Doug 27/05/2026): UNIFICACIÓN CANÓNICA TRANSVERSAL —
+   "tenemos todo un rollo con los estilos de los tabs, en varios
+   lugares están diferentes, me inclino más por los implementados en
+   director/bandeja.html pero con el background hover de los otros,
+   vuélvelo transversal canónico".
 
-   El badge count cambia de fondo gris a peach cuando el tab está activo. */
+   Problema previo: dos sistemas de tabs convivían con diferencias
+   sutiles pero perceptibles:
+     · .naowee-tab (DS CDN) — hover #FFEDC7 (orange-100, yellower)
+     · .actos-tab (local) — hover #fff3e6 (orange-bg local, pinker)
+   Más diferencias en padding, underline color, height. Ambos cumplían
+   "underline-only en activo" pero se VEÍAN distintos.
+
+   Canonical (TRANSVERSAL — aplica a .naowee-tab Y .actos-tab):
+     · idle:                    text-primary, transparent fill, sin underline
+     · hover (idle):            peach #FFEDC7 bg + accent text
+     · selected (idle):         accent text, transparent fill, underline 2px
+     · selected (hover):        peach #FFEDC7 bg + accent text + underline 2px
+     · focus-visible:           outline 2px accent
+
+   Mismo padding (12px 14px), mismo color de hover (#FFEDC7), mismo
+   indicador underline (2px naranja accent). Para count badges, usar
+   .actos-tab__count (también canonical, funciona en cualquier tab). */
+
+/* ───── Wrapper común para ambos sistemas ───── */
 .actos-tabs-wrap {
   margin: 0;
   padding: 0 24px;
@@ -1149,6 +1167,8 @@
   border-bottom: 1px solid var(--border, #e7e9f3);
   background: var(--surface, #fff);
 }
+
+/* ───── .actos-tab — patrón local Director/coord-actos ───── */
 .actos-tab {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 14px;
@@ -1165,7 +1185,7 @@
   transition: background .15s, color .15s;
 }
 .actos-tab:hover {
-  background: var(--orange-bg, #fff3e6);
+  background: #FFEDC7;                          /* v1.13.24: unified hover peach (DS orange-100) */
   color: var(--accent, #d74009);
 }
 .actos-tab:focus-visible {
@@ -1177,7 +1197,7 @@
   background: transparent;
 }
 .actos-tab.is-selected:hover {
-  background: var(--orange-bg, #fff3e6);
+  background: #FFEDC7;                          /* v1.13.24: unified hover peach */
 }
 .actos-tab.is-selected::after {
   content: '';
@@ -1188,7 +1208,10 @@
   background: var(--accent, #d74009);
   border-radius: 1px 1px 0 0;
 }
-.actos-tab__count {
+
+/* ───── Count badge (compartido entre .actos-tab y .naowee-tab) ───── */
+.actos-tab__count,
+.naowee-tab .actos-tab__count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 22px;
   padding: 2px 8px;
@@ -1200,16 +1223,38 @@
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   transition: background .15s, color .15s;
 }
-.actos-tab:hover .actos-tab__count {
+.actos-tab:hover .actos-tab__count,
+.naowee-tab:hover .actos-tab__count {
   background: #fff;
   color: var(--accent, #d74009);
 }
-.actos-tab.is-selected .actos-tab__count {
-  background: var(--orange-bg, #fff3e6);
+.actos-tab.is-selected .actos-tab__count,
+.naowee-tab--selected .actos-tab__count {
+  background: #FFEDC7;                          /* v1.13.24: unified pill peach */
   color: var(--accent, #d74009);
 }
-.actos-tab.is-selected:hover .actos-tab__count {
+.actos-tab.is-selected:hover .actos-tab__count,
+.naowee-tab--selected:hover .actos-tab__count {
   background: #fff;
+}
+
+/* ───── .naowee-tab DS — overrides canónicos transversales ─────
+   El DS de Naowee v1.8.0 ya implementa "selected = solo underline"
+   (no background fill); estos overrides solo sincronizan el shade del
+   hover peach al exacto #FFEDC7 y bloquean cualquier futura regresión
+   donde se añada background fill al estado --selected. */
+.naowee-tab--selected {
+  background: transparent !important;
+}
+.naowee-tab:hover,
+.naowee-tab--selected:hover {
+  background: #FFEDC7 !important;
+  color: var(--accent, #d74009);
+}
+/* Quitar el "text-secondary on unselected hover" del DS — preferimos
+   text-accent para señalizar afinidad cromática con el activo. */
+.naowee-tab:not(.naowee-tab--selected):hover {
+  color: var(--accent, #d74009);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
