@@ -107,7 +107,11 @@
   }
 
   function inSubdir() {
-    return /\/(usuario-externo|profesional|coordinador|director)\//.test(location.pathname);
+    /* v1.12.6: agregados atu|git|juridica al regex. Bug reportado por Doug
+       cuando cambiaba de perfil estando en /prototype/atu/bandeja.html:
+       inSubdir() devolvía false → pathPrefix() devolvía '' → navegación
+       resolvía a /prototype/atu/coordinador/bandeja.html (404). */
+    return /\/(usuario-externo|profesional|coordinador|director|atu|git|juridica)\//.test(location.pathname);
   }
   function pathPrefix() { return inSubdir() ? '../' : ''; }
   function sharedPath() { return pathPrefix() + 'shared/'; }

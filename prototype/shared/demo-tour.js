@@ -377,7 +377,8 @@
 
   /* ───── Path prefix (igual que shell.js) ───── */
   function pathPrefix() {
-    var inSub = /\/(usuario-externo|profesional|coordinador|director)\//.test(location.pathname);
+    /* v1.12.6: agregados atu|git|juridica — sync con shell.js#inSubdir. */
+    var inSub = /\/(usuario-externo|profesional|coordinador|director|atu|git|juridica)\//.test(location.pathname);
     return inSub ? '../' : '';
   }
 
