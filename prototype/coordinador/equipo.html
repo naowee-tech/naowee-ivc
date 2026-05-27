@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.37">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.37">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.37">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.37">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.38">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.38">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.38">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.38">
   <style>.naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -143,25 +143,56 @@
     .carga-label--zero   .carga-label__dot { background: var(--text-muted, #9ca3af); }
     .carga-label--zero { color: var(--text-muted, #9ca3af); font-weight: 500; }
 
-    /* v1.13.36: Acciones row — canónico DS .naowee-btn--mute --icon --small +
-       .naowee-tooltip wrapper. Idéntico al patrón de coordinador/bandeja
-       (líneas 1617+). El override de overflow en row-actions + el z-index
-       del tooltip son necesarios para que el tooltip no se corte en la
-       tabla. */
-    .row-actions { display: inline-flex; align-items: center; gap: 4px; justify-content: flex-end; }
+    /* v1.13.36-38: Acciones — canónico DS .naowee-btn--mute --icon --small +
+       .naowee-tooltip wrapper. Patrón de coord/bandeja líneas 1617+.
+
+       v1.13.38 (Doug): icon button CENTRADO en la columna + tooltip no
+       se enmascara. Cambios:
+       - .row-actions justify-content: center (centra en la celda)
+       - th/td de la columna Acciones también text-align: center
+       - Todos los wrappers padre con overflow: visible !important
+         INCLUYENDO el wrap de overflow-x:auto del table (que es el
+         culprit del clipping a la derecha)
+       - Tooltip ahora ancla a derecha en la última columna para que
+         no se extienda fuera de la tabla. */
+    .row-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: center;
+    }
     .naowee-table-card,
     .naowee-table-card__body,
     .row-actions,
     .row-actions .naowee-tooltip {
       overflow: visible !important;
     }
+    /* El div wrapper con overflow-x:auto del table también necesita
+       permitir que el tooltip sobresalga vertically — usamos clip-x. */
+    .naowee-table-card > div[style*="overflow-x"] {
+      overflow-x: auto !important;
+      overflow-y: visible !important;
+    }
     .naowee-tooltip__content {
       z-index: 9999 !important;
+    }
+    /* Tooltip en la última columna — ancla a la derecha del botón
+       para que se extienda hacia la izquierda y no se enmascare. */
+    .row-actions .naowee-tooltip__content {
+      left: auto !important;
+      right: 0 !important;
+      transform: none !important;
     }
     .naowee-tooltip:hover .naowee-tooltip__content,
     .naowee-tooltip:focus-within .naowee-tooltip__content {
       opacity: 1 !important;
       pointer-events: none;
+    }
+
+    /* Centrar columna Acciones (header + cells). */
+    .naowee-table th.col-acciones,
+    .naowee-table td.col-acciones {
+      text-align: center !important;
     }
 
     /* Estado badge — forzar nowrap para que "Pendiente confirmación"
@@ -425,10 +456,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.37"></script>
-  <script src="../shared/shell.js?v=1.13.37"></script>
-  <script src="../shared/ivc-store.js?v=1.13.37"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.37" defer></script>
+  <script src="../shared/data.js?v=1.13.38"></script>
+  <script src="../shared/shell.js?v=1.13.38"></script>
+  <script src="../shared/ivc-store.js?v=1.13.38"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.38" defer></script>
 
   <script>
     var state = {
@@ -634,7 +665,7 @@
           '<th>Correo institucional</th>' +
           '<th>Estado</th>' +
           '<th style="text-align:center;">Carga actual</th>' +
-          '<th style="text-align:right;">Acciones</th>' +
+          '<th class="col-acciones">Acciones</th>' +
         '</tr></thead>' +
         '<tbody>' +
           personas.map(renderPersonaRow).join('') +
@@ -655,7 +686,7 @@
         '<td><span class="row-email">' + escHtml(p.email) + '</span></td>' +
         '<td>' + renderEstadoBadge(p.estado) + '</td>' +
         '<td style="text-align:center;">' + cargaCell + '</td>' +
-        '<td style="text-align:right;">' + renderRowActions(p) + '</td>' +
+        '<td class="col-acciones">' + renderRowActions(p) + '</td>' +
       '</tr>';
     }
 
