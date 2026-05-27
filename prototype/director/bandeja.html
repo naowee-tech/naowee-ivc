@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.14">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.14">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.14">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.14">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.15">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.15">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.15">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.15">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -509,6 +509,10 @@
        components.css#v1.12.7 (icono 40×40 + tipografía DS). */
 
     /* ── Firma button (green loud) + Devolver (mute) ────────────────── */
+    /* v1.13.15 (Doug 27/05/2026): hover ya NO cambia el fill, ahora aplica
+       un glow verde sutil (box-shadow ring) — mismo lenguaje que los CTA
+       semánticos del DS. Doug: "el cta firmar acto no tiene los estilos
+       glow hover". */
     .btn-firmar {
       background: var(--green, #1f8923);
       color: #fff;
@@ -519,16 +523,24 @@
       font-weight: 700;
       cursor: pointer;
       display: inline-flex; align-items: center; gap: 8px;
-      transition: background .15s, transform .08s;
+      transition: box-shadow .18s ease, transform .08s ease;
     }
-    .btn-firmar:hover { background: #176b1a; }
-    .btn-firmar:active { transform: scale(.98); }
+    .btn-firmar:hover {
+      background: var(--green, #1f8923);
+      box-shadow: 0 0 0 4px rgba(31, 137, 35, 0.18), 0 4px 14px rgba(31, 137, 35, 0.25);
+    }
+    .btn-firmar:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(31, 137, 35, 0.28), 0 4px 14px rgba(31, 137, 35, 0.32);
+    }
+    .btn-firmar:active { transform: translateY(1px); }
     .btn-firmar:disabled {
       background: var(--border, #e7e9f3);
       color: var(--text-secondary);
       cursor: not-allowed;
+      box-shadow: none;
     }
-    .btn-firmar:disabled:hover { background: var(--border); }
+    .btn-firmar:disabled:hover { background: var(--border); box-shadow: none; }
 
     /* Version pill */
     .row-version-pill {
@@ -842,8 +854,9 @@
           <div style="font-size:11px;color:var(--text-secondary);">Ministerio del Deporte de Colombia</div>
         </div>
       </div>
+      <!-- v1.13.15 (Doug 27/05/2026): "Cancelar" removido — se pisaba con el
+           close X del header (redundancia). El usuario cierra con la X. -->
       <div class="naowee-modal__footer naowee-modal__footer--end" style="gap: 10px;">
-        <button type="button" class="naowee-btn naowee-btn--mute" id="modalFirmaCancel">Cancelar</button>
         <button type="button" class="btn-firmar" id="modalFirmaConfirm">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Confirmar firma
@@ -890,10 +903,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.14"></script>
-  <script src="../shared/shell.js?v=1.13.14"></script>
-  <script src="../shared/ivc-store.js?v=1.13.14"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.14" defer></script>
+  <script src="../shared/data.js?v=1.13.15"></script>
+  <script src="../shared/shell.js?v=1.13.15"></script>
+  <script src="../shared/ivc-store.js?v=1.13.15"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.15" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -1583,7 +1596,8 @@
       var overlay = document.getElementById('modalFirmaOverlay');
       function close() { overlay.classList.remove('open'); }
       document.getElementById('modalFirmaClose').addEventListener('click', close);
-      document.getElementById('modalFirmaCancel').addEventListener('click', close);
+      /* v1.13.15: Cancelar removido del footer; ahora el close X + click
+         fuera del modal son los únicos paths de dismiss. */
       overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
 
       document.getElementById('modalFirmaConfirm').addEventListener('click', function () {
