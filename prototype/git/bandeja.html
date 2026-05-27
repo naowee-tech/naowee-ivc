@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.29">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.29">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.29">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.29">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.30">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.30">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.30">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.30">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -43,6 +43,38 @@
     .notif-modal-body__row:last-child { border-bottom: 0; }
     .notif-modal-body__key { color: var(--text-secondary); flex: 0 0 140px; }
     .notif-modal-body__val { color: var(--text-primary); font-weight: 600; }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       v1.13.30 (Doug 27/05/2026): CSS DEFENSIVE para el botón Publicar
+       aviso. Doug reportó que ni el hover ni el click funcionaban en su
+       browser. Aquí defendemos con specificity alta + !important.
+
+       - Pointer-events: auto !important para descartar overlay invisible
+       - Hover glow naranja explícito, no depende del DS CDN
+       - Position relative + z-index 5 para subir sobre cualquier overlay
+       - Cursor pointer para feedback visual de interactividad */
+    .git-publish-btn {
+      position: relative !important;
+      z-index: 5 !important;
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      transition: box-shadow .2s ease, transform .1s ease !important;
+    }
+    .git-publish-btn:hover {
+      box-shadow: 0 6px 18px rgba(215, 64, 9, 0.32),
+                  0 2px 6px rgba(215, 64, 9, 0.18) !important;
+      transform: translateY(-1px) !important;
+    }
+    .git-publish-btn:active {
+      transform: translateY(0) !important;
+      box-shadow: 0 2px 6px rgba(215, 64, 9, 0.18) !important;
+    }
+    /* Reset modal overlay defensively — si alguna sesión previa dejó .open
+       stuck, este reset garantiza display: none al cargar. JS también
+       elimina la clase pero defendemos con CSS. */
+    body.git-bandeja-fresh-load .naowee-modal-overlay:not(.git-force-open) {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -92,15 +124,24 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.29"></script>
-  <script src="../shared/shell.js?v=1.13.29"></script>
-  <script src="../shared/ivc-store.js?v=1.13.29"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.29" defer></script>
+  <script src="../shared/data.js?v=1.13.30"></script>
+  <script src="../shared/shell.js?v=1.13.30"></script>
+  <script src="../shared/ivc-store.js?v=1.13.30"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.30" defer></script>
 
   <script>
     var state = { tramites: [], confirmId: null };
 
     document.addEventListener('DOMContentLoaded', function () {
+      /* v1.13.30: defensive force-close del modal por si quedó stuck
+         con .open class de una sesión anterior. */
+      var modalEl = document.getElementById('modalConfirmAviso');
+      if (modalEl) {
+        modalEl.classList.remove('open');
+        modalEl.classList.remove('git-force-open');
+      }
+      document.body.classList.add('git-bandeja-fresh-load');
+
       window.IVCData.setPerfil('git');
       var template = document.getElementById('page-content');
       var shellRoot = document.getElementById('app-shell');
@@ -179,14 +220,20 @@
               '</div>'
             : renderTable())+
         '</section>';
+
+      /* v1.13.30: bind clicks DIRECTAMENTE en cada botón después de
+         inyectar el HTML. requestAnimationFrame asegura que el DOM
+         esté pintado antes de buscar los botones. */
+      requestAnimationFrame(bindButtonClicks);
     }
 
-    /* v1.13.29 (Doug 27/05/2026): Cambio defensivo — inline onclick →
-       data-action + delegación global. Doug reportó: "le doy clic a
-       publicar aviso nada pasa ni hover state tengo en el cta". El
-       click programático funcionaba en preview pero el usuario tenía
-       cache mixta. Delegación + sin inline onclick es más robusta y
-       permite hard-reload limpio. */
+    /* v1.13.30 (Doug 27/05/2026): solución bruta — bind DIRECTO a cada
+       botón (sin delegación) + clase .git-publish-btn con CSS defensive
+       que garantiza pointer-events:auto + hover glow !important. Doug
+       reportó "ni hover glow ni clic" — esto no puede fallar porque:
+       1. No depende del DS CDN (CSS local con !important)
+       2. No depende de delegation (cada botón tiene su listener)
+       3. Force-cleans .open class del modal al cargar */
     function renderTable() {
       return '<div style="overflow-x:auto;"><table class="naowee-table"><thead><tr>' +
         '<th>Radicado</th><th>Tipo</th><th>Organismo</th><th>Profesional IVC</th><th>Días vencidos</th><th style="text-align:center;">Acciones</th>' +
@@ -201,7 +248,7 @@
             '<td>' + escHtml(t.profesionalNombre || '—') + '</td>' +
             '<td><span class="row-plazo row-plazo--negative">' + dias + ' días vencidos</span></td>' +
             '<td style="text-align:center;">' +
-              '<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-action="open-confirm" data-id="' + escHtml(t.id) + '">Publicar aviso</button>' +
+              '<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small git-publish-btn" data-id="' + escHtml(t.id) + '">Publicar aviso</button>' +
             '</td>' +
           '</tr>';
         }).join('') +
@@ -219,30 +266,43 @@
         '<div class="notif-modal-body__row"><span class="notif-modal-body__key">NIT</span><span class="notif-modal-body__val">' + escHtml(t.nit || '—') + '</span></div>' +
         '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Profesional IVC</span><span class="notif-modal-body__val">' + escHtml(t.profesionalNombre || '—') + '</span></div>' +
         '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Canal</span><span class="notif-modal-body__val">Aviso (CPACA Art 67-69)</span></div>';
-      document.getElementById('modalConfirmAviso').classList.add('open');
+      var m = document.getElementById('modalConfirmAviso');
+      /* Asegurar que pueda renderizarse (clase defensive lo oculta hasta
+         que retiramos la guarda y agregamos .git-force-open). */
+      document.body.classList.remove('git-bandeja-fresh-load');
+      m.classList.add('git-force-open');
+      m.classList.add('open');
     }
     function closeConfirmAviso() {
-      document.getElementById('modalConfirmAviso').classList.remove('open');
+      var m = document.getElementById('modalConfirmAviso');
+      m.classList.remove('open');
+      m.classList.remove('git-force-open');
       state.confirmId = null;
     }
-    /* Expose globals para compat con cualquier inline onclick legacy. */
+    /* Expose globals para compat. */
     window._openConfirmAviso = openConfirmAviso;
     window._closeConfirmAviso = closeConfirmAviso;
 
-    function wireConfirm() {
-      /* Delegación global — captura clicks de los botones data-action de
-         la tabla. Robusto contra re-renders y no depende del binding inline. */
-      document.body.addEventListener('click', function (ev) {
-        var trigger = ev.target.closest('[data-action="open-confirm"]');
-        if (trigger) {
+    /* v1.13.30: bind DIRECTO en cada botón después de render. No depende
+       de delegación. Cada vez que renderizamos la tabla, re-bindeamos. */
+    function bindButtonClicks() {
+      var buttons = document.querySelectorAll('.git-publish-btn');
+      buttons.forEach(function (btn) {
+        /* Evitar binds duplicados — marca el botón. */
+        if (btn.__bound) return;
+        btn.__bound = true;
+        btn.addEventListener('click', function (ev) {
           ev.preventDefault();
-          openConfirmAviso(trigger.getAttribute('data-id'));
-          return;
-        }
-        /* Soporte para el botón dismiss del modal. */
-        var dismiss = ev.target.closest('[onclick*="_closeConfirmAviso"]');
-        if (dismiss) { ev.preventDefault(); closeConfirmAviso(); }
+          ev.stopPropagation();
+          var id = btn.getAttribute('data-id');
+          console.log('[GIT] click Publicar aviso →', id);
+          openConfirmAviso(id);
+        });
       });
+      console.log('[GIT] bound', buttons.length, 'botones Publicar aviso');
+    }
+
+    function wireConfirm() {
       document.getElementById('confirmAvisoBtn').addEventListener('click', function () {
         if (!state.confirmId) return;
         var perfil = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['git']) || {};
