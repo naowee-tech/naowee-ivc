@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.2">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.2">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.2">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.2">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.3">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.3">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.3">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.3">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
@@ -1325,14 +1325,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.2"></script>
-  <script src="../shared/shell.js?v=1.13.2"></script>
-  <script src="../shared/demo-tour.js?v=1.13.2"></script>
-  <script src="../shared/ivc-store.js?v=1.13.2"></script>
+  <script src="../shared/data.js?v=1.13.3"></script>
+  <script src="../shared/shell.js?v=1.13.3"></script>
+  <script src="../shared/demo-tour.js?v=1.13.3"></script>
+  <script src="../shared/ivc-store.js?v=1.13.3"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.13.2" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.13.3" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1347,12 +1347,21 @@
       distribuirAsignaciones: {}
     };
 
-    /* Mapa profesional → carga (activos) — para warning GAP #8 */
-    var PROF_LOAD = {
-      'cp-001': 12,
-      'mg-002': 8,
-      'al-003': 15,
-      'lr-004': 5
+    /* v1.13.3 (Doug 27/05/2026): la carga de cada profesional ahora se
+       computa dinámicamente del store en cada render, en lugar del mapa
+       hardcoded anterior. Cuando se asigna un trámite, IVCStore emite
+       tramite:asignado → refreshProfDropdowns() recalcula y reescribe
+       los badges semáforo en ambos dropdowns.
+
+       PROF_LOAD_BASE: contadores iniciales que representan la "carga
+       histórica" (trámites pasados ya completados, no en el store).
+       Se suma a los activos actuales para mantener cifras creíbles
+       en la demo y no resetear a cero el contador al limpiar el seed. */
+    var PROF_LOAD_BASE = {
+      'cp-001': 11,  /* + activos del seed (003, 009) = 13 */
+      'mg-002': 6,   /* + 005, 011 = 8 */
+      'al-003': 14,  /* + 006 = 15 */
+      'lr-004': 4    /* + 008 = 5 */
     };
     var PROF_NAMES = {
       'cp-001': 'Carlos Pérez',
@@ -1361,6 +1370,50 @@
       'lr-004': 'Lucía Ramírez'
     };
     var ALTA_CARGA_UMBRAL = 8;
+
+    /* Cuenta trámites activos (Asignada / En validación) por profId.
+       Usa el store como fuente de verdad. */
+    function computeProfLoad() {
+      var loads = {};
+      Object.keys(PROF_LOAD_BASE).forEach(function (id) { loads[id] = PROF_LOAD_BASE[id]; });
+      var todos = (window.IVCStore && IVCStore.getTramites) ? IVCStore.getTramites({ area: 'aficionado' }) : [];
+      todos.forEach(function (t) {
+        if (!t.profesionalId) return;
+        if (t.estado !== 'Asignada' && t.estado !== 'En validación') return;
+        loads[t.profesionalId] = (loads[t.profesionalId] || 0) + 1;
+      });
+      return loads;
+    }
+    /* Mapa público (usado por updateCargaWarning + msg distribuir). Se actualiza
+       en cada render via refreshProfDropdowns. */
+    var PROF_LOAD = computeProfLoad();
+
+    function semaforoClass(n) {
+      if (n <= 6) return 'prof-opt-badge--low';
+      if (n <= 10) return 'prof-opt-badge--mid';
+      return 'prof-opt-badge--high';
+    }
+
+    /* Reescribe el badge de cada option en los 2 dropdowns + el trigger
+       seleccionado, usando los nuevos counts del store. */
+    function refreshProfDropdowns() {
+      PROF_LOAD = computeProfLoad();
+      ['ddProfesional', 'ddProfesionalSingle'].forEach(function (ddId) {
+        var dd = document.getElementById(ddId);
+        if (!dd) return;
+        dd.querySelectorAll('.naowee-dropdown__option').forEach(function (opt) {
+          var profId = opt.getAttribute('data-val');
+          var carga = PROF_LOAD[profId] || 0;
+          var name = (PROF_NAMES[profId] || '').trim();
+          var badge = '<span class="prof-opt-badge ' + semaforoClass(carga) + '">' + carga + ' activos</span>';
+          opt.innerHTML = '<span class="prof-opt-row"><span class="prof-opt-name">' + name + '</span>' + badge + '</span>';
+        });
+        /* Sincronizar el trigger con el option seleccionado */
+        var selected = dd.querySelector('.naowee-dropdown__option--selected');
+        var trigVal  = dd.querySelector('.naowee-dropdown__value');
+        if (selected && trigVal) trigVal.innerHTML = selected.innerHTML;
+      });
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
       /* Forzar perfil Coordinador para esta página */
@@ -1390,9 +1443,10 @@
 
       /* Live updates: si el formulario crea uno mientras esta tab está
          abierta, o si otra tab cambia el store, refrescamos. */
-      IVCStore.on('tramite:creado',        function(){ loadFromStore(); renderStats(); renderTabla(); updateSubtitle(); });
-      IVCStore.on('tramite:asignado',      function(){ loadFromStore(); renderStats(); renderTabla(); updateSubtitle(); });
-      IVCStore.on('store:changed-external',function(){ loadFromStore(); renderStats(); renderTabla(); updateSubtitle(); });
+      IVCStore.on('tramite:creado',        function(){ loadFromStore(); renderStats(); renderTabla(); updateSubtitle(); refreshProfDropdowns(); });
+      IVCStore.on('tramite:asignado',      function(){ loadFromStore(); renderStats(); renderTabla(); updateSubtitle(); refreshProfDropdowns(); });
+      IVCStore.on('store:changed-external',function(){ loadFromStore(); renderStats(); renderTabla(); updateSubtitle(); refreshProfDropdowns(); });
+      IVCStore.on('tramite:estado-cambiado',function(){ loadFromStore(); renderStats(); renderTabla(); updateSubtitle(); refreshProfDropdowns(); });
 
       renderStats();
       renderTabla();
@@ -1401,6 +1455,9 @@
       wireSelection();
       wireModales();
       setupNaoweeDropdownController();
+      /* v1.13.3: render inicial de badges semáforo desde el store
+         (sobrescribe los valores hardcoded del HTML inicial). */
+      refreshProfDropdowns();
       /* v1.5.2: cuando el demo-switcher (shell.js) cambia el modo, refrescamos */
       IVCStore.on('store:mode-changed', function () {
         loadFromStore();
@@ -1408,6 +1465,7 @@
         renderStats();
         renderTabla();
         updateSubtitle();
+        refreshProfDropdowns();
       });
       /* v1.4.8 rev2: tooltips ahora usan DS canónico nativo (sin portal).
          Ver CSS de .naowee-table-card { overflow: visible } arriba. */
