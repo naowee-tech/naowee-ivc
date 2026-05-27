@@ -65,11 +65,11 @@
        generaba mismatch entre el contador del sidebar y los trámites reales
        en la tabla. Ahora se computa en computeBadge() abajo, usando el store. */
     'coordinador': [
-      { id: 'bandeja-coord', label: 'Bandeja',              icon: ICONS.bandeja,  href: 'bandeja.html' },
-      { id: 'actos-coord',   label: 'Aprobación de actos',  icon: ICONS.approval, href: 'actos.html' },
-      /* v1.13.33: gestión del equipo IVC — coordinador puede invitar
-         profesionales, director, ATU, GIT, jurídica y otros coordinadores. */
-      { id: 'equipo-coord',  label: 'Equipo',               icon: ICONS.team,     href: 'equipo.html' }
+      { id: 'bandeja-coord', section: 'gestion', label: 'Bandeja',              icon: ICONS.bandeja,  href: 'bandeja.html' },
+      { id: 'actos-coord',   section: 'gestion', label: 'Aprobación de actos',  icon: ICONS.approval, href: 'actos.html' },
+      /* v1.13.35: sección CONFIGURACIÓN — patrón canónico del Project
+         admin. Coordinador gestiona equipo IVC desde aquí. */
+      { id: 'equipo-coord',  section: 'config',  label: 'Usuarios y áreas',     icon: ICONS.team,     href: 'equipo.html' }
     ],
     /* v1.2.0 — Fase 2 Sprint 1: Profesional habilitado (HU-4/HU-6)
        v1.5.4 (25/05/2026): bandeja-prof ahora apunta a bandeja.html (lista de
@@ -96,10 +96,12 @@
     ]
   };
 
-  /* Section label por perfil */
+  /* Section label por perfil. v1.13.35: soporta multi-sección con un map
+     { sectionKey → label }. Ítems sin `section` caen en una sección
+     default (la primera del map o el string legacy). */
   var SECTION_LABELS = {
     'usuario-externo': 'MI ORGANISMO',
-    'coordinador':     'COORDINACIÓN',
+    'coordinador':     { 'gestion': 'GESTIÓN', 'config': 'CONFIGURACIÓN' },
     'profesional':     'OPERACIÓN',
     'director':        'DIRECCIÓN',
     /* v1.12.0: roles complementarios. */
@@ -195,14 +197,13 @@
     };
     var perfilSubdir = perfilSubdirs[perfilId] || 'usuario-externo/';
 
-    var navHtml = items.map(function (it) {
+    /* v1.13.35: helper para render de un nav row individual. */
+    function renderNavRow(it) {
       var isActive = it.id === activeId;
       var href = it.href;
       if (href && href !== '#' && !/^https?:/.test(href)) {
         href = (inSubdir() ? '' : perfilSubdir) + href;
       }
-      /* v1.13.4: badge dinámico — computeBadge() lee del store para cada
-         item de nav. Si devuelve falsy o 0, no se renderiza el chip. */
       var badgeVal = it.badge != null ? it.badge : computeBadge(it.id);
       var badgeHtml = badgeVal ? '<span class="nav-row__badge">' + badgeVal + '</span>' : '';
       return '<a class="nav-row ' + (isActive ? 'is-active' : '') + '" ' +
@@ -214,7 +215,24 @@
         '<span class="lbl">' + it.label + '</span>' +
         badgeHtml +
         '</a>';
-    }).join('');
+    }
+
+    /* v1.13.35: multi-section support — si sectionLabel es un objeto
+       { sectionKey: label }, agrupar items por su campo `section`. */
+    var navHtml;
+    if (typeof sectionLabel === 'object' && sectionLabel !== null) {
+      var sectionKeys = Object.keys(sectionLabel);
+      navHtml = sectionKeys.map(function (key) {
+        var sectionItems = items.filter(function (it) { return it.section === key; });
+        if (sectionItems.length === 0) return '';
+        return '<div class="nav-section">' + sectionLabel[key] + '</div>' +
+               sectionItems.map(renderNavRow).join('');
+      }).join('');
+    } else {
+      /* Legacy single-section: una sola label, todos los items. */
+      navHtml = '<div class="nav-section">' + sectionLabel + '</div>' +
+                items.map(renderNavRow).join('');
+    }
 
     return '<aside class="sidebar ' + (isCollapsed ? 'is-collapsed' : '') + '" id="sidebar">' +
       '<div class="sidebar-logo">' +
@@ -226,7 +244,6 @@
         '<span class="sb-logo-img sb-logo-img--pill" title="Inspección, Vigilancia y Control">IVC</span>' +
       '</div>' +
       '<nav class="sidebar-nav" id="sidebarNav" role="navigation" aria-label="Menú principal">' +
-        '<div class="nav-section">' + sectionLabel + '</div>' +
         navHtml +
       '</nav>' +
       '<div class="sidebar-bottom">' +

@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.34">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.34">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.34">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.34">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.35">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.35">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.35">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.35">
   <style>.naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -28,9 +28,9 @@
     .page-title { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.5px; color: var(--text-primary); line-height: 1.2; }
     .page-subtitle { margin: 6px 0 0; font-size: 14px; color: var(--text-secondary); font-weight: 500; }
     .page-inner { max-width: 1480px !important; }
-    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 24px 0; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
     @media (max-width: 900px) { .stat-grid { grid-template-columns: 1fr; } }
-    @media (min-width: 901px) and (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 901px) and (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(3, 1fr); } }
 
     /* Toolbar dentro del card — searchbox + filtros + CTA */
     .equipo-toolbar {
@@ -82,24 +82,26 @@
       font-weight: 600;
     }
 
-    /* Avatar circular con iniciales (mock — sin foto real) */
+    /* v1.13.35 (Doug): avatares low-contrast — fondo claro pastel +
+       texto del color saturado. Mantienen identificación cromática
+       por rol sin sobrecargar visualmente la tabla. */
     .persona-avatar {
       width: 36px; height: 36px;
       border-radius: 50%;
-      background: var(--accent, #d74009);
-      color: #fff;
+      background: var(--orange-bg, #fff3e6);
+      color: var(--accent, #d74009);
       display: inline-flex; align-items: center; justify-content: center;
       font-size: 13px; font-weight: 700;
       flex-shrink: 0;
       letter-spacing: -.2px;
     }
-    .persona-avatar--coordinador { background: #1f78d1; }
-    .persona-avatar--director    { background: #7c3aed; }
-    .persona-avatar--profesional { background: var(--accent, #d74009); }
-    .persona-avatar--atu         { background: #0ea5e9; }
-    .persona-avatar--git         { background: #14b8a6; }
-    .persona-avatar--juridica    { background: #ec4899; }
-    .persona-avatar--pendiente   { background: var(--text-muted, #9ca3af); }
+    .persona-avatar--coordinador { background: #e6effa; color: #1f78d1; }
+    .persona-avatar--director    { background: #f0e6ff; color: #7c3aed; }
+    .persona-avatar--profesional { background: var(--orange-bg, #fff3e6); color: var(--accent, #d74009); }
+    .persona-avatar--atu         { background: #e0f4ff; color: #0284c7; }
+    .persona-avatar--git         { background: #d8f3ee; color: #0d9488; }
+    .persona-avatar--juridica    { background: #fce4f0; color: #db2777; }
+    .persona-avatar--pendiente   { background: var(--bg-soft, #f5f6fa); color: var(--text-muted, #9ca3af); }
 
     .persona-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .persona-cell__body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
@@ -111,31 +113,67 @@
     .row-area-label--empty { font-style: italic; color: var(--text-muted, #9ca3af); }
     .row-email { font-size: 12.5px; color: var(--text-secondary); font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
-    /* Carga: semáforo */
-    .carga-pill {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 3px 10px; border-radius: 999px;
-      font-size: 11.5px; font-weight: 700;
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    /* v1.13.35: Carga label con dot semáforo (verde/amarillo/rojo). */
+    .carga-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12.5px; font-weight: 600;
+      color: var(--text-primary);
     }
-    .carga-pill--low    { background: #e6f4e7; color: #1f8923; }
-    .carga-pill--medium { background: #fff3e6; color: var(--accent, #d74009); }
-    .carga-pill--high   { background: #fff0ee; color: #c01818; }
-    .carga-pill--zero   { background: var(--bg-soft, #f5f6fa); color: var(--text-muted, #9ca3af); }
+    .carga-label__dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .carga-label--low    .carga-label__dot { background: #1f8923; }
+    .carga-label--medium .carga-label__dot { background: #f59e0b; }
+    .carga-label--high   .carga-label__dot { background: #c01818; }
+    .carga-label--zero   .carga-label__dot { background: var(--text-muted, #9ca3af); }
+    .carga-label--zero { color: var(--text-muted, #9ca3af); font-weight: 500; }
 
-    /* Acciones row */
-    .row-actions { display: inline-flex; align-items: center; gap: 4px; justify-content: flex-end; }
+    /* v1.13.35: Acciones row — icon button canónico naranja con tooltip.
+       Reusa el patrón del DS para icon buttons en la columna acciones. */
+    .row-actions { display: inline-flex; align-items: center; gap: 4px; justify-content: flex-end; position: relative; }
     .row-action-btn {
       background: transparent;
-      border: 0;
-      padding: 6px;
-      border-radius: 6px;
+      border: 1px solid transparent;
+      padding: 7px;
+      border-radius: 8px;
       cursor: pointer;
-      color: var(--text-secondary);
+      color: var(--accent, #d74009);
       display: inline-flex;
-      transition: background .15s, color .15s;
+      transition: background .15s, border-color .15s, box-shadow .15s;
+      position: relative;
     }
-    .row-action-btn:hover { background: var(--bg-soft, #f5f6fa); color: var(--accent, #d74009); }
+    .row-action-btn:hover {
+      background: var(--orange-bg, #fff3e6);
+      border-color: var(--accent, #d74009);
+    }
+    .row-action-btn:focus-visible {
+      outline: 2px solid var(--accent, #d74009);
+      outline-offset: 1px;
+    }
+    /* Tooltip sobre el botón de acción al hover */
+    .row-action-btn[data-tooltip] {
+      position: relative;
+    }
+    .row-action-btn[data-tooltip]::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      right: 0;
+      background: var(--text-primary, #282834);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .12s ease;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(40,40,52,.18);
+    }
+    .row-action-btn[data-tooltip]:hover::before { opacity: 1; }
 
     /* Form modal */
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
@@ -153,8 +191,31 @@
       display: block;
       font-size: 11.5px;
       color: var(--text-secondary);
-      margin-top: 4px;
+      margin-top: 6px;
       line-height: 1.4;
+    }
+    /* v1.13.35: helper info canónico con icono badge azul. */
+    .form-helper--info {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .form-helper__icon {
+      flex-shrink: 0;
+      color: #1f78d1;
+    }
+
+    /* v1.13.35: modal dropdowns en tamaño LARGE igualando textfield height
+       y menu portal con z-index alto para no quedar enmascarado por el modal. */
+    .naowee-modal .naowee-dropdown[data-mod] .naowee-dropdown__trigger {
+      height: 44px;
+      padding: 0 14px;
+      font-size: 14px;
+    }
+    .naowee-modal .naowee-dropdown[data-mod] .naowee-dropdown__menu {
+      z-index: 1200 !important;
     }
 
     /* Pending row highlight — sutil, no aggressive */
@@ -261,7 +322,10 @@
                 <input type="text" class="naowee-textfield__input" id="invCedula" placeholder="CC 52.345.678" />
               </div>
             </div>
-            <span class="form-helper">Opcional — formato libre.</span>
+            <span class="form-helper form-helper--info">
+              <svg class="form-helper__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              Campo opcional. Acepta formato libre (CC, CE, NIT).
+            </span>
           </div>
 
           <!-- Email -->
@@ -368,10 +432,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.34"></script>
-  <script src="../shared/shell.js?v=1.13.34"></script>
-  <script src="../shared/ivc-store.js?v=1.13.34"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.34" defer></script>
+  <script src="../shared/data.js?v=1.13.35"></script>
+  <script src="../shared/shell.js?v=1.13.35"></script>
+  <script src="../shared/ivc-store.js?v=1.13.35"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.35" defer></script>
 
   <script>
     var state = {
@@ -443,21 +507,14 @@
         '</header>' +
 
         '<section class="stat-grid">' +
-          renderStatCard('Total activos',     stats.totalActivos,     'Personas con acceso',     'accent') +
-          renderStatCard('Pendientes',        stats.totalPendientes,  'Sin confirmar invitación', 'caution') +
-          renderStatCard('Profesionales',     stats.totalProfes,      'Validan trámites',         'info') +
-          renderStatCard('Capacidad total',   stats.totalCarga + ' trámites',  'Activos en validación',   'success') +
+          renderStatCard('Total activos',  stats.totalActivos,     'Personas con acceso',      'accent') +
+          renderStatCard('Pendientes',     stats.totalPendientes,  'Sin confirmar invitación', 'caution') +
+          renderStatCard('Profesionales',  stats.totalProfes,      'Validan trámites',         'info') +
         '</section>' +
 
         '<section class="naowee-table-card">' +
-          '<div class="naowee-table-card__head">' +
-            '<div class="naowee-table-card__head-text">' +
-              '<h2 class="naowee-table-card__title">Configuración del equipo</h2>' +
-              '<p class="naowee-table-card__subtitle">Invita personas al sistema, asigna áreas y gestiona accesos.</p>' +
-            '</div>' +
-          '</div>' +
-          /* Tabs canónicos */
-          '<nav class="equipo-tabs-wrap" role="tablist">' +
+          /* Tabs canónicos directamente — sin head box per Doug v1.13.35. */
+          '<nav class="equipo-tabs-wrap" role="tablist" style="padding-top:6px;">' +
             '<button type="button" class="actos-tab' + (state.activeTab === 'personas' ? ' is-selected' : '') + '" data-tab="personas" role="tab">' +
               '<span>Personas IVC</span>' +
               '<span class="actos-tab__count">' + state.personas.length + '</span>' +
@@ -500,14 +557,18 @@
     }
 
     function renderToolbar() {
+      var hasQ = !!state.filtros.q;
       return '<div class="equipo-toolbar">' +
         '<div class="equipo-toolbar__search">' +
-          '<div class="naowee-searchbox naowee-searchbox--medium">' +
+          '<div class="naowee-searchbox naowee-searchbox--medium' + (hasQ ? ' naowee-searchbox--has-text' : '') + '" id="searchboxWrap">' +
             '<div class="naowee-searchbox__input-wrap">' +
               '<div class="naowee-searchbox__icon">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
               '</div>' +
               '<input type="text" class="naowee-searchbox__input" placeholder="Buscar por nombre o correo" id="equipoSearch" value="' + escHtml(state.filtros.q) + '"/>' +
+              '<button type="button" class="naowee-searchbox__clear" id="equipoSearchClear" aria-label="Limpiar búsqueda" style="' + (hasQ ? '' : 'display:none;') + '">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+              '</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -590,7 +651,7 @@
 
     function renderPersonaRow(p) {
       var carga = p.rol === 'profesional' && p.estado === 'activo' ? IVCStore.getCargaPersona(p.id) : null;
-      var cargaCell = carga !== null ? renderCargaPill(carga) : '<span style="color:var(--text-muted, #9ca3af); font-size:12px;">—</span>';
+      var cargaCell = carga !== null ? renderCargaLabel(carga) : '<span style="color:var(--text-muted, #9ca3af); font-size:12px;">—</span>';
       var rowClass = p.estado === 'pendiente' ? 'row-pending' : '';
       return '<tr class="' + rowClass + '">' +
         '<td>' + renderPersonaCell(p) + '</td>' +
@@ -623,29 +684,32 @@
       return '<span class="naowee-badge naowee-badge--' + variant + ' naowee-badge--quiet naowee-badge--small">' + escHtml(label) + '</span>';
     }
 
-    function renderCargaPill(n) {
+    function renderCargaLabel(n) {
       var variant = n === 0 ? 'zero' : (n <= 5 ? 'low' : (n <= 12 ? 'medium' : 'high'));
-      return '<span class="carga-pill carga-pill--' + variant + '">' + n + ' activos</span>';
+      return '<span class="carga-label carga-label--' + variant + '">' +
+        '<span class="carga-label__dot" aria-hidden="true"></span>' +
+        n + ' activos' +
+      '</span>';
     }
 
     function renderRowActions(p) {
       var btns = [];
       if (p.estado === 'pendiente') {
         btns.push(
-          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-action="aceptar" data-id="' + escHtml(p.id) + '" title="Simular que la persona aceptó la invitación (modo demo)">' +
+          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-action="aceptar" data-id="' + escHtml(p.id) + '">' +
             'Simular aceptación' +
           '</button>'
         );
       }
       if (p.estado === 'inactivo') {
         btns.push(
-          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-action="reactivar" data-id="' + escHtml(p.id) + '" title="Reactivar acceso">' +
+          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-action="reactivar" data-id="' + escHtml(p.id) + '">' +
             'Reactivar' +
           '</button>'
         );
       } else if (p.estado === 'activo') {
         btns.push(
-          '<button type="button" class="row-action-btn" data-action="desactivar" data-id="' + escHtml(p.id) + '" title="Desactivar acceso">' +
+          '<button type="button" class="row-action-btn" data-action="desactivar" data-id="' + escHtml(p.id) + '" data-tooltip="Desactivar acceso" aria-label="Desactivar acceso">' +
             '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>' +
           '</button>'
         );
@@ -669,10 +733,14 @@
     }
 
     /* ─── Tab Áreas técnicas ─────────────────────────────────────────── */
+    /* v1.13.35: iconos outline naranja en lugar de emojis. */
+    var ICON_AFICIONADO = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14 14 0 0 0 0 20"/><path d="M12 2a14 14 0 0 1 0 20"/><path d="M2 12h20"/></svg>';
+    var ICON_PROFESIONAL = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
+
     function renderAreasTab() {
       var areas = [
-        { key: 'aficionado',  label: 'Deporte Aficionado', icon: '⚽' },
-        { key: 'profesional', label: 'Deporte Profesional', icon: '🏆' }
+        { key: 'aficionado',  label: 'Deporte Aficionado',  icon: ICON_AFICIONADO },
+        { key: 'profesional', label: 'Deporte Profesional', icon: ICON_PROFESIONAL }
       ];
       return '<div class="areas-grid">' +
         areas.map(renderAreaCard).join('') +
@@ -687,12 +755,13 @@
         : profes.map(function (p) {
             var carga = IVCStore.getCargaPersona(p.id);
             var inicials = (p.nombre || '?').split(/\s+/).slice(0, 2).map(function (s) { return s.charAt(0).toUpperCase(); }).join('');
+            /* v1.13.35: usar el mismo low-contrast avatar de la tab Personas. */
             return '<div class="area-card__prof-row">' +
               '<div class="area-card__prof-info">' +
                 '<div class="persona-avatar persona-avatar--profesional" style="width:28px;height:28px;font-size:11px;">' + escHtml(inicials) + '</div>' +
                 '<span class="area-card__prof-name">' + escHtml(p.nombre) + '</span>' +
               '</div>' +
-              renderCargaPill(carga) +
+              renderCargaLabel(carga) +
             '</div>';
           }).join('');
       return '<div class="area-card">' +
@@ -701,7 +770,7 @@
             '<h3 class="area-card__title">' + escHtml(area.label) + '</h3>' +
             '<span class="area-card__subtitle">Área técnica fija del Ministerio</span>' +
           '</div>' +
-          '<div class="area-card__icon" style="font-size:22px;">' + area.icon + '</div>' +
+          '<div class="area-card__icon">' + area.icon + '</div>' +
         '</div>' +
         '<div class="area-card__stats">' +
           '<div>' +
@@ -733,24 +802,42 @@
     function wirePersonasTab() {
       /* Filter dropdowns — canónico naowee-dropdown */
       wireFilterDropdowns();
-      /* Search */
+      /* Search + clear button */
       var search = document.getElementById('equipoSearch');
+      var searchClear = document.getElementById('equipoSearchClear');
+      var searchboxWrap = document.getElementById('searchboxWrap');
+      function refreshTable() {
+        var tableHost = document.querySelector('.naowee-table-card > div:last-child');
+        if (!tableHost) return;
+        var filtered = applyFilters(state.personas);
+        var newHtml = renderPersonasTable(filtered);
+        var prev = tableHost;
+        var div = document.createElement('div');
+        div.innerHTML = newHtml;
+        if (prev.parentNode && div.firstChild) {
+          prev.parentNode.replaceChild(div.firstChild, prev);
+        }
+        wireRowActions();
+      }
+      function updateClearVisibility() {
+        if (!searchClear) return;
+        var has = state.filtros.q && state.filtros.q.length > 0;
+        searchClear.style.display = has ? 'inline-flex' : 'none';
+        if (searchboxWrap) searchboxWrap.classList.toggle('naowee-searchbox--has-text', has);
+      }
       if (search) {
         search.addEventListener('input', function () {
           state.filtros.q = search.value;
-          /* Render solo la tabla para preservar focus del input. */
-          var tableHost = document.querySelector('.naowee-table-card > div:last-child');
-          if (tableHost) {
-            var filtered = applyFilters(state.personas);
-            var newHtml = renderPersonasTable(filtered);
-            var prev = tableHost;
-            var div = document.createElement('div');
-            div.innerHTML = newHtml;
-            if (prev.parentNode && div.firstChild) {
-              prev.parentNode.replaceChild(div.firstChild, prev);
-            }
-            wireRowActions();
-          }
+          updateClearVisibility();
+          refreshTable();
+        });
+      }
+      if (searchClear) {
+        searchClear.addEventListener('click', function () {
+          state.filtros.q = '';
+          if (search) { search.value = ''; search.focus(); }
+          updateClearVisibility();
+          refreshTable();
         });
       }
       /* CTA Invitar */
