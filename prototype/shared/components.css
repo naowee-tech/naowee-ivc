@@ -915,3 +915,10 @@
 .row-plazo--positive { color: var(--green, #1f8923); }
 .row-plazo--caution  { color: var(--accent, #d74009); }
 .row-plazo--negative { color: #c0392b; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v1.13.9 (Doug 27/05/2026): override del gap del tooltip canónico DS
+   de 6px → 4px. Aplica a la posición default (arriba) y al modificador
+   --bottom para mantener consistencia. */
+.naowee-tooltip__content              { bottom: calc(100% + 4px) !important; }
+.naowee-tooltip--bottom .naowee-tooltip__content { bottom: auto !important; top: calc(100% + 4px) !important; }

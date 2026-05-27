@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.8">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.8">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.8">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.8">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.9">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.9">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.9">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.9">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
@@ -1340,14 +1340,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.8"></script>
-  <script src="../shared/shell.js?v=1.13.8"></script>
-  <script src="../shared/demo-tour.js?v=1.13.8"></script>
-  <script src="../shared/ivc-store.js?v=1.13.8"></script>
+  <script src="../shared/data.js?v=1.13.9"></script>
+  <script src="../shared/shell.js?v=1.13.9"></script>
+  <script src="../shared/demo-tour.js?v=1.13.9"></script>
+  <script src="../shared/ivc-store.js?v=1.13.9"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.13.8" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.13.9" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1593,7 +1593,7 @@
            accesibles desde inline onclick. */
         var safeId = escHtml(t.id);
         var accionBtn =
-          '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+          '<span class="naowee-tooltip">' +
             '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" ' +
               'data-asignar="' + safeId + '" ' +
               'onclick="event.stopPropagation(); window.openModalIndividual(\'' + safeId + '\');" ' +
@@ -1605,7 +1605,7 @@
 
         /* Botón histórico — icon button ghost (mute) con tooltip canónico */
         var historicoBtn =
-          '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+          '<span class="naowee-tooltip">' +
             '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" ' +
               'data-historico="' + safeId + '" ' +
               'onclick="event.stopPropagation(); window.openModalHistorico(\'' + safeId + '\');" ' +
@@ -1621,7 +1621,7 @@
         /* v1.5.9 (25/05/2026): nuevo botón "Ver detalle" — abre modal con TODOS
            los datos diligenciados en el formulario. Feedback Juanma. */
         var detalleBtn =
-          '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+          '<span class="naowee-tooltip">' +
             '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" ' +
               'data-detalle="' + safeId + '" ' +
               'onclick="event.stopPropagation(); window.openModalDetalle(\'' + safeId + '\');" ' +
@@ -1791,8 +1791,10 @@
         var left = rect.left + (rect.width / 2) - (cw / 2);
         if (left + cw > window.innerWidth - margin) left = window.innerWidth - cw - margin;
         if (left < margin) left = margin;
-        var top = prefBottom ? rect.bottom + 6 : rect.top - ch - 6;
-        if (!prefBottom && top < margin) top = rect.bottom + 6;
+        /* v1.13.9 (Doug 27/05/2026): gap 4px, default arriba. Si no cabe
+           arriba, fallback abajo manteniendo el mismo gap. */
+        var top = prefBottom ? rect.bottom + 4 : rect.top - ch - 4;
+        if (!prefBottom && top < margin) top = rect.bottom + 4;
         content.style.left = left + 'px';
         content.style.top  = top + 'px';
       }

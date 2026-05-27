@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.8">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.8">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.8">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.8">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.9">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.9">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.9">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.9">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
@@ -1087,10 +1087,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.8"></script>
-  <script src="../shared/shell.js?v=1.13.8"></script>
-  <script src="../shared/ivc-store.js?v=1.13.8"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.8" defer></script>
+  <script src="../shared/data.js?v=1.13.9"></script>
+  <script src="../shared/shell.js?v=1.13.9"></script>
+  <script src="../shared/ivc-store.js?v=1.13.9"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.9" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1391,15 +1391,15 @@
           '</div>' +
           /* v1.5.4: tooltips canónicos del DS (.naowee-tooltip + __content) */
           '<div class="ivc-ra-toggle" role="group" aria-label="Veredicto del documento">' +
-            '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+            '<span class="naowee-tooltip">' +
               '<button type="button" class="ivc-ra-toggle__btn ' + (d.validacion === 'cumple' ? 'is-active--cumple' : '') + '" data-r="cumple" data-doc="' + d.id + '" aria-label="Marcar como Cumple">' + iconCheck + '</button>' +
               '<span class="naowee-tooltip__content">Cumple</span>' +
             '</span>' +
-            '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+            '<span class="naowee-tooltip">' +
               '<button type="button" class="ivc-ra-toggle__btn ' + (d.validacion === 'no' ? 'is-active--nocumple' : '') + '" data-r="nocumple" data-doc="' + d.id + '" aria-label="Marcar como No cumple">' + iconX + '</button>' +
               '<span class="naowee-tooltip__content">No cumple</span>' +
             '</span>' +
-            '<span class="naowee-tooltip naowee-tooltip--bottom">' +
+            '<span class="naowee-tooltip">' +
               '<button type="button" class="ivc-ra-toggle__btn ' + (d.validacion === 'obs' ? 'is-active--obs' : '') + '" data-r="obs" data-doc="' + d.id + '" aria-label="Marcar como Cumplimiento parcial">' + iconWarn + '</button>' +
               '<span class="naowee-tooltip__content">Cumplimiento parcial</span>' +
             '</span>' +
