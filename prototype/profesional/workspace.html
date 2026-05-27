@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.11">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.11">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.11">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.11">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.12">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.12">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.12">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.12">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
@@ -1109,10 +1109,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.11"></script>
-  <script src="../shared/shell.js?v=1.13.11"></script>
-  <script src="../shared/ivc-store.js?v=1.13.11"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.11" defer></script>
+  <script src="../shared/data.js?v=1.13.12"></script>
+  <script src="../shared/shell.js?v=1.13.12"></script>
+  <script src="../shared/ivc-store.js?v=1.13.12"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.12" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1347,9 +1347,20 @@
         /* v1.7.2: Tabs DS LITERALES — estructura mínima del playground. */
         '<section class="ivc-tabs-card">' +
           '<div class="naowee-tabs" role="tablist" style="width:100%">' +
-            '<button class="naowee-tab naowee-tab--selected" data-tab="documentos" role="tab" type="button">Documentos</button>' +
-            '<button class="naowee-tab" data-tab="datos" role="tab" type="button">Datos</button>' +
-            '<button class="naowee-tab" data-tab="historial" role="tab" type="button">Historial</button>' +
+            /* v1.13.12 (Doug 27/05/2026): icono a la izquierda de cada label.
+               Doc icon (file-text) · Datos icon (list-rows) · Historial (clock). */
+            '<button class="naowee-tab naowee-tab--selected" data-tab="documentos" role="tab" type="button">' +
+              '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+              'Documentos' +
+            '</button>' +
+            '<button class="naowee-tab" data-tab="datos" role="tab" type="button">' +
+              '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' +
+              'Datos' +
+            '</button>' +
+            '<button class="naowee-tab" data-tab="historial" role="tab" type="button">' +
+              '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+              'Historial' +
+            '</button>' +
           '</div>' +
 
           '<div class="ivc-tab-panel" data-panel="documentos" id="panelDocumentos">' +

@@ -1000,3 +1000,22 @@
 .ivc-traza-toggle.is-expanded .ivc-traza-toggle__chev {
   transform: rotate(180deg);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v1.13.12 (Doug 27/05/2026): iconos a la izquierda del label en TABS
+   (.naowee-tab y .actos-tab). El icono hereda el color del tab (gris en
+   idle, naranja en .naowee-tab--selected / .actos-tab.is-selected),
+   manteniendo la consistencia semántica del estado activo.
+   Flex-shrink:0 para que no se aplaste si el label se alarga.
+   margin-right:6px define el gap entre icono y label en tabs custom
+   (los .naowee-tab del DS ya tienen `gap`, este margen es ignorado por
+   inherit-friendly default — actúa solo en tabs flex sin gap). */
+.ivc-tab-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+  margin-right: 0;
+}
+.naowee-tab--selected .ivc-tab-icon,
+.actos-tab.is-selected .ivc-tab-icon {
+  opacity: 1;
+}
