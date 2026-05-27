@@ -29,11 +29,28 @@
   font-family: 'Inter', sans-serif;
   font-size: 11.5px;
   color: var(--text-secondary, #646587);
-  pointer-events: auto;
+  /* v1.12.4 (Doug 26/05/2026): pointer-events:none en el wrapper para que
+     NO bloquee hover/click de elementos detrás (filas de tabla, botones
+     de acción, etc). El footer es decorativo — solo el link de versión
+     necesita ser clickeable. Causa raíz del bug reportado por Doug:
+     "los iconos de acción en la tabla no hacen hover ni se pueden
+     clickear". El footer mide ~480px de ancho y se sentaba encima de
+     las filas inferiores robando todos los pointer events. */
+  pointer-events: none;
   transform: translateY(0);
   transition:
     transform .32s cubic-bezier(.4, 0, .2, 1),
     opacity .25s ease;
+}
+/* Re-habilitar pointer-events SOLO en los children interactivos del
+   footer. El link al release notes es el único elemento que el usuario
+   realmente toca; el logo + el texto de copyright son puramente
+   decorativos. */
+.naowee-floating-footer__version,
+.naowee-floating-footer__logo,
+.naowee-floating-footer__text,
+.naowee-floating-footer__sep {
+  pointer-events: auto;
 }
 
 /* Oculto cuando se hace scroll DOWN — reaparece al scroll UP.

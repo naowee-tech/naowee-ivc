@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.3">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.3">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.12.3">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.3">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.4">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.4">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.4">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.4">
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
        que dashboard.html (no se duplica el patrón en components.css para no
@@ -198,15 +198,8 @@
       background: var(--orange-bg, #fff3e6) !important;
       color: var(--accent, #d74009) !important;
     }
-    /* v1.12.3: defensive — si el demo-tour overlay aparece (no debería tras
-       setTourClosed(true) en este page), forzar pointer-events:none global
-       para que NUNCA bloquee clicks de tooltips/buttons de la tabla. */
-    .demo-tour-overlay,
-    .demo-tour-overlay::before,
-    .demo-tour-spotlight {
-      pointer-events: none !important;
-    }
-    /* v1.12.3: solo el tooltip del tour interactúa (cuando esté activo). */
+    /* v1.12.3 defensive removido en v1.12.4 — el CSS canónico del tour ya
+       tiene pointer-events:none. Override !important causaba más confusión. */
     .row-checkbox-cell { width: 36px; padding-left: 18px; }
 
     /* Footer count info — minimal, page-scoped */
@@ -1262,14 +1255,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.12.3"></script>
-  <script src="../shared/shell.js?v=1.12.3"></script>
-  <script src="../shared/demo-tour.js?v=1.12.3"></script>
-  <script src="../shared/ivc-store.js?v=1.12.3"></script>
+  <script src="../shared/data.js?v=1.12.4"></script>
+  <script src="../shared/shell.js?v=1.12.4"></script>
+  <script src="../shared/demo-tour.js?v=1.12.4"></script>
+  <script src="../shared/ivc-store.js?v=1.12.4"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.12.3" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.12.4" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {

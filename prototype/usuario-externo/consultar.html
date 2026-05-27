@@ -24,9 +24,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.3">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.3">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.3">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.4">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.4">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.4">
 
   <style>
     * { box-sizing: border-box; }
@@ -895,8 +895,8 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.12.3"></script>
-  <script src="../shared/ivc-store.js?v=1.12.3"></script>
+  <script src="../shared/data.js?v=1.12.4"></script>
+  <script src="../shared/ivc-store.js?v=1.12.4"></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -1047,11 +1047,13 @@
           '<button class="naowee-btn naowee-btn--quiet" onclick="_goLanding()">Intentar de nuevo</button>' +
         '</div>';
     }
-    /* v1.8.6: back button canónico DS — .naowee-btn--mute (Ghost) + --small */
+    /* v1.8.6: back button canónico DS — .naowee-btn--mute (Ghost) + --small
+       v1.12.4: usar <a href> en lugar de <button onclick> — más robusto
+       contra cualquier interceptor de event. Doug reportó "click no funciona". */
     function _renderBackButton() {
-      return '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" onclick="_goLanding()">' +
+      return '<a href="consultar.html" class="naowee-btn naowee-btn--mute naowee-btn--small" style="text-decoration: none;">' +
         ICON_BACK + ' Nueva consulta' +
-      '</button>';
+      '</a>';
     }
     window._goLanding = function () { location.search = ''; };
 
