@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.20">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.20">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.20">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.20">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.21">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.21">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.21">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.21">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -41,10 +41,8 @@
       color: var(--text-secondary);
       font-weight: 500;
     }
-    /* v1.13.6 (Doug 27/05/2026): page-inner sube a 1480px (paridad con
-       bandeja/actos) → title y subtitle se alinean al borde izquierdo del
-       área de contenido. El max-width 720 vive ahora en el card y el header
-       block para que se mantengan compactos pero anclados al left. */
+    /* v1.13.21 (Doug 27/05/2026): page-inner 1480 con title a la izquierda;
+       el card de firma se centra horizontalmente (margin auto). */
     .page-inner { max-width: 1480px !important; }
     .page-title-block { max-width: 720px; }
 
@@ -54,37 +52,9 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg, 12px);
       padding: 28px;
-      margin-top: 28px;
+      margin: 28px auto 0;       /* v1.13.21: auto center horizontal */
       max-width: 720px;
     }
-
-    /* v1.13.6: Eliminar firma como botón destructivo rojo (hover + active).
-       Patrón consistente con el resto del prototype: idle fondo blanco con
-       texto rojo, hover red bg + texto blanco. */
-    .btn-destructive {
-      background: transparent;
-      border: 1px solid #e7c8c8;
-      color: #c01818;
-      padding: 0 18px;
-      height: 40px;
-      border-radius: var(--radius-md, 8px);
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: background .15s, color .15s, border-color .15s;
-    }
-    .btn-destructive:hover,
-    .btn-destructive:focus-visible {
-      background: #c01818;
-      border-color: #c01818;
-      color: #fff;
-      outline: none;
-    }
-    .btn-destructive:active { transform: translateY(1px); }
 
     /* ── Drop zone ──────────────────────────────────────────────────── */
     .firma-drop {
@@ -283,7 +253,10 @@
           </div>
 
           <div class="firma-actions">
-            <button type="button" class="btn-destructive" id="btnEliminarFirma">Eliminar firma</button>
+            <!-- v1.13.21: ghost button canónico DS (mute) — label naranja
+                 idle + hover peach claro. Doug pidió que NO sea destructive
+                 rojo sino el ghost orange del DS. -->
+            <button type="button" class="naowee-btn naowee-btn--mute" id="btnEliminarFirma">Eliminar firma</button>
             <button type="button" class="naowee-btn naowee-btn--loud" id="btnReemplazarFirma">Reemplazar firma</button>
           </div>
         </div>
@@ -325,10 +298,10 @@
   </style>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.20"></script>
-  <script src="../shared/shell.js?v=1.13.20"></script>
-  <script src="../shared/ivc-store.js?v=1.13.20"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.20" defer></script>
+  <script src="../shared/data.js?v=1.13.21"></script>
+  <script src="../shared/shell.js?v=1.13.21"></script>
+  <script src="../shared/ivc-store.js?v=1.13.21"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.21" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════

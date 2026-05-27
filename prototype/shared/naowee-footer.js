@@ -15,7 +15,7 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 (function mountNaoweeFooter() {
-  var IVC_VERSION = 'v1.13.20';
+  var IVC_VERSION = 'v1.13.21';
   var REPO = 'naowee-tech/naowee-ivc';
   var MODULE_NAME = 'IVC';
 
