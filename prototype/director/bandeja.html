@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.17">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.17">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.17">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.17">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.18">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.18">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.18">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.18">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -458,52 +458,8 @@
     }
     .naowee-table-card > div:last-child { padding-bottom: 8px; }
 
-    /* ── Tabs in-card ───────────────────────────────────────────────── */
-    .actos-tabs-wrap--in-card {
-      margin: 0;
-      padding: 0 24px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-    .actos-tab {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 12px 0;
-      margin-right: 32px;
-      background: transparent;
-      border: 0;
-      color: var(--text-secondary);
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      position: relative;
-      transition: color .15s;
-    }
-    .actos-tab:hover { color: var(--text-primary); }
-    .actos-tab.is-selected { color: var(--accent, #d74009); }
-    .actos-tab.is-selected::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0; bottom: -1px;
-      height: 2px;
-      background: var(--accent, #d74009);
-      border-radius: 1px;
-    }
-    .actos-tab__count {
-      display: inline-flex; align-items: center; justify-content: center;
-      min-width: 22px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: var(--bg-soft, #f5f6fa);
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-secondary);
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
-    }
-    .actos-tab.is-selected .actos-tab__count {
-      background: var(--orange-bg, #fff3e6);
-      color: var(--accent, #d74009);
-    }
+    /* v1.13.18: estilos de .actos-tab promovidos a shared/components.css
+       con hover canónico DS (peach naranja bg + accent text). */
 
     /* v1.12.7: empty state migrado al canónico .naowee-empty-state — ver
        components.css#v1.12.7 (icono 40×40 + tipografía DS). */
@@ -903,10 +859,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.17"></script>
-  <script src="../shared/shell.js?v=1.13.17"></script>
-  <script src="../shared/ivc-store.js?v=1.13.17"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.17" defer></script>
+  <script src="../shared/data.js?v=1.13.18"></script>
+  <script src="../shared/shell.js?v=1.13.18"></script>
+  <script src="../shared/ivc-store.js?v=1.13.18"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.18" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════

@@ -1127,6 +1127,92 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   v1.13.18 (Doug 27/05/2026): tabs in-card de actos (coordinador y
+   director). Promovido desde duplicación local → shared.
+
+   Hover canónico DS Naowee:
+     · idle:       text-primary (gris/negro normal)
+     · hover:      peach naranja bg + accent text (mute fill hover pattern)
+     · selected:   accent text + accent underline 2px (no bg)
+     · hover sobre selected: mantiene accent + peach bg sutil
+
+   El badge count cambia de fondo gris a peach cuando el tab está activo. */
+.actos-tabs-wrap {
+  margin: 0;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border, #e7e9f3);
+  background: var(--surface, #fff);
+}
+.actos-tabs-wrap--in-card {
+  margin: 0;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border, #e7e9f3);
+  background: var(--surface, #fff);
+}
+.actos-tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 14px;
+  margin-right: 4px;
+  background: transparent;
+  border: 0;
+  color: var(--text-primary, #282834);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  border-radius: 6px 6px 0 0;
+  transition: background .15s, color .15s;
+}
+.actos-tab:hover {
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+}
+.actos-tab:focus-visible {
+  outline: 2px solid var(--accent, #d74009);
+  outline-offset: -2px;
+}
+.actos-tab.is-selected {
+  color: var(--accent, #d74009);
+  background: transparent;
+}
+.actos-tab.is-selected:hover {
+  background: var(--orange-bg, #fff3e6);
+}
+.actos-tab.is-selected::after {
+  content: '';
+  position: absolute;
+  left: 14px; right: 14px;   /* alinea con el padding del tab */
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent, #d74009);
+  border-radius: 1px 1px 0 0;
+}
+.actos-tab__count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-soft, #f5f6fa);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  transition: background .15s, color .15s;
+}
+.actos-tab:hover .actos-tab__count {
+  background: #fff;
+  color: var(--accent, #d74009);
+}
+.actos-tab.is-selected .actos-tab__count {
+  background: var(--orange-bg, #fff3e6);
+  color: var(--accent, #d74009);
+}
+.actos-tab.is-selected:hover .actos-tab__count {
+  background: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    v1.13.12 (Doug 27/05/2026): iconos a la izquierda del label en TABS
    (.naowee-tab y .actos-tab). El icono hereda el color del tab (gris en
    idle, naranja en .naowee-tab--selected / .actos-tab.is-selected),
