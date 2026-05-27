@@ -842,3 +842,42 @@
   color: var(--text-primary);
   margin-top: 2px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v1.12.7 (26/05/2026): Override IVC del .naowee-empty-state canónico.
+   Doug pidió: "haz el icono más pequeño y estandariza así los empty
+   states, regula en todas las páginas icono título y contenido."
+
+   DS canónico v1.8.0 default:
+     icon       48 × 48
+     title      16px / 700
+     description 13px / 400 (max-width 320px)
+     padding    60px 24px (en el wrapper)
+
+   IVC override:
+     icon       40 × 40  ← más sutil, da más aire al título
+     título     16/700   (igual al DS)
+     descripción 13/400  (igual al DS)
+     max-width  420px    ← un poco más ancho que DS, para mensajes IVC
+                          (ej. CPACA Art 67-69) que necesitan más espacio
+     padding    60px 24px (igual al DS)
+
+   El SVG dentro del icon hereda width/height 100% del wrapper (regla
+   del DS), así que con cambiar solo el wrapper, todos los iconos del
+   prototype se reescalan automáticamente — siempre que el SVG no
+   tenga atributos width/height inline. Limpiamos esos atributos en
+   los 6 puntos donde había svg width="56" / "64".
+   ═══════════════════════════════════════════════════════════════════════ */
+.naowee-empty-state__icon {
+  width: 40px;
+  height: 40px;
+}
+.naowee-empty-state__description {
+  max-width: 420px;
+}
+/* Defensive override: si algún HTML tiene <svg width="56" ...> hardcoded
+   (legacy), forzamos a heredar el tamaño del parent. */
+.naowee-empty-state__icon svg {
+  width: 100% !important;
+  height: 100% !important;
+}

@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.6">
-  <link rel="stylesheet" href="../shared/components.css?v=1.12.6">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.12.6">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.6">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.12.7">
+  <link rel="stylesheet" href="../shared/components.css?v=1.12.7">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.12.7">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.12.7">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -36,15 +36,8 @@
     .naowee-table-card > div:last-child { padding-bottom: 8px; }
 
     .row-radicado { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; }
-    .actos-empty { padding: 64px 24px; text-align: center; color: var(--text-secondary); }
-    .actos-empty__icon {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: var(--green-bg, #e6f4e7); color: var(--green, #1f8923);
-      display: inline-flex; align-items: center; justify-content: center;
-      margin-bottom: 14px;
-    }
-    .actos-empty__title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
-    .actos-empty__sub { font-size: 13.5px; max-width: 420px; margin: 0 auto; line-height: 1.55; }
+    /* v1.12.7: empty state migrado al canónico .naowee-empty-state — ver
+       components.css#v1.12.7 (icono 40×40 + tipografía DS). */
 
     /* Modal "Marcar notificado" — confirma la notificación con un mini-form */
     .notif-modal-body__row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -90,10 +83,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.12.6"></script>
-  <script src="../shared/shell.js?v=1.12.6"></script>
-  <script src="../shared/ivc-store.js?v=1.12.6"></script>
-  <script src="../shared/naowee-footer.js?v=1.12.6" defer></script>
+  <script src="../shared/data.js?v=1.12.7"></script>
+  <script src="../shared/shell.js?v=1.12.7"></script>
+  <script src="../shared/ivc-store.js?v=1.12.7"></script>
+  <script src="../shared/naowee-footer.js?v=1.12.7" defer></script>
 
   <script>
     var state = { tramites: [], confirmId: null };
@@ -168,12 +161,12 @@
             '</div>' +
           '</div>' +
           (state.tramites.length === 0
-            ? '<div class="actos-empty">' +
-                '<div class="actos-empty__icon">' +
-                  '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+            ? '<div class="naowee-empty-state">' +
+                '<div class="naowee-empty-state__icon">' +
+                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/><path d="M4 7l8 6 8-6"/><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg>' +
                 '</div>' +
-                '<div class="actos-empty__title">Sin trámites por notificar</div>' +
-                '<div class="actos-empty__sub">Cuando el Director del IVC firme actos con notificación en oficinas, aparecerán aquí dentro de los 5 días hábiles para notificar al organismo presencialmente por plantilla.</div>' +
+                '<div class="naowee-empty-state__title">Sin trámites por notificar</div>' +
+                '<div class="naowee-empty-state__description">Cuando el Director del IVC firme actos con notificación en oficinas, aparecerán aquí dentro de los 5 días hábiles para notificar al organismo presencialmente por plantilla.</div>' +
               '</div>'
             : renderTable())+
         '</section>';

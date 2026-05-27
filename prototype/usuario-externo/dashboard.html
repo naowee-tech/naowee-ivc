@@ -202,10 +202,14 @@
       if (!t) {
         statEl.textContent = '0';
         container.innerHTML =
-          '<div class="naowee-empty">' +
-            '<div class="naowee-empty__icon">📋</div>' +
-            '<h3 class="naowee-empty__title">No tienes trámites activos</h3>' +
-            '<p class="naowee-empty__desc">Inicia un nuevo Otorgamiento de Reconocimiento Deportivo cargando los 7 documentos del Decreto 1387/1970.</p>' +
+          /* v1.12.7: migrado al canónico .naowee-empty-state (icono SVG 40×40)
+             para consistencia con todas las bandejas del prototype. */
+          '<div class="naowee-empty-state">' +
+            '<div class="naowee-empty-state__icon">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>' +
+            '</div>' +
+            '<div class="naowee-empty-state__title">No tienes trámites activos</div>' +
+            '<div class="naowee-empty-state__description">Inicia un nuevo Otorgamiento de Reconocimiento Deportivo cargando los 7 documentos del Decreto 1387/1970.</div>' +
           '</div>';
         return;
       }
