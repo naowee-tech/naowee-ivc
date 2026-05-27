@@ -898,3 +898,20 @@
   color: var(--text-secondary) !important;
   line-height: 1.5 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v1.13.5 (Doug 27/05/2026): semáforo de plazo. Promovido de
+   coordinador/bandeja.html → shared para que CUALQUIER tabla del prototype
+   (actos, director, modal detalle, etc) lo use sin redefinir el CSS.
+     · >5 días     → verde  (positive)
+     · 3-5 días    → naranja (caution)
+     · ≤2/vencido  → rojo   (negative)
+   ═══════════════════════════════════════════════════════════════════════ */
+.row-plazo {
+  font-size: 13px;
+  font-weight: 600;
+  font-feature-settings: 'tnum';
+}
+.row-plazo--positive { color: var(--green, #1f8923); }
+.row-plazo--caution  { color: var(--accent, #d74009); }
+.row-plazo--negative { color: #c0392b; }

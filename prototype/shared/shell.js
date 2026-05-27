@@ -124,7 +124,10 @@
     try {
       var todos = IVCStore.getTramites({ area: 'aficionado' }) || [];
       if (navId === 'bandeja-coord') {
-        return todos.filter(function (t) { return t.estado === 'No asignada'; }).length || null;
+        /* v1.13.5: Doug — el badge debe reflejar el total de trámites visibles
+           en la tabla (mismo número que el footer "Mostrando X de Y"), no
+           solo las "No asignada". El Coordinador ve toda la operación. */
+        return todos.length || null;
       }
       if (navId === 'bandeja-prof') {
         return todos.filter(function (t) {
