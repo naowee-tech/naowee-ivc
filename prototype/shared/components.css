@@ -642,7 +642,12 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: none;        /* sin elevation — Doug feedback #3 */
-  overflow: hidden;
+  /* v1.13.28 (Doug 27/05/2026): de `overflow: hidden` → `visible` para
+     que el glow elevation de los .naowee-btn--loud en la columna
+     Acciones no quede clipped por el border del card. La thead usa
+     border-radius propio (6px) sobre cells y la tabla está inset 14px
+     horizontal, así que nada toca los corners del card. */
+  overflow: visible;
   padding: 0;
 }
 

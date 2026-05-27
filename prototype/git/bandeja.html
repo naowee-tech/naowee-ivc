@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.27">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.27">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.27">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.27">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.28">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.28">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.28">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.28">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -61,15 +61,26 @@
         </button>
       </div>
       <div class="naowee-modal__body">
-        <div class="naowee-message naowee-message--caution" style="margin-bottom: 16px;">
+        <div class="naowee-message naowee-message--caution" style="margin-bottom: 12px;">
           <div class="naowee-message__header">
             <span class="naowee-message__icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </span>
-            <span class="naowee-message__title">Notificación por aviso (5 días hábiles vencidos)</span>
+            <span class="naowee-message__title">La publicación del aviso ES la notificación legal</span>
           </div>
           <div class="naowee-message__text">
-            Vencido el plazo personal sin asistencia del organismo, la notificación se surte por aviso publicado en el sitio web del Ministerio durante 5 días hábiles. Al confirmar, el trámite se marca como notificado y el organismo podrá responder renuncia a términos.
+            CPACA Art 67-69 — vencido el plazo personal sin asistencia del organismo, <strong>no se envía correo electrónico</strong>. La publicación del aviso en el sitio web del Ministerio durante 5 días hábiles surte la notificación de pleno derecho.
+          </div>
+        </div>
+        <div class="naowee-message naowee-message--informative" style="margin-bottom: 16px;">
+          <div class="naowee-message__header">
+            <span class="naowee-message__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+            <span class="naowee-message__title">¿Qué pasa después?</span>
+          </div>
+          <div class="naowee-message__text">
+            Al confirmar, el aviso queda publicado y el trámite avanza al flujo de respuesta. El organismo podrá entrar a su portal y elegir entre <strong>renunciar a términos</strong> (acto vigente desde el día siguiente) o <strong>interponer recursos</strong> (apelación o reposición) dentro de los 10 días siguientes.
           </div>
         </div>
         <div id="confirmAvisoDetails"></div>
@@ -81,10 +92,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.27"></script>
-  <script src="../shared/shell.js?v=1.13.27"></script>
-  <script src="../shared/ivc-store.js?v=1.13.27"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.27" defer></script>
+  <script src="../shared/data.js?v=1.13.28"></script>
+  <script src="../shared/shell.js?v=1.13.28"></script>
+  <script src="../shared/ivc-store.js?v=1.13.28"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.28" defer></script>
 
   <script>
     var state = { tramites: [], confirmId: null };
