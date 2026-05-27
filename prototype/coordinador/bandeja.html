@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.9">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.9">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.9">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.9">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.10">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.10">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.10">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.10">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
@@ -1311,7 +1311,17 @@
         </button>
       </div>
       <div class="naowee-modal__body">
-        <ol class="ivc-timeline" id="histTimeline"></ol>
+        <!-- v1.13.10: timeline en pattern colapsable .ivc-traza-* (max-height
+             240 + Ver más + bottom fade). Wireup en openModalHistorico. -->
+        <div class="ivc-traza-wrap" id="modalHistTrazaWrap">
+          <div class="ivc-traza-box" id="modalHistTrazaBox">
+            <ol class="ivc-timeline" id="histTimeline"></ol>
+          </div>
+          <button type="button" class="ivc-traza-toggle" id="modalHistTrazaToggle" style="display:none;" onclick="window._toggleModalHistTraza()">
+            <span class="ivc-traza-toggle__label">Ver más</span>
+            <svg class="ivc-traza-toggle__chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1340,14 +1350,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.9"></script>
-  <script src="../shared/shell.js?v=1.13.9"></script>
-  <script src="../shared/demo-tour.js?v=1.13.9"></script>
-  <script src="../shared/ivc-store.js?v=1.13.9"></script>
+  <script src="../shared/data.js?v=1.13.10"></script>
+  <script src="../shared/shell.js?v=1.13.10"></script>
+  <script src="../shared/demo-tour.js?v=1.13.10"></script>
+  <script src="../shared/ivc-store.js?v=1.13.10"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.13.9" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.13.10" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -3351,7 +3361,31 @@
         '</li>';
       }).join('');
       document.getElementById('modalHistoricoOverlay').classList.add('open');
+      /* v1.13.10: detectar overflow del timeline para mostrar "Ver más". */
+      setTimeout(function () {
+        var box = document.getElementById('modalHistTrazaBox');
+        var wrap = document.getElementById('modalHistTrazaWrap');
+        var toggle = document.getElementById('modalHistTrazaToggle');
+        if (!box || !wrap || !toggle) return;
+        /* Reset al abrir (en caso de que el usuario haya expandido en un trámite anterior). */
+        box.classList.remove('is-expanded');
+        toggle.classList.remove('is-expanded');
+        var lbl = toggle.querySelector('.ivc-traza-toggle__label');
+        if (lbl) lbl.textContent = 'Ver más';
+        var hasOverflow = box.scrollHeight > box.clientHeight + 4;
+        wrap.classList.toggle('has-overflow', hasOverflow);
+        toggle.style.display = hasOverflow ? 'inline-flex' : 'none';
+      }, 0);
     }
+    window._toggleModalHistTraza = function () {
+      var box = document.getElementById('modalHistTrazaBox');
+      var toggle = document.getElementById('modalHistTrazaToggle');
+      var lbl = toggle && toggle.querySelector('.ivc-traza-toggle__label');
+      if (!box || !toggle) return;
+      var isExpanded = box.classList.toggle('is-expanded');
+      toggle.classList.toggle('is-expanded', isExpanded);
+      if (lbl) lbl.textContent = isExpanded ? 'Ver menos' : 'Ver más';
+    };
     function closeModalHistorico() {
       document.getElementById('modalHistoricoOverlay').classList.remove('open');
     }

@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.9">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.9">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.9">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.9">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.10">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.10">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.10">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.10">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
@@ -408,56 +408,64 @@
     .ivc-ra-toggle__btn.is-active--nocumple { background: var(--red-bg, #fff0ee);    color: #8a1212; }
     .ivc-ra-toggle__btn.is-active--obs      { background: var(--orange-bg, #fff3e6); color: var(--accent); }
 
-    /* ──────────────── TAB: Datos ──────────────── */
+    /* ──────────────── TAB: Datos ────────────────
+       v1.13.10 (Doug 27/05/2026): aligeré la lectura del tab.
+       · titles ahora son gris claro letterspaced sutil — NO naranja
+       · sin divider border-bottom (rompía el flujo visual)
+       · más aire vertical entre campos (gap 18→26px) */
     .ivc-data-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 18px 32px;
+      gap: 26px 32px;
     }
     @media (max-width: 900px) { .ivc-data-grid { grid-template-columns: 1fr; } }
-    .ivc-data-grid__cell { display: flex; flex-direction: column; gap: 4px; }
+    .ivc-data-grid__cell { display: flex; flex-direction: column; gap: 6px; }
     .ivc-data-grid__label {
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .6px;
+      font-weight: 600;
+      letter-spacing: .4px;
       text-transform: uppercase;
-      color: var(--text-secondary);
+      color: #9a9db0;
     }
     .ivc-data-grid__value {
       font-size: 14px;
       color: var(--text-primary);
       font-weight: 500;
+      line-height: 1.45;
     }
     .ivc-data-grid__value--mono {
       font-family: ui-monospace, SFMono-Regular, monospace;
       font-weight: 700;
     }
 
-    /* v1.5.9 (25/05/2026): bloques de detalle del trámite (tab Datos completo). */
+    /* v1.5.9 (25/05/2026): bloques de detalle del trámite (tab Datos completo).
+       v1.13.10 (Doug 27/05/2026): title ahora es gris secundario letterspaced
+       sutil (no naranja). Divider removido — la jerarquía visual se logra con
+       el margin-top generoso entre bloques (32px) + uppercase letterspacing. */
     .ivc-detail-block {
-      margin: 0 0 32px;
+      margin: 0 0 36px;
     }
-    .ivc-detail-block + .ivc-detail-block { margin-top: 32px; }
+    .ivc-detail-block + .ivc-detail-block { margin-top: 36px; }
     .ivc-detail-block__title {
-      font-size: 13px;
+      font-size: 11.5px;
       font-weight: 700;
-      letter-spacing: .4px;
+      letter-spacing: .6px;
       text-transform: uppercase;
-      color: var(--accent);
-      margin: 0 0 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
+      color: #9a9db0;
+      margin: 0 0 18px;
+      padding-bottom: 0;
+      border-bottom: 0;
     }
     .ivc-detail-subblock {
-      margin: 18px 0 0;
+      margin: 22px 0 0;
     }
     .ivc-detail-subblock__title {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: .3px;
       text-transform: uppercase;
-      color: var(--text-secondary);
-      margin: 0 0 10px;
+      color: #9a9db0;
+      margin: 0 0 12px;
     }
     .ivc-detail-table {
       width: 100%;
@@ -1087,10 +1095,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.9"></script>
-  <script src="../shared/shell.js?v=1.13.9"></script>
-  <script src="../shared/ivc-store.js?v=1.13.9"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.9" defer></script>
+  <script src="../shared/data.js?v=1.13.10"></script>
+  <script src="../shared/shell.js?v=1.13.10"></script>
+  <script src="../shared/ivc-store.js?v=1.13.10"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.10" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1753,7 +1761,7 @@
         '</div>';
       }
       var ordered = hist.slice();
-      return '<ol class="ivc-timeline">' +
+      var listHtml = '<ol class="ivc-timeline">' +
         ordered.map(function (ev) {
           var variant = timelineItemVariant(ev.accion || ev.titulo);
           var meta = (ev.fecha || '') + (ev.hora ? ' · ' + ev.hora : (ev.meta ? ' · ' + ev.meta : ''));
@@ -1765,12 +1773,52 @@
           '</li>';
         }).join('') +
       '</ol>';
+      /* v1.13.10: timeline en pattern colapsable (scroll-box + ver más + bottom fade).
+         Por defecto max-height 240px; el wireup en wireTrazaToggle() decide si
+         hay overflow y muestra el botón "Ver más". */
+      return '<div class="ivc-traza-wrap" id="histTrazaWrap">' +
+        '<div class="ivc-traza-box" id="histTrazaBox">' + listHtml + '</div>' +
+        '<button type="button" class="ivc-traza-toggle" id="histTrazaToggle" style="display:none;" onclick="window._toggleHistorialTraza()">' +
+          '<span class="ivc-traza-toggle__label">Ver más</span>' +
+          '<svg class="ivc-traza-toggle__chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
+        '</button>' +
+      '</div>';
     }
 
     function renderHistorial() {
       var panel = document.getElementById('panelHistorial');
-      if (panel) panel.innerHTML = renderHistorialPanel();
+      if (panel) {
+        panel.innerHTML = renderHistorialPanel();
+        /* Esperar al next frame para medir el scrollHeight con el contenido ya pintado. */
+        setTimeout(wireHistorialTraza, 0);
+      }
     }
+
+    /* v1.13.10: wireup del toggle/fade del timeline colapsable. */
+    function wireHistorialTraza() {
+      var box = document.getElementById('histTrazaBox');
+      var wrap = document.getElementById('histTrazaWrap');
+      var toggle = document.getElementById('histTrazaToggle');
+      if (!box || !wrap || !toggle) return;
+      var hasOverflow = box.scrollHeight > box.clientHeight + 4;
+      if (hasOverflow) {
+        wrap.classList.add('has-overflow');
+        toggle.style.display = 'inline-flex';
+      } else {
+        wrap.classList.remove('has-overflow');
+        toggle.style.display = 'none';
+      }
+    }
+
+    window._toggleHistorialTraza = function () {
+      var box = document.getElementById('histTrazaBox');
+      var toggle = document.getElementById('histTrazaToggle');
+      var label = toggle && toggle.querySelector('.ivc-traza-toggle__label');
+      if (!box || !toggle) return;
+      var isExpanded = box.classList.toggle('is-expanded');
+      toggle.classList.toggle('is-expanded', isExpanded);
+      if (label) label.textContent = isExpanded ? 'Ver menos' : 'Ver más';
+    };
 
     /* v1.7.0: tabs interaction simplificado — patrón DS simple usa ::after
        de .naowee-tab--selected como indicator (no requiere JS de posicionamiento). */
