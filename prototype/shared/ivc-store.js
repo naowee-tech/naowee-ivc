@@ -21,7 +21,7 @@
   'use strict';
 
   var KEY = 'ivc:store';
-  var SEED_VERSION = 5;            /* v1.13.7 (Doug 27/05/2026): bump fuerza reseed para corregir ultimoRadicado 20→23 (colisión de IDs al crear reposición). */
+  var SEED_VERSION = 6;            /* v1.13.26 (Doug 27/05/2026): bump fuerza reseed — agrega 024/025 NotifOficinas vencidos para que la bandeja GIT tenga mocks reales y no quede vacía. */
 
   /* ─── Seed inicial ───────────────────────────────────────────────────
      v1.5.3 FIX (25/05/2026): bug crítico — antes mkSeed referenciaba
@@ -431,16 +431,26 @@
        autores en la cola COO. */
     ['IVC-2026-021', 'liga',       'Otorgamiento',  'Liga de Bádminton del Tolima',        '800.555.111-2', '2026-05-11', 22, 'PendienteCOO',     'mg-002'],
     ['IVC-2026-022', 'asociacion', 'Renovación',    'Asociación de Polo del Atlántico',    '901.222.333-4', '2026-05-12', 21, 'PendienteCOO',     'al-003'],
-    ['IVC-2026-023', 'federacion', 'Otorgamiento',  'Federación Colombiana de Esgrima',    '900.444.555-7', '2026-05-13', 20, 'PendienteCOO',     'lr-004']
+    ['IVC-2026-023', 'federacion', 'Otorgamiento',  'Federación Colombiana de Esgrima',    '900.444.555-7', '2026-05-13', 20, 'PendienteCOO',     'lr-004'],
+    /* v1.13.26 (Doug 27/05/2026): 2 trámites NotifOficinas con plazo VENCIDO
+       (plazoDias negativo) para que la bandeja GIT Comunicaciones tenga
+       casos reales que mostrar. Estos representan organismos que NO
+       asistieron a las oficinas dentro de los 5 días hábiles tras la
+       alerta de notificación → CPACA Art 67-69 obliga a surtir notificación
+       por aviso publicado. Fechas anteriores al "ahora" mock para que el
+       contexto temporal sea coherente. */
+    ['IVC-2026-024', 'liga',       'Otorgamiento',  'Liga de Tiro al Blanco del Cesar',     '800.666.999-1', '2026-04-25', -7,  'NotifOficinas', 'cp-001'],
+    ['IVC-2026-025', 'asociacion', 'Renovación',    'Asociación de Pesca Deportiva Caquetá','901.444.111-3', '2026-04-20', -12, 'NotifOficinas', 'mg-002']
   ];
 
   function buildSeed() {
     return {
       seedVersion: SEED_VERSION,
-      /* v1.13.7 (Doug 27/05/2026): bumpeado de 20→23 porque la v1.13.1 agregó
-         021/022/023 al seed pero olvidó sincronizar ultimoRadicado, generando
-         colisión cuando crearReposicion intentaba el siguiente ID disponible. */
-      ultimoRadicado: 23,
+      /* v1.13.26 (Doug 27/05/2026): bumpeado de 23→25 porque v1.13.26 agregó
+         024/025 al seed (NotifOficinas vencidos para GIT). Mantener este
+         contador sincronizado evita colisión de IDs cuando crearReposicion
+         intenta el siguiente disponible. */
+      ultimoRadicado: 25,
       mode: 'demo',
       profesionales: JSON.parse(JSON.stringify(PROFESIONALES)),
       tramites: SEED_TRAMITES_RAW.map(function (row) { return mkSeed.apply(null, row); })
