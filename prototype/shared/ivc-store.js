@@ -665,6 +665,33 @@
       return p;
     },
 
+    /* v1.13.42 (Doug): editar campos de una persona ya invitada. Solo
+       actualiza fields permitidos (nombre, email, cedula, rol, area).
+       NO cambia estado ni fechaInvitacion. Sincroniza profesionales[]
+       cuando aplica para back-compat. */
+    editarPersona: function (personaId, updates) {
+      if (!updates) return null;
+      var s = this.init();
+      var p = (s.personas || []).find(function (x) { return x.id === personaId; });
+      if (!p) return null;
+      var ALLOWED = ['nombre', 'email', 'cedula', 'rol', 'area'];
+      ALLOWED.forEach(function (key) {
+        if (key in updates) p[key] = updates[key];
+      });
+      /* Si la persona es profesional activo, sincronizar la entrada
+         en s.profesionales[] (back-compat con código legacy). */
+      if (p.rol === 'profesional' && p.estado === 'activo') {
+        var pro = (s.profesionales || []).find(function (x) { return x.id === p.id; });
+        if (pro) {
+          pro.nombre = p.nombre;
+          pro.area   = p.area;
+        }
+      }
+      write(s);
+      emit('persona:editada', p);
+      return p;
+    },
+
     /* Reactivar una persona inactiva sin volver a invitar. */
     reactivarPersona: function (personaId) {
       var s = this.init();

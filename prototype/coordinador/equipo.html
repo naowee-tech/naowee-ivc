@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.41">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.41">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.41">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.41">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.42">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.42">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.42">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.42">
   <style>.naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -356,13 +356,13 @@
   <div class="shell" id="app-shell"></div>
   <template id="page-content"><div class="page-inner" id="pageInner"></div></template>
 
-  <!-- Modal Invitar persona -->
+  <!-- Modal Invitar/Editar persona (reusable v1.13.42) -->
   <div class="naowee-modal-overlay" id="modalInvitar" role="dialog" aria-modal="true">
     <div class="naowee-modal" style="width:95vw; max-width: 620px;">
       <div class="naowee-modal__header">
         <div class="naowee-modal__title-group">
-          <h2 class="naowee-modal__title">Invitar persona al equipo IVC</h2>
-          <p class="naowee-modal__subtitle">Se enviará una invitación al correo institucional para que confirme su acceso.</p>
+          <h2 class="naowee-modal__title" id="invitarTitle">Invitar persona al equipo IVC</h2>
+          <p class="naowee-modal__subtitle" id="invitarSubtitle">Se enviará una invitación al correo institucional para que confirme su acceso.</p>
         </div>
         <button type="button" class="naowee-modal__dismiss" id="invitarDismiss" aria-label="Cerrar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -460,7 +460,8 @@
         </div>
       </div>
       <div class="naowee-modal__footer naowee-modal__footer--end" style="gap: 10px;">
-        <!-- v1.13.39 (Doug): Cancelar removido — el usuario cierra con X o ESC. -->
+        <!-- v1.13.39: Cancelar removido — X o ESC para cerrar.
+             v1.13.42: label dinámico para soportar modo edit. -->
         <button type="button" class="naowee-btn naowee-btn--loud" id="invitarSubmit" disabled>Enviar invitación</button>
       </div>
     </div>
@@ -498,10 +499,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.41"></script>
-  <script src="../shared/shell.js?v=1.13.41"></script>
-  <script src="../shared/ivc-store.js?v=1.13.41"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.41" defer></script>
+  <script src="../shared/data.js?v=1.13.42"></script>
+  <script src="../shared/shell.js?v=1.13.42"></script>
+  <script src="../shared/ivc-store.js?v=1.13.42"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.42" defer></script>
 
   <script>
     var state = {
@@ -511,7 +512,10 @@
       modalAction: null,  /* { type: 'desactivar', personaId: '...' } */
       /* Modal Invitar state — antes vivía en el DOM (selects nativos);
          ahora vive aquí porque los .naowee-dropdown son custom. */
-      invitarForm: { rol: '', area: '' }
+      invitarForm: { rol: '', area: '' },
+      /* v1.13.42: el modal es reusable invitar/edit. 'create' es default. */
+      invitarMode: 'create',  /* 'create' | 'edit' */
+      invitarEditingId: null  /* personaId si modo edit */
     };
 
     /* Labels humanizados */
@@ -549,7 +553,7 @@
       load();
 
       /* Escuchar cambios cross-tab o internos. */
-      ['store:changed-external', 'persona:invitada', 'persona:aceptada', 'persona:desactivada', 'persona:reactivada'].forEach(function (ev) {
+      ['store:changed-external', 'persona:invitada', 'persona:aceptada', 'persona:desactivada', 'persona:reactivada', 'persona:editada'].forEach(function (ev) {
         IVCStore.on(ev, function () { load(); render(); });
       });
 
@@ -789,6 +793,17 @@
           '</button>'
         );
       }
+      /* v1.13.42 (Doug): icon button Editar visible para TODOS los
+         estados (activo, pendiente, inactivo). Permite corregir nombre,
+         email, cédula, rol y área sin importar el estado. */
+      btns.push(
+        '<span class="naowee-tooltip">' +
+          '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--icon naowee-btn--small" data-action="editar" data-id="' + escHtml(p.id) + '" aria-label="Editar persona">' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' +
+          '</button>' +
+          '<span class="naowee-tooltip__content">Editar persona</span>' +
+        '</span>'
+      );
       if (p.estado === 'inactivo') {
         btns.push(
           '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" data-action="reactivar" data-id="' + escHtml(p.id) + '">' +
@@ -1086,24 +1101,68 @@
           if (action === 'aceptar')    { IVCStore.aceptarInvitacion(id);  showSnack('Invitación aceptada · acceso activado.', 'success'); }
           if (action === 'reactivar')  { IVCStore.reactivarPersona(id);   showSnack('Acceso reactivado.', 'success'); }
           if (action === 'desactivar') { openDesactivar(id); }
+          if (action === 'editar')     { openEditar(id); }
         });
       });
     }
 
-    /* ─── Modal Invitar ──────────────────────────────────────────────── */
+    /* ─── Modal Invitar/Editar persona ───────────────────────────────── */
     function openInvitar() {
-      /* Reset campos text. */
+      /* Modo CREATE: reset campos + título "Invitar persona". */
+      state.invitarMode = 'create';
+      state.invitarEditingId = null;
+      document.getElementById('invitarTitle').textContent = 'Invitar persona al equipo IVC';
+      document.getElementById('invitarSubtitle').textContent = 'Se enviará una invitación al correo institucional para que confirme su acceso.';
+      document.getElementById('invitarSubmit').textContent = 'Enviar invitación';
+
       ['invNombre','invCedula','invEmail','invMensaje'].forEach(function (id) {
         var el = document.getElementById(id); if (el) el.value = '';
       });
-      /* Reset dropdowns canónicos + state. */
       state.invitarForm = { rol: '', area: '' };
       resetDropdown(document.getElementById('ddInvRol'),  'Seleccionar rol…');
       resetDropdown(document.getElementById('ddInvArea'), 'Seleccionar área…');
       document.getElementById('invAreaWrap').style.display = 'none';
       document.getElementById('invitarSubmit').disabled = true;
+      /* v1.13.42: mensaje field visible solo en create. */
+      var msgWrap = document.getElementById('invMensaje').closest('.form-grid__field--full');
+      if (msgWrap) msgWrap.style.display = '';
       document.getElementById('modalInvitar').classList.add('open');
       wireModalDropdowns();
+      setTimeout(function () { document.getElementById('invNombre').focus(); }, 50);
+    }
+
+    /* v1.13.42: modo EDIT — pre-rellena campos con la persona existente.
+       Cambia título + subtítulo + submit label. Oculta el mensaje
+       (no aplica al editar). */
+    function openEditar(personaId) {
+      var p = IVCStore.getPersona(personaId);
+      if (!p) return;
+      state.invitarMode = 'edit';
+      state.invitarEditingId = personaId;
+      document.getElementById('invitarTitle').textContent = 'Editar persona';
+      document.getElementById('invitarSubtitle').textContent = 'Actualiza nombre, cédula, correo, rol o área. Los cambios se aplican inmediatamente.';
+      document.getElementById('invitarSubmit').textContent = 'Guardar cambios';
+
+      /* Pre-fill campos. */
+      document.getElementById('invNombre').value = p.nombre || '';
+      document.getElementById('invCedula').value = (p.cedula || '').replace(/^CC\s*/i, '');
+      document.getElementById('invEmail').value  = p.email || '';
+      document.getElementById('invMensaje').value = '';
+      /* Oculta el mensaje al editar — no aplica. */
+      var msgWrap = document.getElementById('invMensaje').closest('.form-grid__field--full');
+      if (msgWrap) msgWrap.style.display = 'none';
+
+      /* Pre-fill dropdowns. */
+      state.invitarForm = { rol: p.rol || '', area: p.area || '' };
+      var rolLabel = ({ profesional:'Profesional IVC', coordinador:'Coordinador IVC', director:'Director IVC', atu:'ATU · Atención al Usuario', git:'GIT · Comunicaciones', juridica:'Jurídica' })[p.rol] || 'Seleccionar rol…';
+      setDropdownValue(document.getElementById('ddInvRol'), p.rol || '', rolLabel);
+      var areaLabel = ({ aficionado:'Deporte Aficionado', profesional:'Deporte Profesional' })[p.area] || 'Seleccionar área…';
+      setDropdownValue(document.getElementById('ddInvArea'), p.area || '', areaLabel);
+      document.getElementById('invAreaWrap').style.display = p.rol === 'profesional' ? 'block' : 'none';
+
+      document.getElementById('modalInvitar').classList.add('open');
+      wireModalDropdowns();
+      validateInvitar();
       setTimeout(function () { document.getElementById('invNombre').focus(); }, 50);
     }
 
@@ -1164,7 +1223,7 @@
         });
       }
 
-      /* Submit */
+      /* Submit — branch create vs edit. */
       document.getElementById('invitarSubmit').addEventListener('click', function () {
         var nombre  = document.getElementById('invNombre').value.trim();
         var cedula  = document.getElementById('invCedula').value.trim();
@@ -1173,30 +1232,43 @@
         var area    = state.invitarForm.area || null;
         var mensaje = document.getElementById('invMensaje').value.trim();
 
-        /* v1.13.36: validación de email duplicado. Si ya existe una
-           persona con ese correo, no se crea otra — se notifica al
-           Coordinador del estado de la cuenta existente. */
+        /* Email duplicado — solo bloquea en CREATE. En EDIT permite
+           que la persona conserve su email (no es duplicado consigo
+           misma) pero bloquea si cambia a uno de otra persona. */
         var existing = IVCStore.getPersonas().find(function (p) {
           return (p.email || '').toLowerCase() === email.toLowerCase();
         });
-        if (existing) {
+        if (existing && existing.id !== state.invitarEditingId) {
           var estadoLabel = ESTADO_LABELS[existing.estado] || existing.estado;
           showSnack(
             'Este correo ya está registrado para ' + existing.nombre +
             ' (' + (ROL_LABELS[existing.rol] || existing.rol) +
-            ') · estado: ' + estadoLabel + '. No se envió una nueva invitación.',
+            ') · estado: ' + estadoLabel + '. No se ' +
+            (state.invitarMode === 'edit' ? 'guardó el cambio' : 'envió una nueva invitación') + '.',
             'error'
           );
           return;
         }
 
-        var nueva = IVCStore.invitarPersona({
-          nombre: nombre, cedula: cedula, email: email,
-          rol: rol, area: area, mensaje: mensaje
-        });
-        if (!nueva) { showSnack('No se pudo enviar la invitación. Verifica los datos.', 'error'); return; }
-        closeInvitar();
-        showSnack('Invitación enviada a ' + email + ' · estado: Pendiente confirmación.', 'success');
+        if (state.invitarMode === 'edit') {
+          /* v1.13.42: actualizar persona existente. */
+          var actualizada = IVCStore.editarPersona(state.invitarEditingId, {
+            nombre: nombre, cedula: cedula, email: email,
+            rol: rol, area: area
+          });
+          if (!actualizada) { showSnack('No se pudo guardar los cambios. Verifica los datos.', 'error'); return; }
+          closeInvitar();
+          showSnack('Cambios guardados para ' + nombre + '.', 'success');
+        } else {
+          /* Modo CREATE: invitar nueva persona. */
+          var nueva = IVCStore.invitarPersona({
+            nombre: nombre, cedula: cedula, email: email,
+            rol: rol, area: area, mensaje: mensaje
+          });
+          if (!nueva) { showSnack('No se pudo enviar la invitación. Verifica los datos.', 'error'); return; }
+          closeInvitar();
+          showSnack('Invitación enviada a ' + email + ' · estado: Pendiente confirmación.', 'success');
+        }
       });
 
       /* Desactivar modal */
