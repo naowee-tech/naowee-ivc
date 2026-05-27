@@ -21,7 +21,7 @@
   'use strict';
 
   var KEY = 'ivc:store';
-  var SEED_VERSION = 3;            /* v1.12.0: bump para forzar reseed con trámites en TODOS los estados del flujo (PendienteCOO, PendienteFirma, Firmado, NotifElectronica, NotifOficinas, Vigente, EnApelacion, EnReposicion + child). */
+  var SEED_VERSION = 4;            /* v1.13.1 (Doug 27/05/2026): bump para forzar reseed con +3 trámites en PendienteCOO (IVC-2026-021/022/023) — la cola "Aprobación de actos" del Coordinador se sentía vacía con solo 013 en ese estado. */
 
   /* ─── Seed inicial ───────────────────────────────────────────────────
      v1.5.3 FIX (25/05/2026): bug crítico — antes mkSeed referenciaba
@@ -424,7 +424,14 @@
     ['IVC-2026-017', 'liga',       'Renovación',    'Liga de Rugby de Bogotá',             '800.222.333-4', '2026-05-06',  3, 'NotifOficinas',    'cp-001'],
     ['IVC-2026-018', 'liga',       'Otorgamiento',  'Liga de Vóleibol Playa Córdoba',      '900.333.444-5', '2026-05-05', 20, 'EnApelacion',      'mg-002'],
     ['IVC-2026-019', 'asociacion', 'Otorgamiento',  'Asociación de Hockey San Andrés',     '901.666.777-8', '2026-05-04', 19, 'Vigente',          'al-003'],
-    ['IVC-2026-020', 'liga',       'Renovación',    'Liga de Bolos del Chocó',             '800.444.555-6', '2026-05-03', 18, 'EnReposicion',     'lr-004']
+    ['IVC-2026-020', 'liga',       'Renovación',    'Liga de Bolos del Chocó',             '800.444.555-6', '2026-05-03', 18, 'EnReposicion',     'lr-004'],
+    /* v1.13.1 (Doug 27/05/2026): 3 trámites adicionales en PendienteCOO
+       para que la página de "Aprobación de actos" del Coordinador no se
+       sienta vacía. Distintos profesionales para mostrar variedad de
+       autores en la cola COO. */
+    ['IVC-2026-021', 'liga',       'Otorgamiento',  'Liga de Bádminton del Tolima',        '800.555.111-2', '2026-05-11', 22, 'PendienteCOO',     'mg-002'],
+    ['IVC-2026-022', 'asociacion', 'Renovación',    'Asociación de Polo del Atlántico',    '901.222.333-4', '2026-05-12', 21, 'PendienteCOO',     'al-003'],
+    ['IVC-2026-023', 'federacion', 'Otorgamiento',  'Federación Colombiana de Esgrima',    '900.444.555-7', '2026-05-13', 20, 'PendienteCOO',     'lr-004']
   ];
 
   function buildSeed() {
