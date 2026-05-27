@@ -24,9 +24,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.6">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.6">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.6">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.7">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.7">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.7">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -896,8 +896,8 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.6"></script>
-  <script src="../shared/ivc-store.js?v=1.13.6"></script>
+  <script src="../shared/data.js?v=1.13.7"></script>
+  <script src="../shared/ivc-store.js?v=1.13.7"></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -1082,6 +1082,11 @@
       /* v1.11.4: CTAs del flujo de recursos según estado intermedio. */
       var canResponderRecursos  = (t.estado === 'PendienteRecursos');
       var canElegirRecursoTipo  = (t.estado === 'PendienteRecursoTipo');
+      /* v1.13.7: cuando state=EnReposicion, mostrar CTA con link al hijo. */
+      var canVerHijoReposicion  = (t.estado === 'EnReposicion');
+      /* v1.13.7: si este trámite ES un hijo de reposición (tramite_parent),
+         renderizamos un banner arriba con link al padre. */
+      var hijoDeReposicion      = t.tramite_parent ? IVCStore.getTramite(t.tramite_parent) : null;
 
       /* v1.8.9: caution siempre visible al cargar — dismiss sólo afecta la
          vista actual (no persiste). Antes usaba sessionStorage y confundía
@@ -1113,6 +1118,18 @@
               '</div>' +
             '</section>' +
 
+            /* v1.13.7: banner trazabilidad si este trámite es un HIJO de reposición.
+               Muestra el rad del padre + link a su consulta pública. */
+            (hijoDeReposicion ?
+              '<div class="naowee-message naowee-message--informative" style="margin: 0 0 20px;">' +
+                '<div class="naowee-message__header">' +
+                  '<div class="naowee-message__icon">' + MSG_ICON_INFO + '</div>' +
+                  '<div class="naowee-message__title">TRÁMITE DE REPOSICIÓN · HIJO DE ' + escHtml(hijoDeReposicion.id) + '</div>' +
+                '</div>' +
+                '<div class="naowee-message__text">Este trámite fue creado por recurso de reposición sobre el radicado <strong>' + escHtml(hijoDeReposicion.id) + '</strong>. La documentación y trazabilidad fueron heredadas. Vuelve al ciclo de revisión del IVC desde el comienzo. <a href="consultar.html?rad=' + encodeURIComponent(hijoDeReposicion.id) + '" style="color:var(--accent,#d74009); font-weight:600;">Ver trámite padre →</a></div>' +
+              '</div>'
+              : '') +
+
             /* RESULTADO (solo cuando hay veredicto) */
             (isTerminal ? renderResultado(t) : renderEnTramite(t)) +
 
@@ -1130,6 +1147,9 @@
             /* v1.11.4: CTA tipo de recurso — solo cuando state es PendienteRecursoTipo.
                Bifurca en Apelación (→ Jurídica) o Reposición (→ nuevo trámite hijo). */
             (canElegirRecursoTipo ? renderCTAElegirRecurso(t) : '') +
+
+            /* v1.13.7: CTA con link al trámite hijo cuando state=EnReposicion. */
+            (canVerHijoReposicion ? renderCTAHijoReposicion(t) : '') +
 
             /* HISTÓRICO */
             renderHistorico(t) +
@@ -1167,11 +1187,24 @@
         Firmado:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'ACTO FIRMADO',                 desc: 'Su acto administrativo fue firmado electrónicamente por el Director del IVC. Se procederá con la notificación.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
         NotifElectronica: { variant: 'positive', icon: MSG_ICON_CHECK, title: 'NOTIFICADO ELECTRÓNICAMENTE',  desc: 'Su acto administrativo firmado fue enviado por canal electrónico. Por favor responda si renuncia a los términos para que su acto entre en vigencia el día siguiente.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
         Vigente:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'TRÁMITE VIGENTE',              desc: 'Su acto administrativo está vigente. El organismo ha sido inscrito en el Registro Nacional Deportivo. Notificación de cierre enviada.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
-        /* v1.11.4: estados intermedios del flujo de recursos. */
-        PendienteRecursos:    { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'TÉRMINOS LEGALES CORRIENDO', desc: 'No renunció a términos. Tiene 10 días hábiles para interponer recursos (Apelación o Reposición). Si no interpone, su acto entrará en vigencia el día 11.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
-        PendienteRecursoTipo: { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'ELIJA TIPO DE RECURSO',      desc: 'Indicó que interpone recursos. Seleccione la vía: Apelación (revisión jurídica) o Reposición (nuevo trámite hijo).', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        /* v1.13.7: cuando hay una decisión activa abajo (CTARecursos/CTAElegirRecurso),
+           el resultado se muestra como "ACTO FIRMADO" neutral. La urgencia del
+           plazo y la pregunta operativa vive AHORA dentro del CTA card debajo,
+           para que la información esté pegada a la acción. Doug: "como podríamos
+           acercarlas para que se sienta más cercana la información". */
+        PendienteRecursos:    { variant: 'positive', icon: MSG_ICON_CHECK, title: 'ACTO ADMINISTRATIVO FIRMADO', desc: 'Su acto administrativo fue firmado por el Director del IVC y notificado. Tiene una decisión pendiente en el bloque siguiente.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        PendienteRecursoTipo: { variant: 'positive', icon: MSG_ICON_CHECK, title: 'ACTO ADMINISTRATIVO FIRMADO', desc: 'Su acto administrativo fue firmado por el Director del IVC. Indicó que interpondrá recursos; elija la vía en el bloque siguiente.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
         EnApelacion:          { variant: 'informative', icon: MSG_ICON_CHECK, title: 'APELACIÓN EN ÁREA JURÍDICA', desc: 'Su recurso de apelación fue remitido al área jurídica del Ministerio. Recibirá notificación del fallo jurídico una vez se pronuncien sobre el recurso.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
-        EnReposicion:         { variant: 'informative', icon: MSG_ICON_CHECK, title: 'REPOSICIÓN INTERPUESTA',     desc: 'Su recurso de reposición creó un nuevo trámite hijo que vuelve al ciclo de revisión del IVC. Este trámite original quedó cerrado en favor del nuevo radicado.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        /* v1.13.7: lookup del rad del trámite hijo (creado por crearReposicion).
+           Lo buscamos por tramite_parent === t.id en el store. El link al hijo
+           se renderiza fuera del message como CTA dedicado (renderHijoLink),
+           porque .naowee-message__text se imprime con escHtml. */
+        EnReposicion: {
+          variant: 'informative', icon: MSG_ICON_CHECK,
+          title: 'REPOSICIÓN INTERPUESTA',
+          desc: 'Su recurso de reposición creó un nuevo trámite hijo que vuelve al ciclo de revisión del IVC. Este trámite original quedó cerrado en favor del nuevo radicado.',
+          file: 'acto-otorgamiento-' + t.id + '-firmado.pdf'
+        },
         Parcial:          { variant: 'caution',  icon: MSG_ICON_WARN,  title: 'CUMPLIMIENTO PARCIAL',         desc: 'Su trámite presenta observaciones subsanables. Tiene 30 días hábiles desde la notificación para radicar la subsanación.', file: 'acto-cumplimiento-parcial-' + t.id + '.pdf' },
         /* v1.9.8: NoCumple es terminal en firme — al menos un documento fue
            marcado como No Cumple. No admite subsanación; el organismo puede
@@ -1352,12 +1385,23 @@
     /* v1.11.4: CTA RECURSOS — aparece tras No-renuncia (state PendienteRecursos).
        Pregunta si el organismo interpone recursos. Sí → elegir tipo. No → Vigente D+11. */
     function renderCTARecursos(t) {
+      /* v1.13.7: la caution "TÉRMINOS LEGALES CORRIENDO" antes vivía en el
+         message del resultado (separada). Ahora se embebe DENTRO de este
+         card como header del bloque de decisión — la urgencia está pegada
+         a la acción. */
       return '<div class="renuncia-cta">' +
+        '<div class="naowee-message naowee-message--caution" style="margin: 0 0 18px;">' +
+          '<div class="naowee-message__header">' +
+            '<div class="naowee-message__icon">' + MSG_ICON_WARN + '</div>' +
+            '<div class="naowee-message__title">TÉRMINOS LEGALES CORRIENDO</div>' +
+          '</div>' +
+          '<div class="naowee-message__text">No renunció a términos. Tiene <strong>10 días hábiles</strong> para interponer recursos (Apelación o Reposición). Si no interpone, su acto entrará en vigencia el día 11.</div>' +
+        '</div>' +
         '<div class="renuncia-cta__head">' +
           '<svg class="renuncia-cta__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
           '<div>' +
             '<h3 class="renuncia-cta__title">¿Interpone recursos?</h3>' +
-            '<p class="renuncia-cta__sub">Como no renunció a términos, dispone de 10 días hábiles para interponer recursos contra este acto. Si no interpone recursos, su acto entrará en vigencia el día 11 (D+11). Si interpone, podrá elegir entre Apelación o Reposición.</p>' +
+            '<p class="renuncia-cta__sub">Elija: si interpone recursos podrá radicar Apelación (revisión jurídica) o Reposición (nuevo trámite). Si no interpone, su acto queda vigente el día 11 (D+11).</p>' +
           '</div>' +
         '</div>' +
         '<div class="renuncia-cta__actions">' +
@@ -1390,11 +1434,19 @@
        2 opciones tipo card: Apelación (a Jurídica) · Reposición (nuevo trámite). */
     function renderCTAElegirRecurso(t) {
       return '<div class="recurso-tipo-cta">' +
+        /* v1.13.7: caution dentro del card de decisión (no afuera). */
+        '<div class="naowee-message naowee-message--caution" style="margin: 0 0 18px;">' +
+          '<div class="naowee-message__header">' +
+            '<div class="naowee-message__icon">' + MSG_ICON_WARN + '</div>' +
+            '<div class="naowee-message__title">ELIJA TIPO DE RECURSO</div>' +
+          '</div>' +
+          '<div class="naowee-message__text">Indicó que interpone recursos. Seleccione la vía abajo: Apelación (revisión jurídica) o Reposición (nuevo trámite hijo). Una vez seleccionada, no se podrá cambiar.</div>' +
+        '</div>' +
         '<div class="recurso-tipo-cta__head">' +
           '<svg class="recurso-tipo-cta__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
           '<div>' +
             '<h3 class="recurso-tipo-cta__title">Elija el tipo de recurso</h3>' +
-            '<p class="recurso-tipo-cta__sub">Su solicitud de recursos requiere especificar la vía. Una vez seleccionada, no se podrá cambiar.</p>' +
+            '<p class="recurso-tipo-cta__sub">Su solicitud de recursos requiere especificar la vía.</p>' +
           '</div>' +
         '</div>' +
         '<div class="recurso-tipo-grid">' +
@@ -1417,6 +1469,34 @@
         '</div>' +
       '</div>';
     }
+    /* v1.13.7: CTA dedicado al trámite HIJO de una reposición. Aparece cuando
+       state=EnReposicion. Muestra el rad del hijo + link "Ver progreso" que
+       navega a /consultar.html?rad=<hijoId>. La trazabilidad parent↔child
+       queda visible en la página pública (UX más conectada). */
+    function renderCTAHijoReposicion(t) {
+      var hijo = (IVCStore.getTramites() || []).find(function (x) {
+        return x.tramite_parent === t.id && x.tipoTramite === 'Reposición';
+      });
+      if (!hijo) return '';
+      return '<div class="renuncia-cta" style="border: 1px solid var(--blue-border, #cfe1ff); background: var(--blue-bg, #eef5ff);">' +
+        '<div class="renuncia-cta__head">' +
+          '<svg class="renuncia-cta__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--blue-info, #1f78d1);"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>' +
+          '<div>' +
+            '<h3 class="renuncia-cta__title">Nuevo trámite de reposición creado</h3>' +
+            '<p class="renuncia-cta__sub">Su recurso de reposición generó un nuevo radicado que volverá al ciclo de revisión del IVC desde el comienzo. Consulte su avance allí.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div style="background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin: 16px 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">' +
+          '<div>' +
+            '<div style="font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-secondary); font-weight: 700; margin-bottom: 4px;">Trámite hijo</div>' +
+            '<div style="font-family: \'JetBrains Mono\', ui-monospace, monospace; font-size: 16px; font-weight: 800; color: var(--text-primary);">' + escHtml(hijo.id) + '</div>' +
+            '<div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">Radicado el ' + formatDate(hijo.fechaRadicacion) + ' · estado: ' + escHtml(hijo.estado) + '</div>' +
+          '</div>' +
+          '<a href="consultar.html?rad=' + encodeURIComponent(hijo.id) + '" class="naowee-btn naowee-btn--loud naowee-btn--large" style="text-decoration: none;">Ver progreso del nuevo trámite →</a>' +
+        '</div>' +
+      '</div>';
+    }
+
     window._elegirRecursoTipo = function (tipo) {
       var t = IVCState.tramite;
       if (!t) return;

@@ -21,7 +21,7 @@
   'use strict';
 
   var KEY = 'ivc:store';
-  var SEED_VERSION = 4;            /* v1.13.1 (Doug 27/05/2026): bump para forzar reseed con +3 trámites en PendienteCOO (IVC-2026-021/022/023) — la cola "Aprobación de actos" del Coordinador se sentía vacía con solo 013 en ese estado. */
+  var SEED_VERSION = 5;            /* v1.13.7 (Doug 27/05/2026): bump fuerza reseed para corregir ultimoRadicado 20→23 (colisión de IDs al crear reposición). */
 
   /* ─── Seed inicial ───────────────────────────────────────────────────
      v1.5.3 FIX (25/05/2026): bug crítico — antes mkSeed referenciaba
@@ -437,7 +437,10 @@
   function buildSeed() {
     return {
       seedVersion: SEED_VERSION,
-      ultimoRadicado: 20,
+      /* v1.13.7 (Doug 27/05/2026): bumpeado de 20→23 porque la v1.13.1 agregó
+         021/022/023 al seed pero olvidó sincronizar ultimoRadicado, generando
+         colisión cuando crearReposicion intentaba el siguiente ID disponible. */
+      ultimoRadicado: 23,
       mode: 'demo',
       profesionales: JSON.parse(JSON.stringify(PROFESIONALES)),
       tramites: SEED_TRAMITES_RAW.map(function (row) { return mkSeed.apply(null, row); })
