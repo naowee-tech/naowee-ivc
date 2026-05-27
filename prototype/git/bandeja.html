@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.28">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.28">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.28">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.28">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.29">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.29">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.29">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.29">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -92,10 +92,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.28"></script>
-  <script src="../shared/shell.js?v=1.13.28"></script>
-  <script src="../shared/ivc-store.js?v=1.13.28"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.28" defer></script>
+  <script src="../shared/data.js?v=1.13.29"></script>
+  <script src="../shared/shell.js?v=1.13.29"></script>
+  <script src="../shared/ivc-store.js?v=1.13.29"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.29" defer></script>
 
   <script>
     var state = { tramites: [], confirmId: null };
@@ -181,6 +181,12 @@
         '</section>';
     }
 
+    /* v1.13.29 (Doug 27/05/2026): Cambio defensivo — inline onclick →
+       data-action + delegación global. Doug reportó: "le doy clic a
+       publicar aviso nada pasa ni hover state tengo en el cta". El
+       click programático funcionaba en preview pero el usuario tenía
+       cache mixta. Delegación + sin inline onclick es más robusta y
+       permite hard-reload limpio. */
     function renderTable() {
       return '<div style="overflow-x:auto;"><table class="naowee-table"><thead><tr>' +
         '<th>Radicado</th><th>Tipo</th><th>Organismo</th><th>Profesional IVC</th><th>Días vencidos</th><th style="text-align:center;">Acciones</th>' +
@@ -195,17 +201,17 @@
             '<td>' + escHtml(t.profesionalNombre || '—') + '</td>' +
             '<td><span class="row-plazo row-plazo--negative">' + dias + ' días vencidos</span></td>' +
             '<td style="text-align:center;">' +
-              '<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" onclick="window._openConfirmAviso(\'' + escHtml(t.id) + '\')">Publicar aviso</button>' +
+              '<button type="button" class="naowee-btn naowee-btn--loud naowee-btn--small" data-action="open-confirm" data-id="' + escHtml(t.id) + '">Publicar aviso</button>' +
             '</td>' +
           '</tr>';
         }).join('') +
       '</tbody></table></div>';
     }
 
-    window._openConfirmAviso = function (id) {
+    function openConfirmAviso(id) {
       state.confirmId = id;
       var t = state.tramites.find(function (x) { return x.id === id; });
-      if (!t) return;
+      if (!t) { console.warn('[GIT] tramite no encontrado:', id); return; }
       document.getElementById('confirmAvisoSub').textContent = t.id + ' · ' + t.organismo;
       document.getElementById('confirmAvisoDetails').innerHTML =
         '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Radicado</span><span class="notif-modal-body__val">' + escHtml(t.id) + '</span></div>' +
@@ -214,23 +220,46 @@
         '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Profesional IVC</span><span class="notif-modal-body__val">' + escHtml(t.profesionalNombre || '—') + '</span></div>' +
         '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Canal</span><span class="notif-modal-body__val">Aviso (CPACA Art 67-69)</span></div>';
       document.getElementById('modalConfirmAviso').classList.add('open');
-    };
-    window._closeConfirmAviso = function () {
+    }
+    function closeConfirmAviso() {
       document.getElementById('modalConfirmAviso').classList.remove('open');
       state.confirmId = null;
-    };
+    }
+    /* Expose globals para compat con cualquier inline onclick legacy. */
+    window._openConfirmAviso = openConfirmAviso;
+    window._closeConfirmAviso = closeConfirmAviso;
 
     function wireConfirm() {
+      /* Delegación global — captura clicks de los botones data-action de
+         la tabla. Robusto contra re-renders y no depende del binding inline. */
+      document.body.addEventListener('click', function (ev) {
+        var trigger = ev.target.closest('[data-action="open-confirm"]');
+        if (trigger) {
+          ev.preventDefault();
+          openConfirmAviso(trigger.getAttribute('data-id'));
+          return;
+        }
+        /* Soporte para el botón dismiss del modal. */
+        var dismiss = ev.target.closest('[onclick*="_closeConfirmAviso"]');
+        if (dismiss) { ev.preventDefault(); closeConfirmAviso(); }
+      });
       document.getElementById('confirmAvisoBtn').addEventListener('click', function () {
         if (!state.confirmId) return;
         var perfil = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['git']) || {};
         var actor = (perfil.nombre || 'GIT Comunicaciones') + ' (GIT Comunicaciones)';
         IVCStore.marcarNotificadoOficinas(state.confirmId, 'aviso', actor);
-        window._closeConfirmAviso();
+        closeConfirmAviso();
         _showSnackbar('Aviso publicado. El organismo queda notificado y puede responder renuncia a términos.', 'success');
       });
       document.getElementById('modalConfirmAviso').addEventListener('click', function (ev) {
-        if (ev.target === this) window._closeConfirmAviso();
+        if (ev.target === this) closeConfirmAviso();
+      });
+      /* ESC cierra el modal — UX standard. */
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' &&
+            document.getElementById('modalConfirmAviso').classList.contains('open')) {
+          closeConfirmAviso();
+        }
       });
     }
 
