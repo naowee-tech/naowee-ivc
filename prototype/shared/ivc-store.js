@@ -708,6 +708,20 @@
       return t;
     },
 
+    /* v1.13.13 (Doug 27/05/2026): persiste el array de docs validados al
+       trámite. Usado por el workspace del Profesional cuando emite veredicto
+       (Cumple/Parcial/NoCumple) para que la página pública pueda leer qué
+       docs fueron marcados como obs/no y listarlos uno por uno en el modal
+       de subsanación. */
+    setDocumentos: function (tramiteId, docs) {
+      var s = this.init();
+      var t = s.tramites.find(function (x) { return x.id === tramiteId; });
+      if (!t) return null;
+      t.documentos = Array.isArray(docs) ? docs.slice() : [];
+      write(s);
+      return t;
+    },
+
     on: function (event, cb) {
       if (!listeners[event]) listeners[event] = [];
       listeners[event].push(cb);

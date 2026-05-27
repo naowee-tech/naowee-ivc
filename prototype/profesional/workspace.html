@@ -11,10 +11,10 @@
   <!-- Naowee DS canónico v1.8.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.12">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.12">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.12">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.12">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.13">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.13">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.13">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.13">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: layout objetivo = proyecto-detalle.html v2.0.3
@@ -1109,10 +1109,10 @@
        reemplaza. Se renderiza desde JS en renderDocsTab. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.12"></script>
-  <script src="../shared/shell.js?v=1.13.12"></script>
-  <script src="../shared/ivc-store.js?v=1.13.12"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.12" defer></script>
+  <script src="../shared/data.js?v=1.13.13"></script>
+  <script src="../shared/shell.js?v=1.13.13"></script>
+  <script src="../shared/ivc-store.js?v=1.13.13"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.13" defer></script>
   <script>
     /* Source of truth = IVCStore; lectura via ?id=IVC-2026-001 */
     var state = {
@@ -1377,11 +1377,33 @@
 
     /* ───────── Render: Documentos panel ───────── */
     function renderDocsPanel() {
-      var html = '<div class="ivc-checklist-progress">' +
-        '<span class="ivc-checklist-progress__text"><strong id="docsValidadosCount">0</strong> de ' + state.docs.length + ' documentos validados</span>' +
-        '<div class="ivc-checklist-progress__bar"><div class="ivc-checklist-progress__fill" id="progressFill" style="width:0%"></div></div>' +
-      '</div>' +
-      '<div id="docsList">' + buildDocRows() + '</div>';
+      /* v1.13.13: detectar revalidación post-subsanación. Si hay docs con
+         __subsanado_prev (marca dejada por _confirmSubsanacion en consultar),
+         significa que el organismo subsanó esos y necesita re-revisión solo
+         de esos. Los demás cumple permanecen — banner sutil arriba avisa. */
+      var subsanados = state.docs.filter(function (d) { return d.__subsanado_prev; });
+      var yaCumple = state.docs.filter(function (d) { return d.validacion === 'cumple'; });
+      var banner = '';
+      if (subsanados.length > 0) {
+        banner =
+          '<div class="naowee-message naowee-message--informative" style="margin-bottom: 18px;">' +
+            '<div class="naowee-message__header">' +
+              '<div class="naowee-message__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>' +
+              '<div class="naowee-message__title">Re-revisión por subsanación · ' + subsanados.length + ' documento(s)</div>' +
+            '</div>' +
+            '<div class="naowee-message__text">' +
+              yaCumple.length + ' documento(s) ya fueron validados previamente como Cumple y quedaron lockeados con badge verde. ' +
+              'Solo necesita re-validar los <strong>' + subsanados.length + ' subsanado(s)</strong>: ' +
+              subsanados.map(function (d) { return '<em>' + d.titulo + '</em>'; }).join(', ') + '.' +
+            '</div>' +
+          '</div>';
+      }
+      var html = banner +
+        '<div class="ivc-checklist-progress">' +
+          '<span class="ivc-checklist-progress__text"><strong id="docsValidadosCount">0</strong> de ' + state.docs.length + ' documentos validados</span>' +
+          '<div class="ivc-checklist-progress__bar"><div class="ivc-checklist-progress__fill" id="progressFill" style="width:0%"></div></div>' +
+        '</div>' +
+        '<div id="docsList">' + buildDocRows() + '</div>';
       return html;
     }
 
@@ -1773,10 +1795,28 @@
     function timelineItemVariant(accion) {
       var a = (accion || '').toLowerCase();
       if (a.indexOf('no cumple') >= 0 || a.indexOf('rechaz') >= 0) return 'negative';
+      if (a.indexOf('subsana') >= 0)                                return 'info';
       if (a.indexOf('cumple') >= 0 && a.indexOf('parcial') < 0)   return 'positive';
       if (a.indexOf('parcial') >= 0 || a.indexOf('devuelt') >= 0) return 'caution';
       if (a.indexOf('radicad') >= 0 || a.indexOf('asignad') >= 0 || a.indexOf('validaci') >= 0) return 'info';
       return 'muted';
+    }
+    /* v1.13.13: badge label semántico para cada evento del historial. */
+    function timelineEventBadge(accion) {
+      var a = (accion || '').toLowerCase();
+      if (a.indexOf('subsanación radicada') >= 0)                  return { label: 'Subsanación', variant: 'informative' };
+      if (a.indexOf('no cumple') >= 0 || a.indexOf('rechaz') >= 0) return { label: 'No cumple',   variant: 'negative' };
+      if (a.indexOf('cumplimiento parcial') >= 0 || a.indexOf('parcial') >= 0 || a.indexOf('devuelt') >= 0)
+                                                                    return { label: 'Parcial',     variant: 'caution' };
+      if (a.indexOf('acto administrativo') >= 0 && a.indexOf('generado') >= 0)
+                                                                    return { label: 'Acto generado', variant: 'positive' };
+      if (a.indexOf('aprob') >= 0 && a.indexOf('coordinador') >= 0) return { label: 'Aprobado COO', variant: 'positive' };
+      if (a.indexOf('firma') >= 0)                                  return { label: 'Firma',       variant: 'positive' };
+      if (a.indexOf('notificad') >= 0)                              return { label: 'Notificado',  variant: 'informative' };
+      if (a.indexOf('vigente') >= 0)                                return { label: 'Vigente',     variant: 'positive' };
+      if (a.indexOf('asignad') >= 0)                                return { label: 'Asignación',  variant: 'informative' };
+      if (a.indexOf('radicad') >= 0)                                return { label: 'Radicado',    variant: 'informative' };
+      return null;
     }
 
     function renderHistorialPanel() {
@@ -1791,11 +1831,16 @@
       var ordered = hist.slice();
       var listHtml = '<ol class="ivc-timeline">' +
         ordered.map(function (ev) {
-          var variant = timelineItemVariant(ev.accion || ev.titulo);
+          var accionText = ev.accion || ev.titulo || '—';
+          var variant = timelineItemVariant(accionText);
+          var badge = timelineEventBadge(accionText);
+          var badgeHtml = badge
+            ? ' <span class="naowee-badge naowee-badge--' + badge.variant + ' naowee-badge--quiet naowee-badge--small" style="margin-left:6px; vertical-align:middle;">' + badge.label + '</span>'
+            : '';
           var meta = (ev.fecha || '') + (ev.hora ? ' · ' + ev.hora : (ev.meta ? ' · ' + ev.meta : ''));
           return '<li class="ivc-timeline__item ivc-timeline__item--' + variant + '">' +
             '<span class="ivc-timeline__dot"></span>' +
-            '<span class="ivc-timeline__title">' + (ev.accion || ev.titulo || '—') + '</span>' +
+            '<span class="ivc-timeline__title">' + accionText + badgeHtml + '</span>' +
             '<span class="ivc-timeline__meta">' + meta + '</span>' +
             '<span class="ivc-timeline__actor">' + (ev.actor || '—') + '</span>' +
           '</li>';
@@ -2074,6 +2119,8 @@
 
     function confirmCumple() {
       var actor = 'Carlos Pérez (Profesional)';
+      /* v1.13.13: persistir el array de docs (todos cumple) al store. */
+      IVCStore.setDocumentos(state.tramite.id, state.docs);
       /* v1.10.0: el veredicto Cumple ya no salta directo a estado 'Cumple'.
          Va a 'PendienteCOO' (acto generado, esperando aprobación del
          Coordinador). El Coordinador en su página dedicada de aprobación
@@ -2090,6 +2137,10 @@
     function confirmParcial() {
       var obs = document.getElementById('parcialObsText').value;
       var actor = 'Carlos Pérez (Profesional)';
+      /* v1.13.13: persistir el array de docs (cada uno con su validacion +
+         observacion). El portal público lo lee para listar exactamente
+         qué docs debe subsanar el organismo, con sus títulos reales. */
+      IVCStore.setDocumentos(state.tramite.id, state.docs);
       IVCStore.actualizarEstado(state.tramite.id, 'Parcial', actor, obs || 'Devuelto para subsanación');
       state.tramite = IVCStore.getTramite(state.tramite.id);
       document.getElementById('modalParcialOverlay').classList.remove('open');
@@ -2101,6 +2152,7 @@
     function confirmNoCumple() {
       var causales = document.getElementById('causalesText').value;
       var actor = 'Carlos Pérez (Profesional)';
+      IVCStore.setDocumentos(state.tramite.id, state.docs);
       IVCStore.actualizarEstado(state.tramite.id, 'NoCumple', actor, causales || 'No cumple con los requisitos');
       state.tramite = IVCStore.getTramite(state.tramite.id);
       document.getElementById('modalNoCumpleOverlay').classList.remove('open');
