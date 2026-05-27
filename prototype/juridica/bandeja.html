@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.16">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.16">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.16">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.16">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.17">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.17">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.17">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.17">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -137,10 +137,10 @@
     </div>
   </div>
 
-  <script src="../shared/data.js?v=1.13.16"></script>
-  <script src="../shared/shell.js?v=1.13.16"></script>
-  <script src="../shared/ivc-store.js?v=1.13.16"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.16" defer></script>
+  <script src="../shared/data.js?v=1.13.17"></script>
+  <script src="../shared/shell.js?v=1.13.17"></script>
+  <script src="../shared/ivc-store.js?v=1.13.17"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.17" defer></script>
 
   <script>
     var state = { tramites: [], resolverId: null, selectedRes: null };
@@ -356,7 +356,11 @@
             '<div style="font-weight:600; font-size:13.5px;">acto-otorgamiento-' + escHtml(t.id) + '-firmado.pdf</div>' +
             '<div style="font-size:11.5px; color:var(--text-secondary);">312 KB · PDF · Firmado por el Director del IVC</div>' +
           '</div>' +
-          '<a href="#" onclick="event.preventDefault();" class="naowee-btn naowee-btn--quiet naowee-btn--small">Descargar PDF</a>' +
+          /* v1.13.17: botón con estilo botón, sin underline textlink. */
+          '<button type="button" onclick="event.preventDefault();" class="naowee-btn naowee-btn--mute naowee-btn--small" style="text-decoration:none;">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+            'Descargar PDF' +
+          '</button>' +
         '</div>' +
 
         /* DOCUMENTOS DE LA VALIDACIÓN */
@@ -411,11 +415,15 @@
       var t = state.tramites.find(function (x) { return x.id === id; });
       if (!t) return;
       document.getElementById('resolverSub').textContent = t.id + ' · ' + t.organismo;
+      /* v1.13.17: 2×2 grid de info-boxes (Doug). Patrón canónico shared. */
       document.getElementById('resolverDetails').innerHTML =
-        '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Radicado</span><span class="notif-modal-body__val">' + escHtml(t.id) + '</span></div>' +
-        '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Organismo</span><span class="notif-modal-body__val">' + escHtml(t.organismo) + '</span></div>' +
-        '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Tipo trámite</span><span class="notif-modal-body__val">' + escHtml(t.tipoTramite || '—') + '</span></div>' +
-        '<div class="notif-modal-body__row"><span class="notif-modal-body__key">Profesional IVC</span><span class="notif-modal-body__val">' + escHtml(t.profesionalNombre || '—') + '</span></div>';
+        '<div class="ivc-info-grid">' +
+          '<div class="ivc-info-box"><span class="ivc-info-box__label">Radicado</span><span class="ivc-info-box__value" style="font-family:\'JetBrains Mono\',ui-monospace,monospace; font-weight:700; font-size:13px;">' + escHtml(t.id) + '</span></div>' +
+          '<div class="ivc-info-box"><span class="ivc-info-box__label">Tipo trámite</span><span class="ivc-info-box__value">' + escHtml(t.tipoTramite || '—') + '</span></div>' +
+          '<div class="ivc-info-box"><span class="ivc-info-box__label">Organismo</span><span class="ivc-info-box__value">' + escHtml(t.organismo) + '<div style="font-size:11.5px; color:var(--text-secondary); font-family:ui-monospace,monospace; font-weight:400; margin-top:2px;">NIT ' + escHtml(t.nit || '—') + '</div></span></div>' +
+          '<div class="ivc-info-box"><span class="ivc-info-box__label">Profesional IVC</span><span class="ivc-info-box__value">' + escHtml(t.profesionalNombre || '—') + '</span></div>' +
+        '</div>' +
+        '<h3 style="font-size:11.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#9a9db0; margin: 20px 0 6px 0;">Acciones necesarias</h3>';
 
       /* Reset modal state */
       var cards = document.querySelectorAll('#resolverGrid .resolucion-card');

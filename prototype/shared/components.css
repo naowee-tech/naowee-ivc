@@ -1002,6 +1002,131 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   v1.13.17 (Doug 27/05/2026): timeline canónica del IVC promovida a shared.
+   Antes vivía duplicada en workspace + coordinador. Ahora cualquier página
+   (juridica/expediente, modal Detalle del Coord, director, etc) puede usarla.
+
+   Markup esperado:
+     <ol class="ivc-timeline">
+       <li class="ivc-timeline__item ivc-timeline__item--{positive|caution|negative|info|muted}">
+         <span class="ivc-timeline__dot"></span>
+         <span class="ivc-timeline__title">Texto del evento <badge/></span>
+         <span class="ivc-timeline__meta">27 may 2026 · 10:43</span>
+         <span class="ivc-timeline__actor">María García (Profesional)</span>
+       </li>
+     </ol> */
+.ivc-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px 0;
+  position: relative;
+}
+.ivc-timeline::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--border, #e7e9f3);
+}
+.ivc-timeline__item {
+  position: relative;
+  padding: 0 0 18px 32px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+.ivc-timeline__item:last-child { padding-bottom: 0; }
+.ivc-timeline__dot {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent, #d74009);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--accent, #d74009);
+}
+.ivc-timeline__item--muted .ivc-timeline__dot {
+  background: var(--text-muted, #9ca3af);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--border-dark, #d0d4e6);
+}
+.ivc-timeline__item--positive .ivc-timeline__dot {
+  background: var(--green, #1f8923);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--green, #1f8923);
+}
+.ivc-timeline__item--caution .ivc-timeline__dot {
+  background: var(--accent, #d74009);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--accent, #d74009);
+}
+.ivc-timeline__item--negative .ivc-timeline__dot {
+  background: #c01818;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px #c01818;
+}
+.ivc-timeline__item--info .ivc-timeline__dot {
+  background: var(--blue-info, #1f78d1);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--blue-info, #1f78d1);
+}
+.ivc-timeline__title {
+  display: block;
+  font-weight: 700;
+  color: var(--text-primary, #282834);
+  font-size: 13.5px;
+  margin-bottom: 2px;
+}
+.ivc-timeline__meta {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  margin-top: 2px;
+}
+.ivc-timeline__actor {
+  display: block;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v1.13.17: grid de info-boxes 2×2 — patrón usado en el modal Resolver
+   apelación de Jurídica (Doug pidió cajas con background fill claro,
+   título arriba y contenido abajo, en lugar de líneas). Reusable. */
+.ivc-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0 18px;
+}
+@media (max-width: 600px) {
+  .ivc-info-grid { grid-template-columns: 1fr; }
+}
+.ivc-info-box {
+  background: #f7f8fc;
+  border: 1px solid var(--border, #e7e9f3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ivc-info-box__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #9a9db0;
+}
+.ivc-info-box__value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #282834);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    v1.13.12 (Doug 27/05/2026): iconos a la izquierda del label en TABS
    (.naowee-tab y .actos-tab). El icono hereda el color del tab (gris en
    idle, naranja en .naowee-tab--selected / .actos-tab.is-selected),
