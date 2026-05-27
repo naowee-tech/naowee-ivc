@@ -868,16 +868,33 @@
    tenga atributos width/height inline. Limpiamos esos atributos en
    los 6 puntos donde había svg width="56" / "64".
    ═══════════════════════════════════════════════════════════════════════ */
+/* v1.12.8: Doug pidió bajar de 40→32, color gris neutro consistente
+   (no el lavanda del DS), padding inferior generoso para que el empty
+   state respire dentro del card, y el mismo icono inbox-tray en todas
+   las páginas para que la familia visual sea coherente. */
+.naowee-empty-state {
+  padding: 72px 24px 80px !important;  /* top breathing + más aire abajo */
+}
 .naowee-empty-state__icon {
-  width: 40px;
-  height: 40px;
+  width: 32px !important;
+  height: 32px !important;
+  color: #c8cad8 !important;             /* gris neutro estandarizado */
+  margin-bottom: 14px !important;
 }
-.naowee-empty-state__description {
-  max-width: 420px;
-}
-/* Defensive override: si algún HTML tiene <svg width="56" ...> hardcoded
-   (legacy), forzamos a heredar el tamaño del parent. */
 .naowee-empty-state__icon svg {
   width: 100% !important;
   height: 100% !important;
+  stroke-width: 1.5;
+}
+.naowee-empty-state__title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 4px !important;
+}
+.naowee-empty-state__description {
+  max-width: 420px;
+  font-size: 13px !important;
+  color: var(--text-secondary) !important;
+  line-height: 1.5 !important;
 }
