@@ -59,8 +59,11 @@
        antes de pasar a firma del Director (loop INS-004 COO).
        v1.10.1: badge del actos removido — un valor hardcoded creaba mismatch
        con el empty state real de la página, y además truncaba el label. */
+    /* v1.13.4 (Doug 27/05/2026): badge dinámico. Antes era hardcoded '4' →
+       generaba mismatch entre el contador del sidebar y los trámites reales
+       en la tabla. Ahora se computa en computeBadge() abajo, usando el store. */
     'coordinador': [
-      { id: 'bandeja-coord', label: 'Bandeja',              icon: ICONS.bandeja,  href: 'bandeja.html', badge: '4' },
+      { id: 'bandeja-coord', label: 'Bandeja',              icon: ICONS.bandeja,  href: 'bandeja.html' },
       { id: 'actos-coord',   label: 'Aprobación de actos',  icon: ICONS.approval, href: 'actos.html' }
     ],
     /* v1.2.0 — Fase 2 Sprint 1: Profesional habilitado (HU-4/HU-6)
@@ -68,7 +71,7 @@
        asignados), no a workspace.html (que es la vista de validación 1-trámite).
        v1.5.8 (25/05/2026): "En revisión" e "Histórico" eliminados → tabs en bandeja. */
     'profesional': [
-      { id: 'bandeja-prof', label: 'Mi bandeja', icon: ICONS.bandeja, href: 'bandeja.html', badge: '4' }
+      { id: 'bandeja-prof', label: 'Mi bandeja', icon: ICONS.bandeja, href: 'bandeja.html' }
     ],
     /* v1.11.0: Director con bandeja de trámites pendientes firma + perfil
        para subir su firma electrónica (preset reutilizable). */
@@ -113,6 +116,43 @@
        resolvía a /prototype/atu/coordinador/bandeja.html (404). */
     return /\/(usuario-externo|profesional|coordinador|director|atu|git|juridica)\//.test(location.pathname);
   }
+  /* v1.13.4: badge dinámico del sidebar — Doug reportó que Profesional
+     mostraba '4' hardcoded cuando solo tenía 3 trámites. Ahora computeBadge()
+     cuenta del store y devuelve string o null. */
+  function computeBadge(navId) {
+    if (typeof window === 'undefined' || !window.IVCStore || !IVCStore.getTramites) return null;
+    try {
+      var todos = IVCStore.getTramites({ area: 'aficionado' }) || [];
+      if (navId === 'bandeja-coord') {
+        return todos.filter(function (t) { return t.estado === 'No asignada'; }).length || null;
+      }
+      if (navId === 'bandeja-prof') {
+        return todos.filter(function (t) {
+          return t.profesionalId === 'cp-001' && (t.estado === 'Asignada' || t.estado === 'En validación');
+        }).length || null;
+      }
+      if (navId === 'bandeja-director') {
+        return todos.filter(function (t) { return t.estado === 'PendienteFirma'; }).length || null;
+      }
+      if (navId === 'actos-coord') {
+        return todos.filter(function (t) { return t.estado === 'PendienteCOO'; }).length || null;
+      }
+      if (navId === 'bandeja-atu') {
+        return todos.filter(function (t) {
+          return t.estado === 'NotifOficinas' && (typeof t.plazoDias === 'number' ? t.plazoDias >= 0 : true);
+        }).length || null;
+      }
+      if (navId === 'bandeja-git') {
+        return todos.filter(function (t) {
+          return t.estado === 'NotifOficinas' && (typeof t.plazoDias === 'number' && t.plazoDias < 0);
+        }).length || null;
+      }
+      if (navId === 'bandeja-jur') {
+        return todos.filter(function (t) { return t.estado === 'EnApelacion'; }).length || null;
+      }
+    } catch (e) { return null; }
+    return null;
+  }
   function pathPrefix() { return inSubdir() ? '../' : ''; }
   function sharedPath() { return pathPrefix() + 'shared/'; }
 
@@ -153,7 +193,10 @@
       if (href && href !== '#' && !/^https?:/.test(href)) {
         href = (inSubdir() ? '' : perfilSubdir) + href;
       }
-      var badgeHtml = it.badge ? '<span class="nav-row__badge">' + it.badge + '</span>' : '';
+      /* v1.13.4: badge dinámico — computeBadge() lee del store para cada
+         item de nav. Si devuelve falsy o 0, no se renderiza el chip. */
+      var badgeVal = it.badge != null ? it.badge : computeBadge(it.id);
+      var badgeHtml = badgeVal ? '<span class="nav-row__badge">' + badgeVal + '</span>' : '';
       return '<a class="nav-row ' + (isActive ? 'is-active' : '') + '" ' +
         'href="' + href + '" ' +
         'data-nav-id="' + it.id + '" ' +
