@@ -256,7 +256,21 @@
     var perfiles = (window.IVCData && window.IVCData.getAllPerfiles && window.IVCData.getAllPerfiles()) || [];
     var currentPerfil = (window.IVCData && window.IVCData.PERFILES[perfilId]) || {};
 
-    var itemsHtml = perfiles.map(function (p) {
+    /* v1.12.9 (Doug 27/05/2026): agrupar perfiles por fase del flujo end-to-end.
+       Orden canónico del proceso IVC:
+       1) Coordinador IVC (radica/asigna) — Fase 2
+       2) Profesional IVC (valida documentos) — Fase 2 (paralela)
+       3) Director IVC (firma) — Fase 5
+       4) Notificación (ATU plantilla / GIT aviso) — Fase 5.5
+       5) Jurídica (apelaciones) — Fase 6 */
+    var GROUPS = [
+      { label: 'Validación de requisitos', ids: ['coordinador', 'profesional'] },
+      { label: 'Firma del acto',           ids: ['director'] },
+      { label: 'Notificación al organismo', ids: ['atu', 'git'] },
+      { label: 'Recursos y apelaciones',   ids: ['juridica'] }
+    ];
+
+    function renderItem(p) {
       var isActive = p.id === perfilId;
       var disabled = !p.enabled;
       return '<a class="demo-role-switcher__item ' +
@@ -272,6 +286,19 @@
         '<span class="demo-role-switcher__item-stage">' + p.etapa + '</span>' +
         (isActive ? '<span class="demo-role-switcher__check">' + ICONS.check + '</span>' : '') +
       '</a>';
+    }
+
+    var perfilesById = {};
+    perfiles.forEach(function (p) { perfilesById[p.id] = p; });
+
+    var itemsHtml = GROUPS.map(function (g) {
+      var groupItems = g.ids
+        .map(function (id) { return perfilesById[id]; })
+        .filter(Boolean)
+        .map(renderItem)
+        .join('');
+      if (!groupItems) return '';
+      return '<div class="demo-role-switcher__group-label">' + g.label + '</div>' + groupItems;
     }).join('');
 
     return '<div class="demo-role-switcher" id="demoSwitcher">' +

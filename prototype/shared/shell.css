@@ -417,13 +417,17 @@ a { color: inherit; text-decoration: none; }
 .demo-role-switcher__panel {
   position: absolute;
   bottom: calc(100% + 8px);
-  right: 0;
+  /* v1.12.9 (Doug 27/05/2026): centrar el panel sobre el toggle.
+     Antes tenía `right: 0` heredado del bottom-right; ahora `left: 50%`
+     con translateX(-50%) lo centra horizontalmente. */
+  left: 50%;
+  right: auto;
   width: 340px; max-height: 72vh;
   background: #fff;
   border: 1px solid var(--border); border-radius: 12px;
   box-shadow: 0 12px 32px rgba(40,40,52,.16);
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateX(-50%) translateY(6px);
   pointer-events: none;
   transition: opacity .2s, transform .2s;
   padding: 8px 6px;
@@ -431,7 +435,7 @@ a { color: inherit; text-decoration: none; }
 }
 .demo-role-switcher.is-open .demo-role-switcher__panel {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
   pointer-events: auto;
 }
 
@@ -489,6 +493,23 @@ a { color: inherit; text-decoration: none; }
 }
 .demo-role-switcher__list::-webkit-scrollbar { width: 6px; }
 .demo-role-switcher__list::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+
+/* v1.12.9: group labels — separar visualmente las fases del flujo IVC
+   (Validación / Firma / Notificación / Recursos). Patrón uppercase
+   letterspaced sutil, como section markers. */
+.demo-role-switcher__group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--text-secondary, #646587);
+  padding: 10px 12px 4px;
+  margin-top: 4px;
+}
+.demo-role-switcher__group-label:first-child {
+  margin-top: 0;
+  padding-top: 4px;
+}
 
 .demo-role-switcher__item {
   display: flex; align-items: center; gap: 10px;
