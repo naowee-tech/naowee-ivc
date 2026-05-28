@@ -13,10 +13,10 @@
        .naowee-searchbox, .naowee-checkbox, .naowee-radio, .naowee-helper, .naowee-shake. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.42">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.42">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.42">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.42">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.55">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.55">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.55">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.55">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
   <style>
     /* Page-local: estilos mínimos del page-title y del grid de stats — mismos
@@ -123,20 +123,93 @@
       color: var(--text-primary);
     }
     /* v1.13.7: chip para trámites HIJO de reposición — muestra el rad del
-       padre debajo. Patrón paridad con .row-organismo__sub (NIT debajo). */
+       padre debajo. Patrón paridad con .row-organismo__sub (NIT debajo).
+
+       v1.13.51 (Doug 27/05/2026): revert al estilo sin container — menos
+       invasivo. Sólo texto morado + flecha icon inline (la flecha que a
+       Doug le gustó). Fuente Inter (no monospace). */
     .row-radicado-parent {
-      display: block;
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 10.5px;
+      display: flex;          /* línea propia DEBAJO del radicado negro */
+      align-items: center;
+      gap: 3px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
       font-weight: 600;
       color: var(--purple, #7c3aed);
-      margin-top: 3px;
+      margin-top: 4px;
+      letter-spacing: .1px;
+      white-space: nowrap;   /* una sola línea — no envolver "Hijo de IVC-…" */
+    }
+    .row-radicado-parent svg {
+      width: 12px; height: 12px;
+      flex-shrink: 0;
+      stroke-width: 2.2;
+    }
+
+    /* ── v1.13.51: Tab Trazabilidad (modal detalle) — vínculo padre→hijo en
+       layout de ÁRBOL vertical (padre arriba → flecha abajo → hijo debajo).
+       Doug: badges con más respiro del radicado, flecha menos pegada.
+       El timeline reusa .ivc-timeline (shared). */
+    .ivc-traza-link {
+      display: flex; flex-direction: column; align-items: flex-start;
+      gap: 0;
+      padding: 6px 0 2px;
+    }
+    .ivc-traza-link__node {
+      display: flex; flex-direction: row; align-items: center;
+      gap: 12px;  /* radicado ←→ badge, lado a lado */
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .ivc-traza-link__tag {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .4px;
+      padding: 3px 10px; border-radius: 9999px;
+      flex-shrink: 0;
+    }
+    .ivc-traza-link__tag--parent { background: #f4efff; color: var(--purple, #7c3aed); }
+    .ivc-traza-link__tag--child  { background: var(--orange-bg, #fff3e6); color: var(--accent, #d74009); }
+    .ivc-traza-link__rad {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 16px; font-weight: 700; color: var(--text-primary, #282834);
       letter-spacing: .2px;
     }
-    .row-radicado-parent::before {
-      content: '↳ ';
-      font-weight: 700;
+    /* Flecha conectora vertical (apunta hacia abajo: padre → hijo). */
+    .ivc-traza-link__arrow {
+      width: 20px; height: 20px; flex-shrink: 0;
+      color: var(--purple, #7c3aed);
+      margin: 10px 0 10px 8px;   /* respiro vertical + leve indent tipo árbol */
     }
+    .ivc-traza-note {
+      margin: 12px 0 0; font-size: 12.5px; line-height: 1.5;
+      color: var(--text-secondary, #646587);
+    }
+    .ivc-traza-note strong { color: var(--purple, #7c3aed); font-weight: 700; }
+
+    /* Aprobaciones — lista de actores que firmaron/aprobaron el origen. */
+    .ivc-traza-approvers { display: flex; flex-direction: column; gap: 8px; }
+    .ivc-traza-approver {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      background: #fafbfd; border-radius: 10px;
+    }
+    .ivc-traza-approver__avatar {
+      width: 32px; height: 32px; flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--green-bg, #e6f4e7); color: var(--green, #1f8923);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .ivc-traza-approver__body { display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; min-width: 0; }
+    .ivc-traza-approver__actor { font-size: 13px; font-weight: 700; color: var(--text-primary, #282834); }
+    .ivc-traza-approver__action { font-size: 11.5px; color: var(--text-secondary, #646587); line-height: 1.4; }
+    .ivc-traza-approver__date {
+      font-size: 11px; color: var(--text-secondary, #646587);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      flex-shrink: 0; text-align: right;
+    }
+
+    .ivc-traza-cta { margin-top: 16px; }
     .row-organismo {
       color: var(--text-primary);
       font-weight: 500;
@@ -750,27 +823,36 @@
       font-size: 13px;
     }
     /* v1.8.1: tablas más limpias — header lowercase, font weight medium,
-       hover sutil en rows, padding más generoso. */
+       hover sutil en rows, padding más generoso.
+
+       v1.13.53 (Doug 27/05/2026): header = barra gris FLOTANTE con las 4
+       esquinas redondeadas (no solo las de arriba) y SIN divider inferior.
+       border-collapse:separate permite radius en los th; el respiro
+       header→datos lo da el padding-top de la primera fila. */
     .ivc-detail-table {
-      width: 100%; border-collapse: collapse; font-size: 13px;
-      border: 1px solid var(--border); border-radius: var(--radius-md, 8px);
-      overflow: hidden; margin: 0 0 6px;
+      width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px;
+      margin: 0 0 6px;
       background: var(--surface);
     }
     .ivc-detail-table th {
       background: var(--bg-soft); text-align: left;
-      padding: 11px 14px;
-      font-size: 12px; font-weight: 600;
+      padding: 9px 14px;
+      font-size: 11.5px; font-weight: 600;
       letter-spacing: 0; text-transform: none;
-      color: var(--text-secondary); border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      border: 0;   /* sin divider inferior pegado */
     }
+    .ivc-detail-table thead th:first-child { border-radius: 8px 0 0 8px; }
+    .ivc-detail-table thead th:last-child  { border-radius: 0 8px 8px 0; }
+    /* respiro entre la barra del header y la primera fila de datos */
+    .ivc-detail-table tbody tr:first-child td { padding-top: 14px; }
     .ivc-detail-table td {
       padding: 12px 14px; border-bottom: 1px solid var(--border);
       color: var(--text-primary); vertical-align: top;
       font-weight: 500;
     }
-    .ivc-detail-table tr:last-child td { border-bottom: 0; }
-    .ivc-detail-table tbody tr:hover { background: rgba(0,0,0,0.015); }
+    .ivc-detail-table tbody tr:last-child td { border-bottom: 0; }
+    .ivc-detail-table tbody tr:hover td { background: rgba(0,0,0,0.015); }
     .ivc-detail-empty {
       font-size: 13px; color: var(--text-secondary);
       font-style: italic; margin: 4px 0;
@@ -1350,14 +1432,14 @@
   </div>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.42"></script>
-  <script src="../shared/shell.js?v=1.13.42"></script>
-  <script src="../shared/demo-tour.js?v=1.13.42"></script>
-  <script src="../shared/ivc-store.js?v=1.13.42"></script>
+  <script src="../shared/data.js?v=1.13.55"></script>
+  <script src="../shared/shell.js?v=1.13.55"></script>
+  <script src="../shared/demo-tour.js?v=1.13.55"></script>
+  <script src="../shared/ivc-store.js?v=1.13.55"></script>
 
   <!-- v1.4.9: Footer flotante canónico (Project v2.0.3 pattern).
        Doc del patrón: /docs/PATRON-FOOTER-FLOTANTE.md -->
-  <script src="../shared/naowee-footer.js?v=1.13.42" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.13.55" defer></script>
   <script>
     /* Estado local del page (no global — solo lo necesita esta pantalla) */
     var state = {
@@ -1666,7 +1748,9 @@
             '</label>' +
           '</td>' +
           '<td><span class="row-radicado">' + t.id + '</span>' +
-            (t.tramite_parent ? '<span class="row-radicado-parent" title="Trámite hijo de reposición">Hijo de ' + escHtml(t.tramite_parent) + '</span>' : '') +
+            (t.tramite_parent ? '<span class="row-radicado-parent" title="Reposición · trámite hijo del ' + escHtml(t.tramite_parent) + '">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 10 20 15 15 20"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>' +
+              'Hijo de ' + escHtml(t.tramite_parent) + '</span>' : '') +
           '</td>' +
           '<td><span class="row-tipo">' + (t.tipoTramite || t.tipo || '—') + '</span></td>' +
           '<td><span class="row-organismo">' + t.organismo + '<span class="row-organismo__sub">NIT ' + t.nit + '</span></span></td>' +
@@ -2697,11 +2781,16 @@
        Tabs adaptativos por organismo (Liga/Federación tienen Asamblea, Asociación no). */
     var __detalleTramiteActual = null;
 
-    function getTabsDetalleParaOrganismo(tipoOrganismo) {
-      var tabs = [
-        { id:'general',    label:'General' },
-        { id:'personeria', label:'Personería' }
-      ];
+    function getTabsDetalleParaOrganismo(t) {
+      var tipoOrganismo = (t && typeof t === 'object') ? t.tipoOrganismo : t;
+      var tabs = [];
+      /* v1.13.50 (Doug 27/05/2026): trámites HIJO (reposición) abren con el
+         tab Trazabilidad primero — da contexto del origen antes de los datos. */
+      if (t && typeof t === 'object' && t.tramite_parent) {
+        tabs.push({ id:'trazabilidad', label:'Trazabilidad' });
+      }
+      tabs.push({ id:'general',    label:'General' });
+      tabs.push({ id:'personeria', label:'Personería' });
       if (tipoOrganismo === 'liga' || tipoOrganismo === 'federacion') {
         tabs.push({ id:'asamblea', label:'Asamblea' });
       }
@@ -2716,7 +2805,8 @@
       personeria: '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/></svg>',
       asamblea:   '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
       estructura: '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
-      cierre:     '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+      cierre:     '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      trazabilidad: '<svg class="ivc-tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>'
     };
 
     /* v1.12.2: window.openModalDetalle expuesto para que el onclick inline
@@ -2727,8 +2817,8 @@
       if (!t) return;
       __detalleTramiteActual = t;
       document.getElementById('modalDetalleSub').textContent = t.id + ' · ' + t.organismo;
-      // Renderizar tabs según organismo
-      var tabs = getTabsDetalleParaOrganismo(t.tipoOrganismo);
+      // Renderizar tabs según organismo (+ trazabilidad si es hijo de reposición)
+      var tabs = getTabsDetalleParaOrganismo(t);
       var tabsHtml = tabs.map(function(tab, i){
         return '<button class="naowee-tab' + (i === 0 ? ' naowee-tab--selected' : '') +
                '" data-detalle-tab="' + tab.id + '" role="tab" type="button">' +
@@ -2926,12 +3016,118 @@
       _resetBlockCounter();  /* v1.6.7: cada tab arranca con su primer bloque expandido */
       if (!t) return '<p class="ivc-detail-empty">Trámite no encontrado.</p>';
       var d = t.datos || {};
+      if (tabId === 'trazabilidad') return _renderTabTrazabilidad(t, d);
       if (tabId === 'general')    return _renderTabGeneral(t, d);
       if (tabId === 'personeria') return _renderTabPersoneria(t, d);
       if (tabId === 'asamblea')   return _renderTabAsamblea(t, d);
       if (tabId === 'estructura') return _renderTabEstructura(t, d);
       if (tabId === 'cierre')     return _renderTabCierre(t, d);
       return '';
+    }
+
+    /* ── TAB · Trazabilidad (solo trámites HIJO de reposición) ───────────
+       v1.13.50 (Doug 27/05/2026): muestra el vínculo padre→hijo, los datos
+       y APROBACIONES del trámite de origen, y su historial completo. Permite
+       saltar al detalle del padre. Reusa el componente .ivc-timeline. */
+    var _TRAZA_ESTADO_LABEL = {
+      'No asignada':'No asignada', 'Asignada':'Asignada', 'En validación':'En validación',
+      'PendienteCOO':'Pendiente aprobación COO', 'PendienteFirma':'Pendiente firma Director',
+      'Firmado':'Firmado', 'Notificado':'Notificado', 'Vigente':'Vigente',
+      'EnApelacion':'En apelación', 'EnReposicion':'En reposición',
+      'PendienteRecursos':'Pendiente recursos', 'Finalizado':'Finalizado',
+      'NoCumple':'No cumple', 'CumpleParcial':'Cumple parcial'
+    };
+    function _trazaEstadoLabel(e) { return _TRAZA_ESTADO_LABEL[e] || e || '—'; }
+
+    /* Clasifica un evento del histórico para el color del dot del timeline. */
+    function _trazaDotMod(accion) {
+      var a = (accion || '').toLowerCase();
+      if (/no cumple|rechaz|niega|negativa|devuel/.test(a)) return 'negative';
+      if (/firm|aprob|cumple|vigente|notific|favorable/.test(a)) return 'positive';
+      if (/asignad|remisi|valida|revisi|reposici|apelaci/.test(a)) return 'info';
+      return 'muted';
+    }
+
+    /* Timeline reusable a partir de un array historico (más reciente arriba). */
+    function _dtTimelineFromHistorico(historico) {
+      if (!historico || !historico.length) return '<p class="ivc-detail-empty">Sin eventos registrados.</p>';
+      var items = historico.slice().reverse();
+      return '<ul class="ivc-timeline">' + items.map(function (h) {
+        var meta = (h.fecha ? _dtDate(h.fecha) : '') + (h.hora ? ' · ' + h.hora : '');
+        return '<li class="ivc-timeline__item ivc-timeline__item--' + _trazaDotMod(h.accion) + '">' +
+          '<span class="ivc-timeline__dot"></span>' +
+          '<span class="ivc-timeline__title">' + escHtml(h.accion || '—') + '</span>' +
+          (meta ? '<span class="ivc-timeline__meta">' + escHtml(meta) + '</span>' : '') +
+          (h.actor ? '<span class="ivc-timeline__actor">Por: ' + escHtml(h.actor) + '</span>' : '') +
+        '</li>';
+      }).join('') + '</ul>';
+    }
+
+    function _renderTabTrazabilidad(t, d) {
+      var parentId = t.tramite_parent;
+      var parent = (window.IVCStore && IVCStore.getTramite) ? IVCStore.getTramite(parentId) : null;
+
+      /* Vínculo padre→hijo visual. */
+      var linkHtml =
+        '<div class="ivc-traza-link">' +
+          '<div class="ivc-traza-link__node">' +
+            '<span class="ivc-traza-link__rad">' + escHtml(parentId) + '</span>' +
+            '<span class="ivc-traza-link__tag ivc-traza-link__tag--parent">Trámite de origen</span>' +
+          '</div>' +
+          '<svg class="ivc-traza-link__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="4" x2="12" y2="20"/><polyline points="6 14 12 20 18 14"/></svg>' +
+          '<div class="ivc-traza-link__node">' +
+            '<span class="ivc-traza-link__rad">' + escHtml(t.id) + '</span>' +
+            '<span class="ivc-traza-link__tag ivc-traza-link__tag--child">Reposición (este)</span>' +
+          '</div>' +
+        '</div>' +
+        '<p class="ivc-traza-note">Este trámite es una <strong>Reposición</strong> interpuesta contra la resolución del trámite de origen. Conserva sus datos y documentos para la revalidación del Profesional.</p>';
+      var html = _dtBlockRaw('Relación del trámite', linkHtml);
+
+      if (!parent) {
+        html += _dtBlockRaw('Trámite de origen',
+          '<p class="ivc-detail-empty">El trámite de origen (' + escHtml(parentId) + ') está archivado y no está disponible para consulta en esta vista.</p>');
+        return html;
+      }
+
+      /* Datos del padre. */
+      html += _dtBlock('Datos del trámite de origen',
+        _dtCell('Radicado', parent.id, true) +
+        _dtCell('Tipo de trámite', parent.tipoTramite || '—') +
+        _dtCell('Fecha de radicación', parent.fechaRadicacion ? _dtDate(parent.fechaRadicacion) : '—') +
+        _dtCell('Estado', _trazaEstadoLabel(parent.estado)) +
+        _dtCell('Profesional que validó', parent.profesionalNombre || '—')
+      );
+
+      /* Aprobaciones extraídas del histórico del padre (quién aprobó/firmó). */
+      var aprob = (parent.historico || []).filter(function (h) {
+        var a = (h.accion || '').toLowerCase();
+        return /firm|aprob|cumple|favorable|veredicto/.test(a) && !/no cumple/.test(a);
+      });
+      if (aprob.length) {
+        var aprobHtml = '<div class="ivc-traza-approvers">' + aprob.map(function (h) {
+          var meta = (h.fecha ? _dtDate(h.fecha) : '') + (h.hora ? ' · ' + h.hora : '');
+          return '<div class="ivc-traza-approver">' +
+            '<span class="ivc-traza-approver__avatar">' + escHtml(_initials(h.actor)) + '</span>' +
+            '<div class="ivc-traza-approver__body">' +
+              '<span class="ivc-traza-approver__actor">' + escHtml(h.actor || '—') + '</span>' +
+              '<span class="ivc-traza-approver__action">' + escHtml(h.accion || '') + '</span>' +
+            '</div>' +
+            (meta ? '<span class="ivc-traza-approver__date">' + escHtml(meta) + '</span>' : '') +
+          '</div>';
+        }).join('') + '</div>';
+        html += _dtBlockRaw('Aprobaciones del trámite de origen', aprobHtml);
+      }
+
+      /* Historial completo del padre (timeline). */
+      html += _dtBlockRaw('Historial completo del trámite de origen', _dtTimelineFromHistorico(parent.historico));
+
+      /* CTA para saltar al detalle del padre. */
+      html += '<div class="ivc-traza-cta">' +
+        '<button type="button" class="naowee-btn naowee-btn--mute naowee-btn--small" ' +
+        'onclick="window.openModalDetalle(\'' + escHtml(parentId) + '\')">Ver detalle completo del trámite de origen →</button>' +
+      '</div>';
+
+      return html;
     }
 
     /* v1.5.9 rev3 (25/05/2026): refactor en 5 funciones, una por tab.

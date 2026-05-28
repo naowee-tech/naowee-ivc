@@ -220,6 +220,22 @@
   }
   .wz-stepper-wrap .naowee-stepper__connector--done { background: #15803d; }
 
+  /* v1.13.54 (Juanma 27/05/2026): skeleton de los pasos restantes ANTES de
+     elegir organismo. Solo puntos grises + línea del recorrido (sin label ni
+     número) — sugiere "vienen ~5-6 pasos más" sin comprometer el conteo
+     exacto, que lo define el tipo de organismo. */
+  .wz-stepper-wrap .naowee-stepper__step--skeleton .naowee-stepper__number {
+    width: 11px; height: 11px; min-width: 11px;
+    background: var(--border, #e7e9f3);
+    box-shadow: none;
+    margin-top: 8px;   /* centra el dot 11px con la línea del connector (centro ≈13px) */
+    animation: none;
+  }
+  .wz-stepper-wrap .naowee-stepper__connector--skeleton {
+    background: var(--border, #e7e9f3);
+    opacity: .65;
+  }
+
   .wz-stepper-mobile {
     display: none;
     padding: 14px 22px;
@@ -336,6 +352,21 @@
     color: var(--naowee-color-text-secondary, #646587);
     font-weight: 400;
   }
+  /* v1.13.55 (Doug 27/05/2026) #1: focus canónico del textfield — borde naranja
+     + 3px shadow accent (igual que .ivc-mini-input y el DS). Faltaba el estado.
+     Scoped bajo .wz-card/.ivc-modal para vencer la regla default scoped, color
+     concreto para evitar cualquier issue de resolución de var. */
+  .wz-card .naowee-textfield__input-wrap:focus-within,
+  .ivc-modal .naowee-textfield__input-wrap:focus-within,
+  .naowee-textfield__input-wrap:focus-within {
+    border-color: #d74009 !important;
+    box-shadow: 0 0 0 3px rgba(215, 64, 9, .15) !important;
+  }
+  /* #5: reducir el gap title↔content de .naowee-message (el DS trae gap:16px,
+     se ve demasiado aire). Lo bajamos a 3px. */
+  .naowee-message__content { gap: 3px !important; }
+  .naowee-message__title { margin: 0 0 2px !important; }
+  .naowee-message__text  { margin: 0 !important; }
 
   /* ── v1.5.7: Trigger de Dirección (estilo igual al textfield wrap canónico) ── */
   .ivc-direccion-trigger {
@@ -1024,9 +1055,12 @@ const STEPS_POR_ORGANISMO = {
 };
 
 function pasosAplicables() {
-  // Antes de que el usuario elija organismo (step 0), mostramos el set completo
-  // para que vea la cantidad máxima posible. Una vez elegido, se reduce.
-  if (!STATE.tipoOrganismo) return STEPS.map((_, i) => i);
+  // v1.13.54 (Juanma 27/05/2026): el NÚMERO de pasos lo determina el tipo de
+  // organismo, así que NO mostramos la secuencia completa hasta elegirlo.
+  // Antes de seleccionar, el stepper muestra solo "Pre-selección" (idx 0) y
+  // los pasos restantes se revelan al elegir el organismo (render() en el
+  // onChange del dropdown). Evita prometer 7 pasos cuando una Asociación tiene 6.
+  if (!STATE.tipoOrganismo) return [0];
   return STEPS_POR_ORGANISMO[STATE.tipoOrganismo] || STEPS.map((_, i) => i);
 }
 
@@ -1573,7 +1607,7 @@ function renderModalDireccionBody() {
           style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;"
           onchange="STATE.data.direccionEstructurada.bis=this.checked;this.closest('.naowee-checkbox').classList.toggle('naowee-checkbox--checked',this.checked);" />
         <span class="naowee-checkbox__box" aria-hidden="true">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 6.5 11.5 13 5"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </span>
         <span class="naowee-checkbox__label">BIS</span>
       </label>
@@ -2353,6 +2387,17 @@ function renderStepper() {
       html += `<div class="naowee-stepper__connector${connectorDone ? ' naowee-stepper__connector--done' : ''}"></div>`;
     }
   });
+
+  // v1.13.54 (Juanma): si aún no se eligió organismo, dibujar el resto del
+  // recorrido como skeleton (5 puntos grises + línea), sin label ni número.
+  if (!STATE.tipoOrganismo) {
+    const SKELETON_STEPS = 5;
+    for (let i = 0; i < SKELETON_STEPS; i++) {
+      html += `<div class="naowee-stepper__connector naowee-stepper__connector--skeleton"></div>`;
+      html += `<div class="naowee-stepper__step naowee-stepper__step--skeleton" role="presentation" aria-hidden="true"><span class="naowee-stepper__number"></span></div>`;
+    }
+  }
+
   wrap.innerHTML = html;
 
   document.getElementById('stepperMobile').innerHTML = `
@@ -2769,7 +2814,9 @@ function renderStep3_F1() {
 
     <h2 class="wz-section">Tipos de reunión realizados</h2>
     <div class="ivc-repeatable">
-      <div class="ivc-repeatable__head" style="grid-template-columns: 1.6fr 1.1fr 1.1fr 0.8fr 80px;">
+      <!-- v1.13.55 #3: columnas del head IGUALES a las del row (antes la 4ª era
+           0.8fr vs 1.1fr → los títulos de fecha no alineaban con su columna). -->
+      <div class="ivc-repeatable__head" style="grid-template-columns: 1.6fr 1.1fr 1.1fr 1.1fr 80px;">
         <div>Tipo / Clase</div>
         <div>Fecha Convocatoria</div>
         <div>Fecha Realización</div>
@@ -3015,9 +3062,11 @@ function repeatableDynamic(opts) {
       ${rows.map((row, i) => `
         <div class="ivc-repeatable__row" style="grid-template-columns: ${cols};">
           ${cellRenderer(row, i)}
-          <button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small ivc-repeatable__remove"${rows.length <= minRows ? ' disabled' : ` onclick="${onRemove(i)}"`} aria-label="Eliminar fila">
+          ${rows.length <= minRows
+            ? `<span class="ivc-repeatable__remove" aria-hidden="true"></span>`
+            : `<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--icon naowee-btn--small ivc-repeatable__remove" onclick="${onRemove(i)}" aria-label="Eliminar fila">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6"/></svg>
-          </button>
+          </button>`}
         </div>
       `).join('')}
       <div class="ivc-repeatable__add">

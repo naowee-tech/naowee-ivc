@@ -581,18 +581,160 @@ a { color: inherit; text-decoration: none; }
   margin-top: 4px;
 }
 
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  .sidebar { width: var(--sidebar-w-collapsed); min-width: var(--sidebar-w-collapsed); overflow: hidden; }
-  .sidebar .sb-logo-img,
-  .sidebar .sb-logo-img--pill,
-  .sidebar .logo-sep,
-  .sidebar .lbl,
-  .sidebar .nav-section { display: none; }
-  .sidebar .sidebar-logo { justify-content: center; padding: 0; }
-  .sidebar .nav-row { justify-content: center; padding: 0; }
-  .sidebar .nav-row .icon { margin-left: 0; }
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — mobile-first overhaul v1.13.43 (Doug 27/05/2026)
+
+   Breakpoints:
+   - Desktop:  >= 1024px  → sidebar fija expandida (274px)
+                            colapsable a 72px con burger
+   - Tablet:   768-1023px → sidebar colapsada por default (72px)
+                            burger expande IN-PLACE a 274px
+   - Mobile:   < 768px    → sidebar DRAWER off-canvas (oculta)
+                            burger abre como overlay full-height
+                            click backdrop / ESC / nav-row cierra
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet 768-1023px: sidebar colapsada por default ── */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .sidebar:not(.is-mobile-open) {
+    width: var(--sidebar-w-collapsed);
+    min-width: var(--sidebar-w-collapsed);
+    overflow: hidden;
+  }
+  .sidebar:not(.is-collapsed):not(.is-mobile-open) .sb-logo-img,
+  .sidebar:not(.is-collapsed):not(.is-mobile-open) .sb-logo-img--pill,
+  .sidebar:not(.is-collapsed):not(.is-mobile-open) .logo-sep,
+  .sidebar:not(.is-collapsed):not(.is-mobile-open) .lbl,
+  .sidebar:not(.is-collapsed):not(.is-mobile-open) .nav-section,
+  .sidebar:not(.is-collapsed):not(.is-mobile-open) .nav-row__badge {
+    display: none;
+  }
+  .sidebar:not(.is-mobile-open) .sidebar-logo { justify-content: center; padding: 0; }
+  .sidebar:not(.is-mobile-open) .nav-row { justify-content: center; padding: 0; }
+  .sidebar:not(.is-mobile-open) .nav-row .icon { margin-left: 0; }
   .user-info { display: none; }
+}
+
+/* ── Mobile < 768px: sidebar drawer off-canvas ── */
+@media (max-width: 767px) {
+  body { font-size: 13px; }
+
+  .shell {
+    overflow-x: hidden;
+  }
+
+  /* Sidebar oculta por default — slide-in cuando .is-mobile-open */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 280px;
+    min-width: 280px;
+    transform: translateX(-100%);
+    box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    z-index: 9999;
+    transition: transform .3s cubic-bezier(.32,.72,0,1);
+  }
+  .sidebar.is-mobile-open {
+    transform: translateX(0);
+  }
+  /* Override is-collapsed en mobile — el sidebar siempre tiene full
+     content cuando se abre como drawer. Bump selectivity con html body para
+     vencer las reglas desktop de is-collapsed (line 199+). */
+  html body .sidebar.is-collapsed,
+  html body .sidebar.is-mobile-open { width: 280px !important; min-width: 280px !important; overflow: visible !important; }
+  html body .sidebar.is-collapsed .sb-logo-img,
+  html body .sidebar.is-collapsed .sb-logo-img--pill,
+  html body .sidebar.is-collapsed .logo-sep,
+  html body .sidebar.is-collapsed .nav-section { display: block !important; }
+  html body .sidebar.is-collapsed .nav-row .lbl,
+  html body .sidebar.is-collapsed .nav-row__badge,
+  html body .sidebar.is-mobile-open .nav-row .lbl,
+  html body .sidebar.is-mobile-open .nav-row__badge {
+    max-width: none !important;
+    opacity: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    pointer-events: auto !important;
+    overflow: visible !important;
+    padding: revert !important;
+    margin: revert !important;
+  }
+  html body .sidebar.is-collapsed .sidebar-logo,
+  html body .sidebar.is-mobile-open .sidebar-logo {
+    justify-content: flex-start !important;
+    padding: 0 20px !important;
+  }
+  html body .sidebar.is-collapsed .nav-row,
+  html body .sidebar.is-mobile-open .nav-row {
+    justify-content: flex-start !important;
+    padding: 0 20px !important;
+    gap: 14px !important;
+    margin: 0 !important;
+  }
+  html body .sidebar.is-collapsed .nav-row::before,
+  html body .sidebar.is-mobile-open .nav-row::before { display: none !important; }
+  html body .sidebar.is-collapsed .active-bar,
+  html body .sidebar.is-mobile-open .active-bar { display: block !important; }
+
+  /* Main toma todo el ancho. */
+  .main { width: 100%; }
+  .top-header {
+    padding-left: 56px !important; /* room for burger trigger */
+  }
+
+  /* Trigger del drawer — botón flotante en header (top-left). */
+  .mobile-drawer-trigger {
+    position: fixed;
+    top: 22px;
+    left: 16px;
+    z-index: 1000;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #e7e9f3);
+    box-shadow: 0 2px 8px rgba(40,40,52,.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: background .15s;
+  }
+  .mobile-drawer-trigger:hover { background: var(--bg-soft, #f5f6fa); }
+  .mobile-drawer-trigger:active { transform: scale(.92); }
+
+  /* Backdrop overlay cuando drawer está abierto. */
+  body.has-mobile-drawer-open::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(40, 40, 52, .5);
+    z-index: 9998;
+    animation: drawerBackdropIn .25s ease;
+  }
+  @keyframes drawerBackdropIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  body.has-mobile-drawer-open {
+    overflow: hidden; /* no scroll body bajo drawer */
+  }
+
+  /* User info compact. */
+  .user-info { display: none; }
+
+  /* Page inner padding compact. */
+  .page-inner {
+    padding: 14px !important;
+    max-width: 100% !important;
+    gap: 14px !important;
+  }
+}
+
+/* ── Tablets desktop entre 1024 y 1280 — sidebar siempre visible — */
+@media (min-width: 1024px) {
+  .mobile-drawer-trigger { display: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════

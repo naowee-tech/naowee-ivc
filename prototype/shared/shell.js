@@ -432,15 +432,26 @@
 
   /* ───── Wire events ───── */
   function wireEvents() {
-    /* Burger toggle */
+    /* Burger toggle — desktop colapsa, mobile abre drawer */
     var toggle = document.getElementById('sidebarToggle');
     var sidebar = document.getElementById('sidebar');
     if (toggle && sidebar) {
       toggle.addEventListener('click', function () {
+        /* En mobile (< 768px) el sidebar usa drawer overlay; el
+           burger del header lo abre/cierra. Aquí (burger interno del
+           sidebar) cierra el drawer cuando está abierto. */
+        if (window.matchMedia('(max-width: 767px)').matches) {
+          closeMobileDrawer();
+          return;
+        }
         sidebar.classList.toggle('is-collapsed');
         setCollapsed(sidebar.classList.contains('is-collapsed'));
       });
     }
+
+    /* v1.13.43: Mobile drawer trigger (botón flotante top-left).
+       Solo visible en < 768px vía CSS. Crear si no existe. */
+    setupMobileDrawer(sidebar);
 
     /* Profile dropdown */
     var switcher = document.getElementById('profileSwitcher');
@@ -654,6 +665,67 @@
     }
 
     wireEvents();
+  }
+
+  /* ───── Mobile drawer (sidebar como off-canvas en < 768px) ─────
+     v1.13.43 (Doug): responsive mobile-first.
+     - setupMobileDrawer inyecta un trigger flotante (top-left) que
+       abre el sidebar como drawer overlay.
+     - Backdrop click / ESC / click en cualquier nav-row cierran. */
+  function setupMobileDrawer(sidebar) {
+    if (!sidebar) return;
+    if (document.querySelector('.mobile-drawer-trigger')) return;
+    var trigger = document.createElement('button');
+    trigger.className = 'mobile-drawer-trigger';
+    trigger.type = 'button';
+    trigger.setAttribute('aria-label', 'Abrir menú');
+    trigger.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+    document.body.appendChild(trigger);
+
+    trigger.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      sidebar.classList.add('is-mobile-open');
+      document.body.classList.add('has-mobile-drawer-open');
+    });
+
+    /* Backdrop click → cerrar (body::after es backdrop visual, lo
+       capturamos via click en body cuando drawer abierto). */
+    document.addEventListener('click', function (ev) {
+      if (!document.body.classList.contains('has-mobile-drawer-open')) return;
+      if (sidebar.contains(ev.target) || trigger.contains(ev.target)) return;
+      closeMobileDrawer();
+    });
+
+    /* Click en cualquier nav-row dentro del drawer → cierra el drawer
+       después de navegar (UX standard de drawer mobile). */
+    sidebar.addEventListener('click', function (ev) {
+      var nav = ev.target.closest && ev.target.closest('.nav-row');
+      if (nav && window.matchMedia('(max-width: 767px)').matches) {
+        /* Esperar un frame para que el browser inicie la navegación
+           antes de cerrar el drawer (no afecta navegación). */
+        setTimeout(closeMobileDrawer, 100);
+      }
+    });
+
+    /* ESC cierra drawer si está abierto. */
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && document.body.classList.contains('has-mobile-drawer-open')) {
+        closeMobileDrawer();
+      }
+    });
+
+    /* Resize: si pasamos de mobile a desktop con drawer abierto, cerrar. */
+    window.addEventListener('resize', function () {
+      if (!window.matchMedia('(max-width: 767px)').matches) {
+        closeMobileDrawer();
+      }
+    });
+  }
+
+  function closeMobileDrawer() {
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.remove('is-mobile-open');
+    document.body.classList.remove('has-mobile-drawer-open');
   }
 
   window.IVCShell = {

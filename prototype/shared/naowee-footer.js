@@ -15,7 +15,7 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 (function mountNaoweeFooter() {
-  var IVC_VERSION = 'v1.13.42';
+  var IVC_VERSION = 'v1.13.55';
   var REPO = 'naowee-tech/naowee-ivc';
   var MODULE_NAME = 'IVC';
 
@@ -60,12 +60,27 @@
   }
 
   /* Patrón scroll-hide del Project v2.0.3 — esconde el footer al scroll
-     down y lo vuelve a mostrar al scroll up. */
+     down y lo vuelve a mostrar al scroll up.
+
+     v1.13.49 (Doug 27/05/2026): scroll events NO bubble, pero SÍ se pueden
+     capturar en phase=capture sobre document. Esto cubre el caso real de
+     IVC donde `.page` es el scroll host (creado dinámicamente por shell.js)
+     y también fallback a window si no hubiera `.page`. Es robusto frente
+     al timing de inicialización porque no depende de query inicial. */
   function bindFooterScrollHide(footer) {
-    var lastY = window.scrollY;
+    var lastY = 0;
     var ticking = false;
+
+    function getY() {
+      var page = document.querySelector('.page');
+      return page ? page.scrollTop : (window.scrollY || document.documentElement.scrollTop);
+    }
+
+    /* Init lastY tras un microtask para que `.page` ya exista. */
+    setTimeout(function () { lastY = getY(); }, 0);
+
     function update() {
-      var y = window.scrollY;
+      var y = getY();
       var dy = y - lastY;
       if (Math.abs(dy) > 4) {
         if (dy > 0 && y > 60) {
@@ -77,12 +92,16 @@
       }
       ticking = false;
     }
-    window.addEventListener('scroll', function () {
+
+    /* capture:true permite captar scroll events de CUALQUIER descendant
+       (scroll NO bubble en phase normal). Pasamos by-pass para que aplique
+       sea quien sea el host. */
+    document.addEventListener('scroll', function () {
       if (!ticking) {
         window.requestAnimationFrame(update);
         ticking = true;
       }
-    }, { passive: true });
+    }, { passive: true, capture: true });
   }
 
   if (document.readyState === 'loading') {

@@ -863,6 +863,19 @@
   color: var(--text-primary);
   margin-top: 2px;
 }
+/* v1.13.55 (Doug 27/05/2026) #5: cuando el message usa la estructura
+   __content (title + text apilados), el DS trae gap:16px → demasiado aire.
+   Lo bajamos a 3px de forma transversal. */
+.naowee-message__content { gap: 3px !important; }
+.naowee-message__content .naowee-message__title { margin: 0 0 2px !important; }
+.naowee-message__content .naowee-message__text  { margin: 0 !important; }
+
+/* v1.13.55 #1: focus canónico del textfield — borde naranja + 3px shadow
+   accent. Transversal (modales de equipo, subsanación, etc.). */
+.naowee-textfield__input-wrap:focus-within {
+  border-color: var(--accent, #d74009) !important;
+  box-shadow: 0 0 0 3px rgba(215, 64, 9, .15) !important;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════
    v1.12.7 (26/05/2026): Override IVC del .naowee-empty-state canónico.
@@ -1364,4 +1377,304 @@
 .naowee-tab--selected .ivc-tab-icon,
 .actos-tab.is-selected .ivc-tab-icon {
   opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE — mobile-first v1.13.43 (Doug 27/05/2026)
+   Aplicado transversal a todos los HTMLs vía shared CSS.
+
+   Estrategias:
+   - Modales: bottom-sheet en < 640px (90vh, slide-up)
+   - Stat-grid: 1col mobile, 2col tablet
+   - Form-grid: 1col en < 640px
+   - Tabla: horizontal scroll (overflow-x:auto ya está) + headers
+     compactos en mobile
+   - Toolbar (bandeja-toolbar / equipo-toolbar): stack vertical en mobile
+   - Page-title sizes scaling
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── < 640px (mobile) ── */
+@media (max-width: 639px) {
+  /* Page titles compact. */
+  .page-title { font-size: 20px !important; letter-spacing: -.3px !important; }
+  .page-subtitle { font-size: 12.5px !important; line-height: 1.45 !important; }
+  .page-title-block { margin-bottom: 8px !important; }
+
+  /* Stat grid → 1 columna. */
+  .stat-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+
+  /* Modales → bottom-sheet. */
+  .naowee-modal-overlay.open {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .naowee-modal-overlay .naowee-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 92vh !important;
+    animation: ivcMobileSheetIn .28s cubic-bezier(.32,.72,0,1);
+  }
+  @keyframes ivcMobileSheetIn {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  /* Header/footer modal: padding compact. */
+  .naowee-modal-overlay .naowee-modal__header { padding: 18px 20px 12px !important; }
+  .naowee-modal-overlay .naowee-modal__body { padding: 14px 20px !important; }
+  .naowee-modal-overlay .naowee-modal__footer { padding: 12px 20px 16px !important; }
+
+  /* Form grids 2-col → 1-col. */
+  .form-grid,
+  .ivc-info-grid,
+  .ivc-data-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Areas grid → 1col. */
+  .areas-grid { grid-template-columns: 1fr !important; }
+  .resolucion-grid { grid-template-columns: 1fr !important; }
+
+  /* Bandeja toolbar y equipo toolbar — stack vertical. */
+  .bandeja-toolbar,
+  .equipo-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+  .bandeja-toolbar__search,
+  .equipo-toolbar__search {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  .bandeja-toolbar__filters,
+  .equipo-toolbar__filters {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    width: 100%;
+  }
+  .bandeja-toolbar .naowee-dropdown,
+  .equipo-toolbar .naowee-dropdown {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  .bandeja-toolbar__spacer,
+  .equipo-toolbar__spacer { display: none !important; }
+  /* CTA full width. */
+  .equipo-toolbar #btnInvitar,
+  .bandeja-toolbar #btnAsignacionMasiva {
+    width: 100%;
+    justify-content: center;
+  }
+  .equipo-toolbar__clear { width: 100%; justify-content: center; }
+
+  /* Table card head padding compact + STACK VERTICAL. */
+  .naowee-table-card__head {
+    padding: 12px 14px !important;
+    gap: 10px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    flex-wrap: nowrap !important;
+  }
+  .naowee-table-card__head > * { width: 100% !important; }
+  .naowee-table-card__title { font-size: 15px !important; }
+  .naowee-table-card__subtitle { font-size: 12px !important; }
+
+  /* Tabla → stacked cards en mobile (cada row es una card vertical).
+     Specificity bumped con `html body` para vencer al DS CDN. */
+  html body .naowee-table-card { overflow: visible !important; }
+  html body .naowee-table-card .naowee-table {
+    min-width: 0 !important;
+    width: 100% !important;
+    display: block !important;
+  }
+  /* Ocultar thead — los labels viven en los datos del row */
+  .naowee-table-card .naowee-table thead,
+  .naowee-table-card .naowee-table colgroup { display: none !important; }
+  /* tbody / tr / td → block */
+  .naowee-table-card .naowee-table tbody,
+  .naowee-table-card .naowee-table tr,
+  .naowee-table-card .naowee-table td {
+    display: block !important;
+    width: 100% !important;
+  }
+  /* Cada row = card stacked */
+  .naowee-table-card .naowee-table tbody tr {
+    padding: 14px 18px !important;
+    border-bottom: 1px solid var(--border, #e7e9f3) !important;
+    border-radius: 0 !important;
+    position: relative;
+  }
+  .naowee-table-card .naowee-table tbody tr:last-child {
+    border-bottom: 0 !important;
+  }
+  .naowee-table-card .naowee-table tbody tr:hover {
+    background: rgba(0,0,0,.02);
+  }
+  /* Cada celda — limpia, sin borders */
+  .naowee-table-card .naowee-table tbody td {
+    padding: 3px 0 !important;
+    border: 0 !important;
+    text-align: left !important;
+    font-size: 13.5px !important;
+    color: var(--text-secondary, #646587);
+  }
+  .naowee-table-card .naowee-table tbody td:first-child,
+  .naowee-table-card .naowee-table tbody td:last-child {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  /* Primera celda usualmente es el radicado/identificador — destacarla */
+  .naowee-table-card .naowee-table tbody td:first-of-type {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: var(--text-primary, #282834) !important;
+    margin-bottom: 2px;
+  }
+  /* Botones de acción en celdas mobile: full width */
+  .naowee-table-card .naowee-table tbody td .naowee-btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 6px;
+  }
+  /* Checkbox cells — más compactos */
+  .naowee-table-card .naowee-table tbody td input[type="checkbox"] {
+    margin: 0;
+  }
+
+  /* Stat cards DS canónicas — compactar padding + valor. */
+  .naowee-stat-card { padding: 14px 16px !important; }
+  .naowee-stat-card__label { font-size: 11px !important; letter-spacing: .4px !important; }
+  .naowee-stat-card__value { font-size: 28px !important; line-height: 1.1 !important; margin: 2px 0 4px !important; }
+  .naowee-stat-card__hint { font-size: 12px !important; line-height: 1.35 !important; }
+
+  /* Bottom card / area cards padding compact (mantener). */
+  .area-card { padding: 16px !important; }
+  .area-card__stat-value { font-size: 18px !important; }
+
+  /* Naowee floating footer: ocultar en mobile (decorativo). */
+  .naowee-floating-footer { display: none !important; }
+
+  /* Demo role switcher: ocultar en mobile (es debug tool, tapa el contenido). */
+  .demo-role-switcher,
+  #demoRoleSwitcher,
+  [class*="demo-role"],
+  [class*="demo-switcher"] { display: none !important; }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     v1.13.46 (Doug): EDGE-TO-EDGE mobile UX — cards llegan al borde para
+     aprovechar el ancho máximo, tabs scroll horizontal, acciones top-right
+     en stacked rows. ═══════════════════════════════════════════════════════ */
+
+  /* Page padding — solo vertical, lateral cero. Cada bloque controla su
+     propio padding interno con margen visual. */
+  .page-inner { padding: 16px 0 80px !important; }
+
+  /* Title/Subtitle: padding 16px lateral (texto necesita aire). */
+  .page-title-block,
+  .page-title,
+  .page-subtitle { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Stat grid + tab nav: 12px lateral (cards "flotan" con un poco de margen). */
+  .stat-grid { padding: 0 12px !important; }
+
+  /* Table card EDGE-TO-EDGE: sin border-radius lateral, sin border-left/right,
+     full bleed con divider top/bottom. */
+  html body .naowee-table-card {
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* TABS HORIZONTAL SCROLL — cuando hay 2+ tabs que no caben, scroll lateral. */
+  .equipo-tabs-wrap,
+  .actos-tabs-wrap,
+  .actos-tabs-wrap--in-card,
+  .naowee-tabs,
+  .bandeja-tabs-wrap {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;          /* Firefox */
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+  }
+  .equipo-tabs-wrap::-webkit-scrollbar,
+  .actos-tabs-wrap::-webkit-scrollbar,
+  .actos-tabs-wrap--in-card::-webkit-scrollbar,
+  .naowee-tabs::-webkit-scrollbar,
+  .bandeja-tabs-wrap::-webkit-scrollbar { display: none; }
+  /* Cada tab no encoge — empuja al overflow */
+  .equipo-tabs-wrap .actos-tab,
+  .actos-tabs-wrap .actos-tab,
+  .naowee-tab,
+  .actos-tab {
+    flex-shrink: 0 !important;
+  }
+
+  /* ACCIONES REPOSICIONADAS: top-right de cada row stacked.
+     - tr tiene position:relative (ya seteado arriba)
+     - td:last-child (Acciones) → absolute top-right
+     - tr padding-right ampliado para que el contenido no quede debajo */
+  .naowee-table-card .naowee-table tbody tr {
+    padding-right: 92px !important;  /* room para ~2-3 icon buttons */
+  }
+  .naowee-table-card .naowee-table tbody td:last-child {
+    position: absolute !important;
+    top: 12px !important;
+    right: 14px !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    gap: 4px !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+  /* Override action button full-width rule cuando está en top-right */
+  .naowee-table-card .naowee-table tbody td:last-child .naowee-btn {
+    width: auto !important;
+    margin-top: 0 !important;
+    flex: 0 0 auto;
+  }
+  /* Icon buttons compactos en mobile */
+  .naowee-table-card .naowee-table tbody td:last-child .naowee-btn--icon,
+  .naowee-table-card .naowee-table tbody td:last-child button[class*="icon"] {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    padding: 0 !important;
+  }
+
+  /* Stat cards: full-radius pero con margen 0 (gap entre cards via grid). */
+  .naowee-stat-card { border-radius: 12px !important; }
+
+  /* Snackbar position bottom-center con padding. */
+  .naowee-snackbar {
+    left: 12px !important;
+    right: 12px !important;
+    transform: none !important;
+    bottom: 16px !important;
+  }
+}
+
+/* ── 640-1023px (tablet) ── */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* Stat grid → 2 columnas. */
+  .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  /* Areas grid → 2 (ya está). */
+  /* Form grids ok 2-col. */
+  /* Modales canónicos (no bottom-sheet) pero más compactos. */
+  .naowee-modal-overlay .naowee-modal { max-width: 90vw; }
+  /* Page inner padding ajustado. */
+  .page-inner { padding: 20px !important; }
 }
