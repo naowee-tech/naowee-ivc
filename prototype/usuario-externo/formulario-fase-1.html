@@ -304,8 +304,59 @@
     background: #fff;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    /* v1.13.56 #3: CTAs en puntas opuestas (Anterior izq · Continuar der).
+       En step 1 (sin Anterior) el margin-left:auto del Continuar lo empuja a la derecha. */
+    justify-content: space-between;
     gap: 12px;
+  }
+  /* Cuando solo está Continuar (btnBack oculto), que quede a la derecha. */
+  .wz-footer > #btnNext { margin-left: auto; }
+
+  /* ═══ v1.13.56 #4 (Doug 27/05/2026): en mobile los popovers (dropdowns +
+     datepicker) emergen como un "fold" desde arriba hacia abajo — crece solo
+     lo que su contenido amerite, con tope 95vh y scroll interno. El datepicker
+     muestra el calendario dentro del mismo fold. ═══ */
+  @media (max-width: 640px) {
+    /* Backdrop dim detrás del fold (CSS-only via :has). */
+    body:has(.naowee-dropdown--open)::before,
+    body:has(.ivc-dropdown--open)::before,
+    body:has(.naowee-datepicker--open)::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: rgba(40, 40, 52, .35);
+      z-index: 9998;
+      animation: ivcFoldBackdrop .2s ease;
+    }
+    @keyframes ivcFoldBackdrop { from { opacity: 0; } to { opacity: 1; } }
+    /* Fold: dropdown menu + datepicker popover — ambos portaleados a <body>
+       con position:fixed + top/left/width inline (via JS). !important vence
+       esos inline. El show/hide lo maneja la transición inline existente
+       (opacity/visibility/transform), por eso no agregamos animation propia. */
+    .naowee-dropdown__menu,
+    .naowee-datepicker--popover.naowee-datepicker--open {
+      top: 12px !important;
+      left: 12px !important;
+      right: 12px !important;
+      bottom: auto !important;
+      width: auto !important;
+      max-width: none !important;
+      min-width: 0 !important;
+      max-height: 95vh !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+      z-index: 9999 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 16px 48px rgba(40, 40, 52, .24) !important;
+    }
+    /* Opciones del dropdown: touch targets cómodos dentro del fold. */
+    .naowee-dropdown__menu .naowee-dropdown__option {
+      padding: 14px 16px !important;
+      font-size: 14.5px !important;
+    }
+    /* Datepicker: calendario ocupa todo el ancho del fold. */
+    .naowee-datepicker--popover.naowee-datepicker--open .naowee-datepicker__calendar {
+      width: 100% !important;
+    }
   }
   /* File drop (canónico v2.0.3)
      v1.5.7 (25/05/2026): padding e icono más sutiles (feedback Doug). */
@@ -954,10 +1005,10 @@
       <div class="ivc-top-header__title">Trámite IVC · Reconocimiento Deportivo</div>
       <div class="ivc-top-header__subtitle">Inspección, Vigilancia y Control</div>
     </div>
-    <span class="naowee-badge naowee-badge--brand naowee-badge--quiet naowee-badge--small">Demo · Fase 1</span>
   </div>
   <div class="ivc-top-header__meta">
-    <img class="l-naowee" src="logos/naowee.svg" alt="Naowee" onerror="this.style.display='none'"/>
+    <!-- v1.13.56 (Doug 27/05/2026) #1: solo imagotipo de naowee (sin wordmark) -->
+    <img class="l-naowee" src="logos/naowee-icon.svg" alt="Naowee" onerror="this.style.display='none'"/>
   </div>
 </header>
 
@@ -4272,7 +4323,7 @@ render();
     '.naowee-floating-footer__version{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:11px;font-weight:500;line-height:1;color:#646587;background:transparent;border:0;text-decoration:none;padding:4px 8px;border-radius:6px;transition:background .12s,color .12s}' +
     '.naowee-floating-footer__version strong{color:#d74009;font-weight:700;font-family:JetBrains Mono,ui-monospace,monospace}' +
     '.naowee-floating-footer__version:hover{background:#fff3e6;color:#d74009}' +
-    '@media(max-width:640px){.naowee-floating-footer{bottom:8px;right:8px;padding:6px 10px;font-size:10.5px}.naowee-floating-footer__logo{height:14px}.naowee-floating-footer__sep{height:10px}}' +
+    '@media(max-width:640px){.naowee-floating-footer{bottom:16px;right:16px;padding:6px 10px;font-size:10.5px}.naowee-floating-footer__logo{height:14px}.naowee-floating-footer__sep{height:10px}}' +
     '@media print{.naowee-floating-footer{display:none}}';
   document.head.appendChild(style);
   var RELEASE_URL = 'https://github.com/' + REPO + '/releases/tag/ivc-' + IVC_VERSION;
