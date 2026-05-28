@@ -736,6 +736,63 @@
     padding-left: 12px;
   }
 
+  /* ═══ v1.13.58 (Doug 27/05/2026): en mobile las tablas repeatable de muchas
+     columnas (ej. Asamblea: 5 cols) se "revientan". UX Pro Max: cada fila se
+     convierte en una CARD apilada con campos full-width, cada uno con su label
+     (tomado del header de columna via data-label, inyectado por
+     labelRepeatableCells() tras cada render). ═══ */
+  @media (max-width: 640px) {
+    /* Header de columnas oculto — los labels viven en cada campo. */
+    .ivc-repeatable__head { display: none !important; }
+    /* Cada fila = card apilada, con un nº de registro arriba. */
+    .ivc-repeatable { counter-reset: ivc-rrow; }
+    .ivc-repeatable__row {
+      display: block !important;
+      grid-template-columns: none !important;
+      padding: 16px !important;
+      position: relative;
+      border-top: 1px solid var(--border) !important;
+    }
+    .ivc-repeatable__row:first-of-type { border-top: 0 !important; }
+    .ivc-repeatable__row::before {
+      counter-increment: ivc-rrow;
+      content: "Registro " counter(ivc-rrow);
+      display: block;
+      font-size: 11px; font-weight: 700; letter-spacing: .4px;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 14px;
+    }
+    /* Cada celda full-width apilada. */
+    .ivc-repeatable__row > * {
+      display: block !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 0 14px !important;
+    }
+    .ivc-repeatable__row > *:last-child { margin-bottom: 0 !important; }
+    /* Label de columna sobre el campo (dropdowns/datepickers soportan ::before;
+       los <input> usan su placeholder, que ya es descriptivo). */
+    .ivc-repeatable__row > [data-label]:not([data-label=""])::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    /* Botón eliminar → acción en la esquina superior derecha de la card. */
+    .ivc-repeatable__row .ivc-repeatable__remove {
+      position: absolute !important;
+      top: 12px !important; right: 12px !important;
+      width: 34px !important; height: 34px !important;
+      margin: 0 !important; justify-self: auto !important;
+    }
+    /* Mini-inputs/dropdowns/datepickers más altos para tap cómodo. */
+    .ivc-repeatable__row input.ivc-mini-input,
+    .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__input {
+      height: 46px !important;
+    }
+  }
+
   /* Resumen final (paso 7) */
   .wz-review { display: grid; gap: 14px; }
   .wz-review__group {
@@ -3829,6 +3886,24 @@ function spawnConfetti() {
    condicionan sub-secciones). Solo se scrolea arriba cuando cambia el paso. */
 let __lastRenderedStep = null;
 
+/* v1.13.58 (Doug 27/05/2026): copia el label de cada columna del header de la
+   tabla repeatable a cada celda del row como data-label. En mobile el CSS lo
+   muestra como label arriba de cada campo (cards apiladas) → la tabla deja de
+   "reventarse". Universal: asamblea, fundadores, miembros, etc. */
+function labelRepeatableCells(container) {
+  (container || document).querySelectorAll('.ivc-repeatable').forEach(function (rep) {
+    var labels = Array.prototype.slice
+      .call(rep.querySelectorAll('.ivc-repeatable__head > *'))
+      .map(function (h) { return h.textContent.trim(); });
+    if (!labels.length) return;
+    rep.querySelectorAll('.ivc-repeatable__row').forEach(function (row) {
+      Array.prototype.slice.call(row.children).forEach(function (cell, i) {
+        if (labels[i]) cell.setAttribute('data-label', labels[i]);
+      });
+    });
+  });
+}
+
 function render() {
   renderStepper();
   const body = document.getElementById('wzBody');
@@ -3858,6 +3933,10 @@ function render() {
 
   // FIX #6: bind del datepicker canónico Naowee tras cada render (Doug 23/05/2026)
   bindDatepickers(body);
+
+  // v1.13.58: etiqueta cada celda de las tablas repeatable con el label de su
+  // columna (data-label) → en mobile el CSS las apila como cards etiquetadas.
+  labelRepeatableCells(body);
 
   // FIX #7 (23/05/2026): si renderizamos el success state, dispara el confetti.
   if (STATE.radicado && STATE.step === 6) {
