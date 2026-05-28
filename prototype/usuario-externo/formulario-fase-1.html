@@ -744,16 +744,25 @@
   @media (max-width: 640px) {
     /* Header de columnas oculto — los labels viven en cada campo. */
     .ivc-repeatable__head { display: none !important; }
-    /* Cada fila = card apilada, con un nº de registro arriba. */
-    .ivc-repeatable { counter-reset: ivc-rrow; }
+    /* v1.13.59: el contenedor exterior pierde su caja (border/radius/bg) para
+       NO anidar "caja dentro de caja"; cada REGISTRO es una card independiente. */
+    .ivc-repeatable {
+      counter-reset: ivc-rrow;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      overflow: visible !important;
+    }
     .ivc-repeatable__row {
       display: block !important;
       grid-template-columns: none !important;
       padding: 16px !important;
       position: relative;
-      border-top: 1px solid var(--border) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 14px !important;
+      background: #fff !important;
+      margin: 0 0 12px !important;
     }
-    .ivc-repeatable__row:first-of-type { border-top: 0 !important; }
     .ivc-repeatable__row::before {
       counter-increment: ivc-rrow;
       content: "Registro " counter(ivc-rrow);
@@ -790,6 +799,13 @@
     .ivc-repeatable__row input.ivc-mini-input,
     .ivc-repeatable__row .naowee-datepicker-field--small .naowee-datepicker-field__input {
       height: 46px !important;
+    }
+    /* "+ Agregar fila": link standalone (el contenedor ya no es una caja). */
+    .ivc-repeatable__add {
+      border-top: 0 !important;
+      background: transparent !important;
+      border-radius: 0 !important;
+      padding: 2px 0 0 !important;
     }
   }
 
