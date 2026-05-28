@@ -312,48 +312,57 @@
   /* Cuando solo está Continuar (btnBack oculto), que quede a la derecha. */
   .wz-footer > #btnNext { margin-left: auto; }
 
-  /* ═══ v1.13.56 #4 (Doug 27/05/2026): en mobile los popovers (dropdowns +
-     datepicker) emergen como un "fold" desde arriba hacia abajo — crece solo
-     lo que su contenido amerite, con tope 95vh y scroll interno. El datepicker
-     muestra el calendario dentro del mismo fold. ═══ */
+  /* ═══ v1.13.57 (Doug 27/05/2026): en mobile los popovers (dropdowns +
+     datepicker) emergen como BOTTOM-SHEET — anclados al borde inferior y
+     deslizando DE ABAJO HACIA ARRIBA (animado), cerca del pulgar (no lejos
+     del área tappable). Full-width, esquinas superiores redondeadas, tope
+     95vh content-sized con scroll. El datepicker muestra el calendario dentro. ═══ */
   @media (max-width: 640px) {
-    /* Backdrop dim detrás del fold (CSS-only via :has). */
+    /* Backdrop dim detrás del sheet (CSS-only via :has). */
     body:has(.naowee-dropdown--open)::before,
     body:has(.ivc-dropdown--open)::before,
     body:has(.naowee-datepicker--open)::before {
       content: '';
       position: fixed; inset: 0;
-      background: rgba(40, 40, 52, .35);
+      background: rgba(40, 40, 52, .4);
       z-index: 9998;
-      animation: ivcFoldBackdrop .2s ease;
+      animation: ivcSheetBackdrop .22s ease;
     }
-    @keyframes ivcFoldBackdrop { from { opacity: 0; } to { opacity: 1; } }
-    /* Fold: dropdown menu + datepicker popover — ambos portaleados a <body>
-       con position:fixed + top/left/width inline (via JS). !important vence
-       esos inline. El show/hide lo maneja la transición inline existente
-       (opacity/visibility/transform), por eso no agregamos animation propia. */
+    @keyframes ivcSheetBackdrop { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Sheet base (cerrado: fuera de pantalla por abajo). Ambos popovers están
+       portaleados a <body> con position:fixed + top/left/width inline; !important
+       vence esos inline. El estado abierto del dropdown vive en el inline
+       "visibility: visible" del menu; el del datepicker en la clase --open. */
     .naowee-dropdown__menu,
-    .naowee-datepicker--popover.naowee-datepicker--open {
-      top: 12px !important;
-      left: 12px !important;
-      right: 12px !important;
-      bottom: auto !important;
-      width: auto !important;
+    .naowee-datepicker--popover {
+      top: auto !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
       max-width: none !important;
       min-width: 0 !important;
       max-height: 95vh !important;
       overflow-y: auto !important;
       -webkit-overflow-scrolling: touch;
       z-index: 9999 !important;
-      border-radius: 16px !important;
-      box-shadow: 0 16px 48px rgba(40, 40, 52, .24) !important;
+      border-radius: 18px 18px 0 0 !important;
+      box-shadow: 0 -8px 40px rgba(40, 40, 52, .22) !important;
+      transform: translateY(100%) !important;
+      transition: transform .32s cubic-bezier(.32, .72, 0, 1) !important;
+      padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
     }
-    /* Opciones del dropdown: touch targets cómodos dentro del fold. */
+    /* Abierto: sube a su posición (slide-up). */
+    .naowee-dropdown__menu[style*="visible"],
+    .naowee-datepicker--popover.naowee-datepicker--open {
+      transform: translateY(0) !important;
+    }
+    /* Touch targets cómodos. */
     .naowee-dropdown__menu .naowee-dropdown__option {
-      padding: 14px 16px !important;
-      font-size: 14.5px !important;
+      padding: 15px 18px !important;
+      font-size: 15px !important;
     }
-    /* Datepicker: calendario ocupa todo el ancho del fold. */
     .naowee-datepicker--popover.naowee-datepicker--open .naowee-datepicker__calendar {
       width: 100% !important;
     }
