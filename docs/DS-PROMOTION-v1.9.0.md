@@ -11,6 +11,42 @@ Hoy estos refinamientos viven como overrides en `prototype/shared/*.css`, JS inl
 y reglas por página. Cada proyecto nuevo los re-implementaría. Al promoverlos al DS
 se convierten en la base — IVC deja de necesitar los overrides.
 
+## Corroboración multi-proyecto — Project v2.0.3 (refuerza el caso)
+
+Analizado el prototipo **Project v2.0.3** (`naowee-test-digitacion/project/v2.0.3/`,
+deployado en GitHub Pages). Hallazgo clave: **consume el MISMO DS canónico `@v1.8.0`
+por CDN que IVC**, y mete sus refinaciones como overrides en `shared/shell.css` +
+`shared/pages.css` (**cero tokens nuevos** — solo usa los del DS).
+
+Delta real de Project vs DS v1.8.0:
+- **44 clases canónicas re-estilizadas** (btn, card, checkbox, datepicker, dropdown,
+  message, modal, stepper, tab, table, textfield, …) — el mismo set que IVC refinó.
+- **16 componentes nuevos propios** (ver abajo).
+
+**Por qué importa:** IVC y Project construyeron *independientemente* los mismos
+overrides. Esa **doble evidencia** es la señal más fuerte de qué promover: si dos
+prototipos lo reinventaron, pertenece al DS. La lista cross-validada va primero.
+
+### Doble evidencia (IVC **y** Project lo tienen) → promover en v1.9.0
+- [ ] **`.naowee-sla` (+ `--ok/--warn/--vencido/--bare`)** = badge semáforo de plazo.
+      IVC = "plazo semáforo" (§ actos/dropdown). **Prioridad 1.**
+- [ ] **`.naowee-toaster` + `.naowee-toast-item`** = sistema de toasts. IVC = snackbar canónico. **Prioridad 1.**
+- [ ] **`.naowee-tip-portal`** = tooltip portaleado a `<body>` (evita clipping en overflow). IVC = tooltip portal. **Prioridad 1.**
+- [ ] **Empty-state refinado** (`.naowee-page-empty`) ↔ IVC empty states canónicos.
+
+### Evidencia simple (solo Project) → evaluar
+- [ ] **`.naowee-multiselect`** — multiselect.
+- [ ] **`.naowee-confirm-summary` + `.naowee-confirm-stat`** — resumen de confirmación con stats.
+- [ ] **`.naowee-version-switcher`** — switcher de versión (par del footer pill).
+- [ ] **`.naowee-page-header--centered`** · **`.naowee-textfield--with-prefix`** · **`.naowee-badge--prio`**.
+
+> Método: diff de clases/tokens `definidos` en los overrides de Project contra el CSS
+> real del CDN `@v1.8.0` (no contra copias locales, que pueden estar desfasadas).
+
+> **Spec de merge detallada** (CSS verbatim de ambos lados + canónico propuesto como
+> superset + plan de migración, sin pisar ni reescribir): ver
+> [`DS-PROMOTION-v1.9.0-SPEC.md`](./DS-PROMOTION-v1.9.0-SPEC.md).
+
 ## Componentes / utilidades a promover
 
 ### A. Estados de componentes (CSS, bajo riesgo) — empezar por acá
