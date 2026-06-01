@@ -21,7 +21,7 @@
   'use strict';
 
   var KEY = 'ivc:store';
-  var SEED_VERSION = 7;            /* v1.13.33 (Doug 27/05/2026): bump fuerza reseed — agrega state.personas[] con todo el equipo IVC (profesionales + director + coord + ATU + GIT + jurídica) para la nueva página coordinador/equipo.html. */
+  var SEED_VERSION = 8;            /* v1.13.56 (Doug + Danna 2026-05-29): bump fuerza reseed — IVC-2026-014 migrado de 'PendienteFirma' a 'Firmado' para que la consulta pública muestre el nuevo CTA "¿Cómo notificar al organismo?" (modal movido del director al organismo según Flujo V4). */
 
   /* ─── Seed inicial ───────────────────────────────────────────────────
      v1.5.3 FIX (25/05/2026): bug crítico — antes mkSeed referenciaba
@@ -443,7 +443,7 @@
        correspondiente. profId, fecha y plazo elegidos para que el contexto sea
        creíble (las fechas son anteriores al "ahora" mock). */
     ['IVC-2026-013', 'liga',       'Otorgamiento',  'Liga de Patinaje del Cauca',          '900.111.222-3', '2026-05-10', 25, 'PendienteCOO',     'cp-001'],
-    ['IVC-2026-014', 'asociacion', 'Otorgamiento',  'Asociación de Squash del Huila',      '901.555.666-7', '2026-05-09', 24, 'PendienteFirma',   'mg-002'],
+    ['IVC-2026-014', 'asociacion', 'Otorgamiento',  'Asociación de Squash del Huila',      '901.555.666-7', '2026-05-09', 24, 'Firmado',          'mg-002'],
     ['IVC-2026-015', 'liga',       'Renovación',    'Liga de Bádminton del Magdalena',     '800.777.888-1', '2026-05-08', 23, 'NotifElectronica','al-003'],
     ['IVC-2026-016', 'asociacion', 'Otorgamiento',  'Asociación de Tiro con Arco Nariño',  '901.888.999-2', '2026-05-07', 22, 'NotifOficinas',    'lr-004'],
     ['IVC-2026-017', 'liga',       'Renovación',    'Liga de Rugby de Bogotá',             '800.222.333-4', '2026-05-06',  3, 'NotifOficinas',    'cp-001'],

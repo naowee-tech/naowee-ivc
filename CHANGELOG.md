@@ -6,6 +6,35 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) + 
 
 ---
 
+## [ivc-v1.13.56] — 2026-05-29 · Modal "¿Cómo notificar?" movido del Director al Organismo (Flujo V4)
+
+> **Hito:** Danna (stakeholder) revisó el flujo V4 y confirmó que la elección del canal de notificación (Electrónica / Oficinas) **no pertenece al Director del IVC** — esa decisión es del organismo notificado. Se rediseña: tras la firma el trámite queda en `Firmado` (terminal para el Director) y el CTA "¿Cómo notificar al organismo?" aparece ahora en la consulta pública del organismo, debajo de "Resultado de la validación".
+
+### Changed — `director/bandeja.html`
+- **Quitado** el modal `#modalNotifOverlay` (HTML + CSS `.notif-options*` + JS `wireModalNotif`/handlers de selección + `state.selectedMedio`). Tras confirmar firma, el trámite queda en estado `'Firmado'` y se redirige a la pestaña "Firmados". El snackbar pasa de *"Procediendo con la elección del medio…"* a *"El organismo elegirá el canal de notificación desde la consulta pública."*
+- **Actualizado** el header doc-comment para reflejar el nuevo flujo (estado `Firmado` es terminal para el Director).
+
+### Added — `usuario-externo/consultar.html`
+- **Nuevo CTA `renderCTAElegirCanal(t)`** que aparece cuando `t.estado === 'Firmado'`. Se renderiza dentro del `.renuncia-cta` wrapper (border azul + gradient para consistencia con los otros CTAs post-firma) con 2 cards seleccionables (`.canal-option`): **Electrónicamente** (Inmediato) y **En oficinas** (5 días hábiles).
+- **Handler `window._elegirCanal(medio)`** que valida `t.estado === 'Firmado'`, llama `IVCStore.actualizarEstado(t.id, 'NotifElectronica' | 'NotifOficinas', actorOrg, detalle)`, muestra snackbar y re-routea con el patrón canónico (`IVCState.tramite = ...; route(); scrollTo top`) usado por `_responderRenuncia`.
+- **CSS `.canal-options` + `.canal-option*`** — grid 2-col → 1-col bajo 700px, mismo patrón visual del `.notif-option` original del director.
+- **Nueva variable de control `canElegirCanal`** + insertada entre `canSubsanar` y `canResponderRenuncia` en el render flow.
+- **`isTerminal` actualizado** para incluir `NotifOficinas` (faltaba — ahora también renderiza bloque resultado).
+- **Nuevo config `NotifOficinas`** en `renderResultado.cfg` con variant `informative` y descripción presencial (antes solo existía en el módulo del director).
+- **Mensaje de `Firmado` actualizado** — *"Elija a continuación el canal por el cual desea ser notificado para continuar con el trámite."* (antes decía *"Se procederá con la notificación"* — pasivo y sin invitación a actuar).
+
+### Changed — Seed (`shared/ivc-store.js`)
+- **Migrado IVC-2026-014** (Asociación de Squash del Huila) de `'PendienteFirma'` → `'Firmado'`. Al abrir el link de consulta pública para este radicado, el organismo ve directamente el nuevo CTA "¿Cómo notificar?" sin necesidad de firmar primero como Director. Los demás trámites en `NotifElectronica`/`NotifOficinas`/`Vigente` quedan tal cual (preservan variedad de estados para la demo).
+- **SEED_VERSION** `7 → 8` para forzar reseed en localStorage de usuarios actuales.
+
+### Misc
+- Cache busters bumpeados `?v=1.13.55 → ?v=1.13.56` en los 11 HTML del prototype.
+- `IVC_VERSION` `v1.13.55 → v1.13.56` en `naowee-footer.js`.
+
+---
+
+---
+
 ## [ivc-v1.8.4] — 2026-05-26
 
 > 🌐 **Flujo end-to-end Coordinador ⇄ Profesional ⇄ Organismo externo: workspace lock post-veredicto, pantalla pública INS-014 (`/consultar.html?rad=…`), radicación de subsanación con sync cross-tab. Modal "Ver detalle" rediseñado con `.naowee-message` canónico DS + actor pill + file links minimal + accordion. Tabs DS canónicos del playground.**

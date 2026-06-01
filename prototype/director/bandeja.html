@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.55">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.55">
-  <link rel="stylesheet" href="../shared/shell.css?v=1.13.55">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.55">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.56">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.56">
+  <link rel="stylesheet" href="../shared/shell.css?v=1.13.56">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.56">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -23,12 +23,14 @@
 
        Mirror del patrón de /coordinador/actos.html — single-file con 2 vistas
        (LIST + DETAIL) por URL. Acciones del Director:
-       · Firmar acto    → aplica firma preset, estado = Firmado, abre modal medio
+       · Firmar acto    → aplica firma preset, estado = Firmado (terminal)
        · Devolver       → opcional v1.11.1 (no implementado: por scope)
 
-       Modal post-firma: ¿Cómo notificar?
-         · Electrónica → estado = NotifElectronica (portal público pregunta renuncia)
-         · Oficinas    → estado = NotifOficinas   (timer 5d, Atención/GIT en v1.11.1)
+       v1.13.56 (Doug + Danna): el modal post-firma "¿Cómo notificar?" fue
+       retirado del Director. Esa decisión pertenece al organismo según el
+       Flujo V4 — el CTA aparece ahora en usuario-externo/consultar.html
+       cuando t.estado === 'Firmado', y al elegir transiciona a
+       NotifElectronica / NotifOficinas (semántica anterior intacta).
        ═══════════════════════════════════════════════════════════════════ */
 
     .page-title-block { margin-bottom: 4px; }
@@ -609,64 +611,10 @@
     /* helper canónico DS — visible solo cuando hay error */
     .naowee-helper[hidden] { display: none !important; }
 
-    /* ── Modal post-firma: ¿Cómo notificar? — opciones tipo card ────── */
-    .notif-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin: 16px 0 8px;
-    }
-    @media (max-width: 600px) { .notif-options { grid-template-columns: 1fr; } }
-    .notif-option {
-      display: flex; flex-direction: column;
-      gap: 10px;
-      padding: 18px 16px;
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      cursor: pointer;
-      text-align: left;
-      font-family: inherit;
-      transition: border-color .15s, background .15s, transform .08s;
-    }
-    .notif-option:hover {
-      border-color: var(--accent, #d74009);
-      background: #fff8f4;
-    }
-    .notif-option.is-selected {
-      border-color: var(--accent, #d74009);
-      background: var(--orange-bg, #fff3e6);
-    }
-    .notif-option:active { transform: scale(.99); }
-    .notif-option__icon {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      background: var(--orange-bg, #fff3e6);
-      color: var(--accent, #d74009);
-    }
-    .notif-option__title {
-      font-size: 14.5px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    .notif-option__desc {
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      line-height: 1.45;
-    }
-    .notif-option__chip {
-      align-self: flex-start;
-      font-size: 10.5px;
-      font-weight: 700;
-      letter-spacing: .3px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: var(--bg-soft, #f5f6fa);
-      color: var(--text-secondary);
-      text-transform: uppercase;
-    }
+    /* v1.13.56: CSS de .notif-options/notif-option removido — el modal
+       "¿Cómo notificar?" se movió a usuario-externo/consultar.html.
+       Si necesitas los estilos canónicos, viven ahora en consultar.html
+       como .canal-options/.canal-option. */
   </style>
 </head>
 <body>
@@ -791,48 +739,16 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════════
-       Modal: ¿Cómo notificar al organismo? (post-firma)
-       ═══════════════════════════════════════════════════════════════════ -->
-  <div class="naowee-modal-overlay" id="modalNotifOverlay" role="dialog" aria-modal="true" aria-labelledby="modalNotifTitle">
-    <div class="naowee-modal" style="width:95vw; max-width: 640px;">
-      <div class="naowee-modal__header">
-        <div class="naowee-modal__title-group">
-          <h2 class="naowee-modal__title" id="modalNotifTitle">¿Cómo notificar al organismo?</h2>
-          <p class="naowee-modal__subtitle" id="modalNotifSub">Elija el medio por el cual el organismo será notificado del acto firmado.</p>
-        </div>
-      </div>
-      <div class="naowee-modal__body">
-        <div class="notif-options" id="notifOptions">
-          <button type="button" class="notif-option" data-medio="electronica">
-            <span class="notif-option__icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            </span>
-            <div class="notif-option__title">Electrónicamente</div>
-            <div class="notif-option__desc">El acto firmado se envía al portal del organismo. Se le pedirá responder si renuncia a términos.</div>
-            <span class="notif-option__chip">Inmediato</span>
-          </button>
-          <button type="button" class="notif-option" data-medio="oficinas">
-            <span class="notif-option__icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>
-            </span>
-            <div class="notif-option__title">En oficinas</div>
-            <div class="notif-option__desc">Se alerta al organismo para asistir presencialmente al IVC en los próximos 5 días hábiles.</div>
-            <span class="notif-option__chip">5 días hábiles</span>
-          </button>
-        </div>
-      </div>
-      <div class="naowee-modal__footer naowee-modal__footer--end" style="gap: 10px;">
-        <button type="button" class="naowee-btn naowee-btn--loud" id="modalNotifConfirm" disabled>Confirmar y notificar</button>
-      </div>
-    </div>
-  </div>
+  <!-- v1.13.56 (Doug + Danna): el modal "¿Cómo notificar al organismo?"
+       fue movido a usuario-externo/consultar.html. El Director ya no decide
+       el canal de notificación — esa decisión pertenece al organismo según
+       el Flujo V4. El estado 'Firmado' es ahora terminal para el Director. -->
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.55"></script>
-  <script src="../shared/shell.js?v=1.13.55"></script>
-  <script src="../shared/ivc-store.js?v=1.13.55"></script>
-  <script src="../shared/naowee-footer.js?v=1.13.55" defer></script>
+  <script src="../shared/data.js?v=1.13.56"></script>
+  <script src="../shared/shell.js?v=1.13.56"></script>
+  <script src="../shared/ivc-store.js?v=1.13.56"></script>
+  <script src="../shared/naowee-footer.js?v=1.13.56" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -857,7 +773,6 @@
     var state = {
       tramite: null,
       tramites: [],
-      selectedMedio: null
     };
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -878,7 +793,6 @@
       });
 
       wireModalFirma();
-      wireModalNotif();
       wireModalFirmaRequired();
 
       /* v1.11.3: gate de entrada — si el Director no tiene firma preset
@@ -1537,61 +1451,16 @@
         state.tramite = IVCStore.getTramite(t.id);
         close();
 
-        /* Step 2: abrir modal "¿Cómo notificar?" */
-        setTimeout(function () {
-          document.getElementById('modalNotifSub').textContent =
-            t.id + ' · ' + (t.organismo || '');
-          state.selectedMedio = null;
-          /* Reset selection */
-          var options = document.querySelectorAll('#notifOptions .notif-option');
-          for (var i = 0; i < options.length; i++) options[i].classList.remove('is-selected');
-          document.getElementById('modalNotifConfirm').disabled = true;
-          document.getElementById('modalNotifOverlay').classList.add('open');
-        }, 320);
-
-        /* Re-render del detalle ahora con firma stamp */
+        /* v1.13.56 (Doug + Danna): Tras firmar, el trámite queda en 'Firmado'.
+           La elección del medio de notificación (Electrónica / Oficinas) NO
+           le pertenece al Director — es decisión del organismo según el Flujo V4.
+           El CTA "¿Cómo notificar al organismo?" aparece ahora en la consulta
+           pública (usuario-externo/consultar.html), debajo del Resultado de la
+           validación. Una vez el organismo elige, transiciona a
+           NotifElectronica o NotifOficinas. */
         renderDetail(document.getElementById('pageInner'));
-        _showSnackbar('Acto firmado electrónicamente. Procediendo con la elección del medio de notificación…', 'success');
-      });
-    }
-
-    function wireModalNotif() {
-      var overlay = document.getElementById('modalNotifOverlay');
-      var confirmBtn = document.getElementById('modalNotifConfirm');
-      var options = document.querySelectorAll('#notifOptions .notif-option');
-
-      for (var i = 0; i < options.length; i++) {
-        (function (opt) {
-          opt.addEventListener('click', function () {
-            for (var j = 0; j < options.length; j++) options[j].classList.remove('is-selected');
-            opt.classList.add('is-selected');
-            state.selectedMedio = opt.getAttribute('data-medio');
-            confirmBtn.disabled = false;
-          });
-        })(options[i]);
-      }
-
-      confirmBtn.addEventListener('click', function () {
-        var t = state.tramite;
-        if (!t || !state.selectedMedio) return;
-
-        /* v1.11.1: actor dinámico desde IVCData.PERFILES (María Helena Ramos). */
-        var perfilDir = (window.IVCData && window.IVCData.PERFILES && window.IVCData.PERFILES['director']) || {};
-        var actor = (perfilDir.nombre || 'Director IVC') + ' (Director IVC)';
-        var newState, detalle, msgSnack;
-        if (state.selectedMedio === 'electronica') {
-          newState = 'NotifElectronica';
-          detalle = 'Notificación electrónica enviada al organismo. Esperando respuesta sobre renuncia a términos.';
-          msgSnack = 'Notificación electrónica enviada al organismo.';
-        } else {
-          newState = 'NotifOficinas';
-          detalle = 'Alerta de notificación en oficinas (5 días hábiles) emitida al organismo.';
-          msgSnack = 'Notificación en oficinas registrada. El organismo tiene 5 días hábiles para asistir.';
-        }
-        IVCStore.actualizarEstado(t.id, newState, actor, detalle);
-        overlay.classList.remove('open');
-        _showSnackbar(msgSnack, 'success');
-        setTimeout(function () { window.location.href = 'bandeja.html?tab=firmados'; }, 1400);
+        _showSnackbar('Acto firmado electrónicamente. El organismo elegirá el canal de notificación desde la consulta pública.', 'success');
+        setTimeout(function () { window.location.href = 'bandeja.html?tab=firmados'; }, 1500);
       });
     }
 

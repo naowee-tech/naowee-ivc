@@ -24,9 +24,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/naowee-tech/naowee-design-system@v1.8.0/dist/design-system.css">
 
-  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.55">
-  <link rel="stylesheet" href="../shared/components.css?v=1.13.55">
-  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.55">
+  <link rel="stylesheet" href="../shared/tokens.css?v=1.13.56">
+  <link rel="stylesheet" href="../shared/components.css?v=1.13.56">
+  <link rel="stylesheet" href="../shared/naowee-footer.css?v=1.13.56">
   <style>/* FOOTER POINTER FIX INLINE — v1.12.5 defensive — Doug reportó que el cache de file:// servía CSS viejo y el footer flotante seguía bloqueando hover/click sobre las tablas. Esta regla está inline en el HTML para vencer al CSS externo cacheado. */ .naowee-floating-footer { pointer-events: none !important; } .naowee-floating-footer__version, .naowee-floating-footer__logo, .naowee-floating-footer__text, .naowee-floating-footer__sep { pointer-events: auto !important; }</style>
 
   <style>
@@ -730,6 +730,69 @@
       }
     }
 
+    /* v1.13.56: CTA "¿Cómo notificar al organismo?" — aparece cuando
+       t.estado === 'Firmado'. Decisión que antes vivía en el director y que
+       Danna confirmó pertenece al organismo (Flujo V4). 2 opciones tipo card
+       (Electrónicamente / En oficinas). Mismo wrapper visual que renuncia-cta
+       (border azul, gradient suave) para coherencia con el resto de CTAs
+       post-firma. Las cards internas reutilizan el patrón notif-option del
+       director (cards seleccionables). */
+    .canal-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(31, 120, 209, 0.2);
+    }
+    @media (max-width: 700px) { .canal-options { grid-template-columns: 1fr; } }
+    .canal-option {
+      display: flex; flex-direction: column;
+      gap: 10px;
+      padding: 18px 16px;
+      background: #fff;
+      border: 1.5px solid var(--border, #e5e7eb);
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: border-color .15s, background .15s, transform .08s;
+    }
+    .canal-option:hover {
+      border-color: var(--accent, #d74009);
+      background: #fff8f4;
+    }
+    .canal-option:active { transform: scale(.99); }
+    .canal-option__icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: var(--orange-bg, #fff3e6);
+      color: var(--accent, #d74009);
+    }
+    .canal-option__title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .canal-option__desc {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+    .canal-option__chip {
+      align-self: flex-start;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--bg-soft, #f5f6fa);
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
     /* v1.11.4: CTA elegir tipo de recurso — 2 opciones tipo card. */
     .recurso-tipo-cta {
       padding: 28px 32px;
@@ -1036,10 +1099,10 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="../shared/data.js?v=1.13.55"></script>
-  <script src="../shared/ivc-store.js?v=1.13.55"></script>
+  <script src="../shared/data.js?v=1.13.56"></script>
+  <script src="../shared/ivc-store.js?v=1.13.56"></script>
   <!-- v1.13.52: pill de versionamiento flotante (faltaba el JS — el CSS ya estaba). -->
-  <script src="../shared/naowee-footer.js?v=1.13.55" defer></script>
+  <script src="../shared/naowee-footer.js?v=1.13.56" defer></script>
 
   <script>
     /* ═══════════════════════════════════════════════════════════════════
@@ -1215,11 +1278,17 @@
          acto firmado en el bloque resultado. */
       var isTerminal = (
         t.estado === 'Cumple'   || t.estado === 'NoCumple'         || t.estado === 'Parcial' ||
-        t.estado === 'Firmado'  || t.estado === 'NotifElectronica' || t.estado === 'Vigente' ||
+        t.estado === 'Firmado'  || t.estado === 'NotifElectronica' || t.estado === 'NotifOficinas' ||
+        t.estado === 'Vigente' ||
         t.estado === 'PendienteRecursos'   || t.estado === 'PendienteRecursoTipo' ||
         t.estado === 'EnApelacion'         || t.estado === 'EnReposicion'
       );
       var canSubsanar = (t.estado === 'Parcial');
+      /* v1.13.56 (Doug + Danna): CTA elegir canal — aparece cuando el
+         Director firmó pero el organismo todavía no eligió cómo ser notificado.
+         Decisión que ANTES vivía en el director y que se movió a este portal
+         según el Flujo V4. */
+      var canElegirCanal = (t.estado === 'Firmado');
       var canResponderRenuncia = (t.estado === 'NotifElectronica');
       /* v1.11.4: CTAs del flujo de recursos según estado intermedio. */
       var canResponderRecursos  = (t.estado === 'PendienteRecursos');
@@ -1278,6 +1347,12 @@
             /* CTA SUBSANAR (solo NoCumple / Parcial) */
             (canSubsanar ? renderCTASubsanar() : '') +
 
+            /* v1.13.56: CTA ELEGIR CANAL — solo cuando state es Firmado.
+               Pregunta al organismo cómo quiere ser notificado (Electrónica /
+               Oficinas). Al elegir transiciona a NotifElectronica o
+               NotifOficinas y el flujo continúa con el CTA de renuncia. */
+            (canElegirCanal ? renderCTAElegirCanal(t) : '') +
+
             /* v1.11.0: CTA RENUNCIA — solo cuando state es NotifElectronica.
                Pregunta al organismo si renuncia a términos. Sí → Vigente D+1. */
             (canResponderRenuncia ? renderCTARenuncia(t) : '') +
@@ -1326,8 +1401,9 @@
     function renderResultado(t) {
       var cfg = ({
         Cumple:           { variant: 'positive', icon: MSG_ICON_CHECK, title: 'CUMPLE',                       desc: 'Su trámite fue aprobado. El acto administrativo de Otorgamiento está pendiente de firma por el Director IVC.', file: 'acto-otorgamiento-' + t.id + '.pdf' },
-        Firmado:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'ACTO FIRMADO',                 desc: 'Su acto administrativo fue firmado electrónicamente por el Director del IVC. Se procederá con la notificación.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        Firmado:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'ACTO FIRMADO',                 desc: 'Su acto administrativo fue firmado electrónicamente por el Director del IVC. Elija a continuación el canal por el cual desea ser notificado para continuar con el trámite.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
         NotifElectronica: { variant: 'positive', icon: MSG_ICON_CHECK, title: 'NOTIFICADO ELECTRÓNICAMENTE',  desc: 'Su acto administrativo firmado fue enviado por canal electrónico. Por favor responda si renuncia a los términos para que su acto entre en vigencia el día siguiente.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
+        NotifOficinas:    { variant: 'informative', icon: MSG_ICON_CHECK, title: 'NOTIFICACIÓN EN OFICINAS',   desc: 'Usted eligió recibir la notificación de forma presencial. Por favor asista al IVC en los próximos 5 días hábiles para recibir oficialmente el acto administrativo firmado.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
         Vigente:          { variant: 'positive', icon: MSG_ICON_CHECK, title: 'TRÁMITE VIGENTE',              desc: 'Su acto administrativo está vigente. El organismo ha sido inscrito en el Registro Nacional Deportivo. Notificación de cierre enviada.', file: 'acto-otorgamiento-' + t.id + '-firmado.pdf' },
         /* v1.13.7: cuando hay una decisión activa abajo (CTARecursos/CTAElegirRecurso),
            el resultado se muestra como "ACTO FIRMADO" neutral. La urgencia del
@@ -1483,6 +1559,67 @@
         '<button class="btn-loud-glow" onclick="_openSubsanarModal()">Radicar subsanación</button>' +
       '</div>';
     }
+
+    /* v1.13.56 (Doug + Danna): CTA ELEGIR CANAL — solo cuando state es 'Firmado'.
+       El organismo (no el director) elige cómo ser notificado. Al elegir:
+       · Electrónica → state = NotifElectronica (luego aparece CTA renuncia)
+       · Oficinas    → state = NotifOficinas   (timer 5d hábiles)
+       Visualmente reutiliza .renuncia-cta como wrapper (border azul + gradient)
+       para coherencia, y dos cards seleccionables (.canal-option) abajo. */
+    function renderCTAElegirCanal(t) {
+      return '<div class="renuncia-cta">' +
+        '<div class="renuncia-cta__head">' +
+          '<svg class="renuncia-cta__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>' +
+          '<div>' +
+            '<h3 class="renuncia-cta__title">¿Cómo desea ser notificado?</h3>' +
+            '<p class="renuncia-cta__sub">Su acto administrativo está firmado y listo para notificar. Elija el canal por el cual desea recibir la notificación oficial. Una vez elija, el flujo continuará con la pregunta de renuncia a términos.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="canal-options">' +
+          '<button type="button" class="canal-option" onclick="_elegirCanal(\'electronica\')">' +
+            '<span class="canal-option__icon">' +
+              '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>' +
+            '</span>' +
+            '<div class="canal-option__title">Electrónicamente</div>' +
+            '<div class="canal-option__desc">Recibirá el acto firmado en este portal de inmediato. Se le pedirá responder si renuncia a términos para que el acto entre en vigencia el día siguiente (D+1).</div>' +
+            '<span class="canal-option__chip">Inmediato</span>' +
+          '</button>' +
+          '<button type="button" class="canal-option" onclick="_elegirCanal(\'oficinas\')">' +
+            '<span class="canal-option__icon">' +
+              '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>' +
+            '</span>' +
+            '<div class="canal-option__title">En oficinas</div>' +
+            '<div class="canal-option__desc">Asistir presencialmente al IVC dentro de los próximos 5 días hábiles para recibir la notificación oficial del acto firmado.</div>' +
+            '<span class="canal-option__chip">5 días hábiles</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }
+    window._elegirCanal = function (medio) {
+      var t = IVCState.tramite;
+      if (!t || t.estado !== 'Firmado') return;
+      var actorOrg = (t.organismo || 'Organismo') + ' (Representante legal)';
+      var newState, detalle, msgSnack;
+      if (medio === 'electronica') {
+        newState = 'NotifElectronica';
+        detalle = 'El organismo eligió notificación electrónica. El acto firmado queda disponible en este portal y se solicita responder sobre renuncia a términos.';
+        msgSnack = 'Canal electrónico seleccionado. Conteste si renuncia a términos para finalizar.';
+      } else {
+        newState = 'NotifOficinas';
+        detalle = 'El organismo eligió notificación en oficinas. Debe asistir presencialmente al IVC en los próximos 5 días hábiles.';
+        msgSnack = 'Canal en oficinas seleccionado. Asista al IVC en los próximos 5 días hábiles.';
+      }
+      IVCStore.actualizarEstado(t.id, newState, actorOrg, detalle);
+      _showSnackbar(msgSnack, 'success');
+      /* v1.13.56: mismo patrón que _responderRenuncia — refrescar tramite
+         desde el store y re-routear para que aparezcan los CTAs del nuevo
+         estado (renuncia si Electrónica, mensaje informativo si Oficinas). */
+      setTimeout(function () {
+        IVCState.tramite = IVCStore.getTramite(t.id);
+        route();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 400);
+    };
 
     /* v1.11.0: CTA RENUNCIA — solo aparece cuando state es NotifElectronica.
        El organismo responde si renuncia a términos:

@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ivc",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--yes",
+        "http-server",
+        "-p",
+        "4201",
+        "-c-1",
+        "--silent"
+      ],
+      "port": 4201
+    },
+    {
+      "name": "ivc-debug",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--yes",
+        "http-server",
+        "-p",
+        "4911",
+        "-c-1",
+        "--silent"
+      ],
+      "port": 4911
+    }
+  ]
+}
