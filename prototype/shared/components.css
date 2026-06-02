@@ -805,6 +805,7 @@
 .naowee-modal-overlay .naowee-modal__footer {
   padding: 16px 28px 20px;
   border-top: 1px solid var(--border);
+  background: var(--surface, #fff); /* v1.13.57 (Vanessa bug): el footer canónico no traía background → en viewports bajos el body scrollea y el textarea cruzaba el footer transparente. */
   gap: 10px;
 }
 
