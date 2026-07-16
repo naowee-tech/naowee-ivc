@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IVC — Flujo Operativo V3 · Sesion Danna + Juanma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+<style>
+:root{
+  --naranja:#FF7500; --azul:#002B5B;
+  --text-primary:#282834; --text-secondary:#646587;
+  --accent:#d74009;
+  --green:#1f8923; --green-bg:#e6f4e7; --green-border:#b7dfb9;
+  --blue-info:#1f78d1; --blue-bg:#eef5ff; --blue-border:#b6d3f2;
+  --surface:#ffffff; --bg:#f5f6fa;
+  --border:#e7e9f3; --border-dark:#d0d4e6;
+  --orange-bg:#fff3e6; --orange-border:#ffbf75;
+  --red-bg:#fff0ee; --red-border:#ffc4bb;
+  --purple:#7c3aed; --purple-bg:#f3edff; --purple-border:#d6c3f5;
+  --sidebar-w:300px; --header-h:88px;
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:20px; --radius-full:9999px;
+  --font:'Inter',sans-serif;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.12);
+  --shadow-card:0 0 2px rgba(145,158,171,.2), 0 12px 24px -4px rgba(145,158,171,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--font);background:var(--bg);color:var(--text-primary);scroll-behavior:smooth;font-size:14px;line-height:1.55}
+body{display:flex;min-height:100vh}
+
+.top-header{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;z-index:100;
+}
+.brand{display:flex;align-items:center;gap:18px}
+.brand-logo{font-size:26px;font-weight:800;color:var(--azul);letter-spacing:-.02em}
+.brand-dot{width:6px;height:6px;background:var(--naranja);border-radius:50%;display:inline-block;margin:0 4px}
+.brand-title{font-size:18px;font-weight:700;color:var(--text-primary)}
+.brand-sub{font-size:11px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:14px}
+.pill-version{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 16px;border-radius:var(--radius-full);
+  background:linear-gradient(135deg,var(--naranja) 0%,var(--accent) 100%);
+  color:#fff;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  box-shadow:var(--shadow-sm);
+}
+.pill-version::before{content:"";width:8px;height:8px;background:#fff;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+.date-stamp{font-size:12px;color:var(--text-secondary);font-weight:500;font-variant-numeric:tabular-nums}
+.btn-print{
+  height:40px;padding:0 18px;border-radius:var(--radius-md);
+  background:var(--surface);border:1.5px solid var(--border-dark);
+  font-family:var(--font);font-weight:700;font-size:13px;color:var(--text-primary);
+  cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .15s;
+}
+.btn-print:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+
+.sidebar{
+  position:fixed;top:var(--header-h);left:0;bottom:0;width:var(--sidebar-w);
+  background:var(--surface);border-right:1px solid var(--border);
+  overflow-y:auto;padding:20px 0 40px;z-index:50;
+}
+.sidebar::-webkit-scrollbar{width:8px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border-dark);border-radius:8px}
+.nav-section-title{
+  font-size:10px;font-weight:700;color:var(--text-secondary);
+  text-transform:uppercase;letter-spacing:.1em;padding:14px 24px 8px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 24px;font-size:13px;font-weight:500;
+  color:var(--text-secondary);text-decoration:none;
+  border-left:3px solid transparent;transition:all .15s;cursor:pointer;
+}
+.nav-item:hover{background:var(--bg);color:var(--text-primary)}
+.nav-item.active{
+  border-left-color:var(--accent);background:var(--orange-bg);
+  color:var(--accent);font-weight:700;
+}
+.nav-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:22px;height:22px;padding:0 6px;
+  background:var(--bg);color:var(--text-secondary);
+  border-radius:var(--radius-sm);font-size:10px;font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+.nav-item.active .nav-num{background:var(--accent);color:#fff}
+
+.main{
+  margin-left:var(--sidebar-w);margin-top:var(--header-h);
+  flex:1;padding:32px 40px 80px;max-width:calc(100vw - var(--sidebar-w));
+}
+.section{margin-bottom:48px;scroll-margin-top:calc(var(--header-h) + 16px)}
+.section-header{margin-bottom:20px}
+.section-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;
+}
+.section-eyebrow::before{content:"";width:24px;height:2px;background:var(--accent);border-radius:2px}
+.section-title{font-size:26px;font-weight:800;color:var(--text-primary);letter-spacing:-.02em;line-height:1.15}
+.section-sub{font-size:14px;color:var(--text-secondary);margin-top:6px;max-width:780px}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-xl);padding:22px 24px;box-shadow:var(--shadow-sm);
+  transition:transform .15s, box-shadow .15s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
+.card-title{font-size:15px;font-weight:700;margin-bottom:8px}
+.card-body{font-size:13px;color:var(--text-secondary);line-height:1.6}
+.card-strip{height:4px;border-radius:var(--radius-full);margin:-22px -24px 18px;border-top-left-radius:var(--radius-xl);border-top-right-radius:var(--radius-xl)}
+
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid-bento{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid-bento .span-2{grid-column:span 2}
+
+.tip-tramite{--tip-color:var(--blue-info);--tip-bg:var(--blue-bg);--tip-border:var(--blue-border)}
+.tip-actuacion{--tip-color:var(--green);--tip-bg:var(--green-bg);--tip-border:var(--green-border)}
+.tip-procedimiento{--tip-color:var(--accent);--tip-bg:var(--orange-bg);--tip-border:var(--orange-border)}
+
+.card-tipologia .card-strip{background:var(--tip-color)}
+.card-tipologia{border-color:var(--tip-border)}
+.tip-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:var(--radius-md);
+  background:var(--tip-bg);color:var(--tip-color);
+  font-size:18px;font-weight:700;margin-bottom:10px;
+}
+.tip-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:var(--radius-full);
+  background:var(--tip-bg);color:var(--tip-color);border:1px solid var(--tip-border);
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+}
+
+.estado-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 9px;border-radius:var(--radius-full);
+  font-size:11px;font-weight:700;border:1.5px solid;
+}
+.estado-badge.tramite{background:var(--blue-bg);color:var(--blue-info);border-color:var(--blue-border)}
+.estado-badge.actuacion{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.estado-badge.procedimiento{background:var(--orange-bg);color:var(--accent);border-color:var(--orange-border)}
+
+.table-wrap{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);margin-top:16px;
+}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{
+  background:var(--bg);color:var(--text-primary);font-weight:700;
+  text-align:left;padding:12px 14px;font-size:11px;
+  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);
+}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:hover{background:#fafbff}
+tbody tr:last-child td{border-bottom:none}
+td code{background:var(--bg);padding:2px 6px;border-radius:var(--radius-sm);font-size:12px;color:var(--accent);font-family:'JetBrains Mono',monospace}
+
+.mermaid-wrap{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-xl);padding:24px;margin:16px 0;
+  box-shadow:var(--shadow-sm);overflow-x:auto;
+}
+.mermaid-wrap .mermaid{font-family:var(--font) !important;display:flex;justify-content:center;min-height:200px}
+
+.confirm-card{
+  background:linear-gradient(135deg,var(--green-bg) 0%,#f0faf1 100%);
+  border:1.5px solid var(--green-border);border-radius:var(--radius-xl);
+  padding:20px 22px;position:relative;overflow:hidden;
+}
+.confirm-card::before{content:"";position:absolute;top:0;left:0;width:5px;height:100%;background:var(--green)}
+.confirm-card.preliminar{background:linear-gradient(135deg,var(--orange-bg) 0%,#fffaf4 100%);border-color:var(--orange-border)}
+.confirm-card.preliminar::before{background:var(--accent)}
+.confirm-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:var(--radius-full);
+  background:var(--green);color:#fff;font-weight:800;font-size:14px;margin-bottom:10px;
+}
+.confirm-card.preliminar .confirm-num{background:var(--accent)}
+.confirm-status{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:var(--radius-full);background:var(--green);color:#fff;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;
+}
+.confirm-status.warn{background:var(--accent)}
+.confirm-impl{
+  margin-top:12px;padding:10px 12px;background:rgba(255,255,255,.7);
+  border:1px solid rgba(0,0,0,.05);border-radius:var(--radius-md);
+  font-size:12px;color:var(--text-primary);
+}
+.confirm-impl strong{color:var(--accent)}
+
+.tabs{
+  display:flex;gap:4px;padding:6px;background:var(--bg);
+  border-radius:var(--radius-lg);margin-bottom:18px;overflow-x:auto;
+}
+.tab{
+  flex:1;min-width:fit-content;padding:10px 16px;border-radius:var(--radius-md);
+  font-size:12px;font-weight:600;color:var(--text-secondary);
+  cursor:pointer;border:none;background:transparent;
+  font-family:var(--font);transition:all .15s;white-space:nowrap;
+}
+.tab:hover{color:var(--text-primary)}
+.tab.active{background:var(--surface);color:var(--accent);box-shadow:var(--shadow-sm);font-weight:700}
+.tab-panel{display:none;animation:fadeInUp .3s cubic-bezier(.4,0,.2,1)}
+.tab-panel.active{display:block}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.accordion{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;transition:box-shadow .15s;
+}
+.accordion:hover{box-shadow:var(--shadow-sm)}
+.acc-header{
+  padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;font-weight:700;font-size:14px;color:var(--text-primary);user-select:none;gap:12px;
+}
+.acc-header:hover{background:var(--bg)}
+.acc-header .left{display:flex;align-items:center;gap:10px;flex:1}
+.acc-count{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:24px;height:22px;padding:0 8px;
+  background:var(--orange-bg);color:var(--accent);
+  border-radius:var(--radius-full);font-size:11px;font-weight:700;
+}
+.acc-chevron{
+  width:20px;height:20px;color:var(--text-secondary);
+  transition:transform .25s cubic-bezier(.4,0,.2,1);flex-shrink:0;
+}
+.accordion.open .acc-chevron{transform:rotate(90deg);color:var(--accent)}
+.acc-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s cubic-bezier(.4,0,.2,1), padding .35s cubic-bezier(.4,0,.2,1);
+  padding:0 18px;
+}
+.accordion.open .acc-body{max-height:2000px;padding:0 18px 18px}
+
+.q-item{
+  padding:12px 14px;margin-bottom:8px;border-radius:var(--radius-md);
+  background:var(--bg);border-left:3px solid var(--accent);font-size:13px;line-height:1.55;
+}
+.q-item strong{color:var(--text-primary);font-weight:700}
+.q-priority{
+  display:inline-block;padding:2px 8px;border-radius:var(--radius-full);
+  font-size:10px;font-weight:700;margin-right:8px;text-transform:uppercase;letter-spacing:.05em;
+}
+.q-priority.high{background:var(--red-bg);color:#c62b1d;border:1px solid var(--red-border)}
+.q-priority.med{background:var(--orange-bg);color:var(--accent);border:1px solid var(--orange-border)}
+.q-priority.low{background:var(--blue-bg);color:var(--blue-info);border:1px solid var(--blue-border)}
+
+.hu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.hu-card{
+  padding:14px 16px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-md);position:relative;transition:all .15s;
+}
+.hu-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.hu-card.critical{border-color:var(--red-border);background:var(--red-bg)}
+.hu-code{font-weight:800;font-size:14px;color:var(--accent);font-family:'JetBrains Mono',monospace}
+.hu-name{font-size:12px;color:var(--text-primary);margin:4px 0;font-weight:600}
+.hu-meta{font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em}
+.hu-star{position:absolute;top:10px;right:10px;color:var(--accent);font-size:14px}
+
+.comp-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-lg);padding:18px 20px;
+  position:relative;overflow:hidden;transition:all .15s;
+}
+.comp-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.comp-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--naranja),var(--accent));
+}
+.comp-tag{
+  display:inline-block;background:var(--azul);color:#fff;
+  padding:3px 10px;border-radius:var(--radius-sm);font-size:11px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;margin-bottom:10px;
+}
+.comp-name{font-size:15px;font-weight:700;margin-bottom:6px}
+.comp-desc{font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px}
+.comp-when{
+  padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);
+  font-size:11px;color:var(--text-primary);
+}
+.comp-when strong{color:var(--accent)}
+
+.timeline{
+  display:grid;grid-template-columns:repeat(9,1fr);gap:8px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-xl);padding:24px;box-shadow:var(--shadow-sm);
+}
+.tl-item{
+  display:flex;flex-direction:column;gap:6px;
+  padding:14px 10px;border-radius:var(--radius-md);
+  background:var(--bg);border-left:3px solid var(--accent);position:relative;transition:all .15s;
+}
+.tl-item:hover{background:var(--orange-bg);transform:translateY(-2px)}
+.tl-time{font-size:11px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.tl-title{font-size:11px;font-weight:600;color:var(--text-primary);line-height:1.35}
+
+.stat{display:flex;align-items:baseline;gap:6px;margin:6px 0}
+.stat-num{font-size:32px;font-weight:800;color:var(--azul);line-height:1;letter-spacing:-.02em}
+.stat-label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+
+.caution-card{
+  background:linear-gradient(135deg,var(--orange-bg) 0%,#fffaf4 100%);
+  border:1.5px solid var(--orange-border);
+  border-radius:var(--radius-xl);padding:20px;position:relative;
+}
+.caution-icon{
+  font-size:18px;display:inline-flex;align-items:center;gap:8px;
+  font-weight:700;color:var(--accent);margin-bottom:10px;
+}
+.caution-card h4{font-size:15px;margin:6px 0}
+
+.reco-card{
+  background:linear-gradient(135deg,var(--azul) 0%,#001a3d 100%);
+  border-radius:var(--radius-xl);padding:32px 36px;color:#fff;
+  margin:24px 0;position:relative;overflow:hidden;
+}
+.reco-card::after{
+  content:"";position:absolute;right:-40px;top:-40px;
+  width:200px;height:200px;background:var(--naranja);
+  border-radius:50%;opacity:.15;
+}
+.reco-card h3{font-size:22px;margin-bottom:14px;font-weight:800;letter-spacing:-.02em}
+.reco-card p{color:rgba(255,255,255,.85);font-size:14px;line-height:1.7;max-width:760px;position:relative;z-index:1}
+.reco-list{margin-top:18px}
+.reco-step{
+  display:flex;gap:14px;align-items:flex-start;padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.reco-step:last-child{border-bottom:none}
+.reco-week{
+  flex-shrink:0;background:var(--naranja);color:#fff;
+  font-weight:700;font-size:11px;padding:4px 10px;border-radius:var(--radius-sm);
+  text-transform:uppercase;letter-spacing:.05em;min-width:120px;text-align:center;
+}
+.reco-text{color:rgba(255,255,255,.92);font-size:13px;line-height:1.6}
+
+.foot{
+  margin-top:60px;padding:32px 0;border-top:2px solid var(--border);
+  text-align:center;color:var(--text-secondary);font-size:12px;
+}
+.foot strong{color:var(--text-primary)}
+.foot-btn{margin-top:16px}
+
+@media (max-width:1024px){
+  .sidebar{transform:translateX(-100%);transition:transform .25s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;max-width:100vw}
+  .grid-3,.grid-bento,.hu-grid{grid-template-columns:repeat(2,1fr)}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .timeline{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:768px){
+  .grid-3,.grid-2,.grid-bento,.hu-grid,.grid-4{grid-template-columns:1fr}
+  .timeline{grid-template-columns:repeat(2,1fr)}
+  .main{padding:20px 16px 40px}
+  .top-header{padding:0 16px}
+  .brand-title{display:none}
+  .date-stamp{display:none}
+}
+
+@media print{
+  body{background:#fff;display:block}
+  .sidebar,.top-header,.btn-print,.foot-btn{display:none !important}
+  .main{margin:0;padding:0;max-width:100%}
+  .section{break-inside:avoid;page-break-inside:avoid;margin-bottom:30px}
+  #s5,#s6,#s7,#s8,#s11,#s15,#s16,#s18{page-break-before:always}
+  .card,.mermaid-wrap,.confirm-card,.comp-card,.reco-card{
+    border:1px solid #333 !important;box-shadow:none !important;
+    background:#fff !important;color:#000 !important;
+  }
+  .reco-card *{color:#000 !important}
+  .accordion .acc-body{max-height:none !important;padding:0 18px 18px !important;overflow:visible !important}
+  .tab-panel{display:block !important}
+  .tabs{display:none}
+  *{color:#000 !important;background:#fff !important}
+  .estado-badge{border:1px solid #333 !important;color:#333 !important}
+  .pill-version{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <div class="brand">
+    <div>
+      <div class="brand-logo">naowee<span class="brand-dot"></span></div>
+    </div>
+    <div>
+      <div class="brand-title">IVC — Flujo Operativo V3</div>
+      <div class="brand-sub">Sesion Danna (PM Ministerio) + Juanma (Tech Lead)</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="pill-version">Version Oficial V3</span>
+    <span class="date-stamp">2026-05-21</span>
+    <button class="btn-print" onclick="window.print()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Imprimir / PDF
+    </button>
+  </div>
+</header>
+
+<aside class="sidebar" id="sidebar">
+  <div class="nav-section-title">Apertura</div>
+  <a class="nav-item active" href="#s1"><span class="nav-num">01</span>Resumen ejecutivo</a>
+  <a class="nav-item" href="#s2"><span class="nav-num">02</span>Confirmaciones Danna</a>
+  <a class="nav-item" href="#s3"><span class="nav-num">03</span>Tipologias de proceso</a>
+  <a class="nav-item" href="#s4"><span class="nav-num">04</span>Comparativa V1-V3</a>
+  <div class="nav-section-title">Flujos</div>
+  <a class="nav-item" href="#s5"><span class="nav-num">05</span>Vista macro (2 lanes)</a>
+  <a class="nav-item" href="#s6"><span class="nav-num">06</span>Tramite 1: Otorgamiento</a>
+  <a class="nav-item" href="#s7"><span class="nav-num">07</span>Tramite 2: Renovacion</a>
+  <a class="nav-item" href="#s8"><span class="nav-num">08</span>State machine V3</a>
+  <div class="nav-section-title">Sistema</div>
+  <a class="nav-item" href="#s9"><span class="nav-num">09</span>Roles (15)</a>
+  <a class="nav-item" href="#s10"><span class="nav-num">10</span>Componentes UI nuevos</a>
+  <a class="nav-item" href="#s11"><span class="nav-num">11</span>Marco legal y validaciones</a>
+  <a class="nav-item" href="#s12"><span class="nav-num">12</span>Catalogos maestros</a>
+  <a class="nav-item" href="#s13"><span class="nav-num">13</span>Pantallas E1</a>
+  <div class="nav-section-title">Sesion</div>
+  <a class="nav-item" href="#s14"><span class="nav-num">14</span>Supuestos pendientes</a>
+  <a class="nav-item" href="#s15"><span class="nav-num">15</span>Preguntas Danna</a>
+  <a class="nav-item" href="#s16"><span class="nav-num">16</span>Preguntas Juanma</a>
+  <a class="nav-item" href="#s17"><span class="nav-num">17</span>HU pre-existentes</a>
+  <a class="nav-item" href="#s18"><span class="nav-num">18</span>Agenda 90 min</a>
+  <a class="nav-item" href="#s19"><span class="nav-num">19</span>Recomendacion final</a>
+</aside>
+
+<main class="main">
+
+<section class="section" id="s1">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 01</div>
+    <h2 class="section-title">Resumen ejecutivo</h2>
+    <p class="section-sub">Donde estamos hoy: 4 bloqueantes cerrados por Danna, descubrimiento critico de tipologias y HU pre-existentes, y un camino claro hacia Hi-Fi parcial.</p>
+  </div>
+  <div class="grid-3">
+    <article class="card">
+      <div class="card-strip" style="background:var(--green)"></div>
+      <div class="tip-pill" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)">Confirmaciones Danna 2026-05-21</div>
+      <h3 class="card-title" style="margin-top:10px">4 bloqueantes cerrados</h3>
+      <div class="card-body">
+        <div class="stat"><span class="stat-num">15d</span><span class="stat-label">habiles por tramite</span></div>
+        <div class="stat"><span class="stat-num">10d</span><span class="stat-label">para recursos</span></div>
+        <p style="margin-top:10px">Firma en renuncia confirmada. Info adicional en reposicion es opcional.</p>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-strip" style="background:var(--accent)"></div>
+      <div class="tip-pill" style="background:var(--orange-bg);color:var(--accent);border:1px solid var(--orange-border)">Descubrimiento critico</div>
+      <h3 class="card-title" style="margin-top:10px">3 tipologias + 45 estados + 15 HU</h3>
+      <div class="card-body">
+        <div class="stat"><span class="stat-num">3</span><span class="stat-label">tipologias proceso</span></div>
+        <div class="stat"><span class="stat-num">45+</span><span class="stat-label">estados sistema</span></div>
+        <div class="stat"><span class="stat-num">15+</span><span class="stat-label">HU referenciadas</span></div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-strip" style="background:var(--azul)"></div>
+      <div class="tip-pill" style="background:var(--blue-bg);color:var(--blue-info);border:1px solid var(--blue-border)">Listo para diseno</div>
+      <h3 class="card-title" style="margin-top:10px">Lo-Fi Lane 1 listo</h3>
+      <div class="card-body">
+        Lane 1 Deporte Aficionado puede iniciar Lo-Fi de inmediato. Hi-Fi a la espera de HU pre-existentes + plantilla acto admin final.
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="s2">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 02 · Nueva</div>
+    <h2 class="section-title">Confirmaciones de Danna (audio 2026-05-21)</h2>
+    <p class="section-sub">4 respuestas que destraban componentes y comportamientos del sistema. Cada una tiene impacto directo en UI.</p>
+  </div>
+  <div class="grid-2">
+
+    <article class="confirm-card preliminar">
+      <div class="confirm-num">1</div>
+      <div class="confirm-status warn">Preliminar · validar contra matriz</div>
+      <h3 class="card-title">15 dias habiles por tramite</h3>
+      <div class="card-body">Tiempo de respuesta estandar para cada tramite. Danna validara contra la matriz oficial los casos especificos por tipo.</div>
+      <div class="confirm-impl"><strong>Implicacion UI:</strong> componente <code>&lt;TramiteCountdown /&gt;</code> con countdown visible en cabecera del tramite + alertas automaticas a 5 / 2 / 0 dias del Profesional asignado.</div>
+    </article>
+
+    <article class="confirm-card">
+      <div class="confirm-num">2</div>
+      <div class="confirm-status">Confirmado · CPACA Art 76</div>
+      <h3 class="card-title">10 dias para interponer recursos</h3>
+      <div class="card-body">Validado legalmente. Tras notificacion, el organismo deportivo tiene 10 dias habiles para interponer recurso de reposicion.</div>
+      <div class="confirm-impl"><strong>Implicacion UI:</strong> componente <code>&lt;RecursoCountdown /&gt;</code> visible post-notificacion. Si vence sin recurso, sistema cierra ventana y avanza a Actualizacion RND.</div>
+    </article>
+
+    <article class="confirm-card">
+      <div class="confirm-num">3</div>
+      <div class="confirm-status">Confirmado</div>
+      <h3 class="card-title">Firma en renuncia a terminos</h3>
+      <div class="card-body">Cualquier transicion donde el organismo renuncie a sus terminos legales requiere captura de firma digital + auditoria inmutable.</div>
+      <div class="confirm-impl"><strong>Implicacion UI:</strong> componente <code>&lt;FirmaConfirmacion /&gt;</code> reutilizable (modal con captura de firma + sello de tiempo + hash). Aplicable a multiples puntos del flujo.</div>
+    </article>
+
+    <article class="confirm-card">
+      <div class="confirm-num">4</div>
+      <div class="confirm-status">Confirmado</div>
+      <h3 class="card-title">Recurso de reposicion con info adicional (opcional)</h3>
+      <div class="card-body">El recurso de reposicion <strong>puede</strong> solicitar informacion adicional al organismo. No es obligatorio. Profesional decide caso a caso.</div>
+      <div class="confirm-impl"><strong>Implicacion UI:</strong> componente <code>&lt;SolicitudInfoAdicional /&gt;</code> parametrizable donde Profesional detalla que info pide. Pausa cronometro hasta respuesta.</div>
+    </article>
+
+  </div>
+</section>
+
+<section class="section" id="s3">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 03 · Nueva</div>
+    <h2 class="section-title">Tipologias de proceso</h2>
+    <p class="section-sub">El XLSX SUID revela 3 tipologias de proceso distintas. Cada una con dinamica, roles y UI propios. Descubrimiento clave: la palabra "tramite" no aplica a todo.</p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:24px">
+
+    <article class="card card-tipologia tip-tramite">
+      <div class="card-strip"></div>
+      <div class="tip-icon">T</div>
+      <h3 class="card-title">Tipologia 1 · Tramite</h3>
+      <p class="card-body" style="margin-bottom:10px"><strong>Solicitud formal de un usuario externo que termina en acto administrativo.</strong></p>
+      <p class="card-body" style="margin-bottom:8px"><strong>Estados tipicos:</strong></p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span class="estado-badge tramite">Radicado</span>
+        <span class="estado-badge tramite">En revision</span>
+        <span class="estado-badge tramite">Aprobado</span>
+        <span class="estado-badge tramite">Actualizado</span>
+      </div>
+      <p class="card-body" style="margin-bottom:8px"><strong>Roles:</strong> Usuario externo, Ventanilla, Profesional IVC.</p>
+      <p class="card-body"><strong>Implicacion UI:</strong> sidebar nav primario, filtros segmentados por tramite.</p>
+    </article>
+
+    <article class="card card-tipologia tip-actuacion">
+      <div class="card-strip"></div>
+      <div class="tip-icon">A</div>
+      <h3 class="card-title">Tipologia 2 · Actuacion</h3>
+      <p class="card-body" style="margin-bottom:10px"><strong>Accion concreta de un funcionario dentro de un tramite o procedimiento.</strong></p>
+      <p class="card-body" style="margin-bottom:8px"><strong>Estados tipicos:</strong></p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span class="estado-badge actuacion">Pendiente subsanar</span>
+        <span class="estado-badge actuacion">En firma</span>
+        <span class="estado-badge actuacion">Firmado</span>
+        <span class="estado-badge actuacion">Notificado</span>
+        <span class="estado-badge actuacion">En pruebas</span>
+        <span class="estado-badge actuacion">Generado</span>
+        <span class="estado-badge actuacion">Escalado</span>
+        <span class="estado-badge actuacion">Recibido</span>
+      </div>
+      <p class="card-body" style="margin-bottom:8px"><strong>Roles:</strong> Profesional IVC + Usuario, Profesional + Juridica.</p>
+      <p class="card-body"><strong>Implicacion UI:</strong> workspace del Profesional, panel de tareas.</p>
+    </article>
+
+    <article class="card card-tipologia tip-procedimiento">
+      <div class="card-strip"></div>
+      <div class="tip-icon">P</div>
+      <h3 class="card-title">Tipologia 3 · Procedimiento</h3>
+      <p class="card-body" style="margin-bottom:10px"><strong>Expediente largo: auditorias, sancionatorios, monitoreo LA/FT.</strong></p>
+      <p class="card-body" style="margin-bottom:8px"><strong>Estados tipicos:</strong></p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span class="estado-badge procedimiento">Registrado</span>
+        <span class="estado-badge procedimiento">En analisis</span>
+        <span class="estado-badge procedimiento">Planeado</span>
+        <span class="estado-badge procedimiento">En ejecucion</span>
+        <span class="estado-badge procedimiento">En seguimiento</span>
+        <span class="estado-badge procedimiento">Cumplido</span>
+        <span class="estado-badge procedimiento">Sancionado / Absuelto</span>
+        <span class="estado-badge procedimiento">Activo</span>
+        <span class="estado-badge procedimiento">En monitoreo</span>
+      </div>
+      <p class="card-body" style="margin-bottom:8px"><strong>Roles:</strong> Coordinador, Auditor, Juridica, Analista LA/FT, Direccion.</p>
+      <p class="card-body"><strong>Implicacion UI:</strong> modulo separado con timeline largo, expediente multidocumento.</p>
+    </article>
+
+  </div>
+
+  <h3 style="font-size:16px;font-weight:700;margin:24px 0 12px">Tabla maestra de estados (XLSX SUID)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Tipo</th><th>Estado</th><th>Funcionalidad sistema</th><th>Roles asociados</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="estado-badge tramite">T</span></td><td><strong>Radicado</strong></td><td>Formulario dinamico, carga doc, consecutivo</td><td>Externo, Ventanilla</td></tr>
+        <tr><td><span class="estado-badge tramite">T</span></td><td><strong>En revision</strong></td><td>Checklist, validacion</td><td>Profesional IVC</td></tr>
+        <tr><td><span class="estado-badge actuacion">A</span></td><td><strong>Pendiente subsanar / Subsanado</strong></td><td>Requerimientos automaticos</td><td>Profesional, Usuario</td></tr>
+        <tr><td><span class="estado-badge tramite">T</span></td><td><strong>Aprobado / Rechazado</strong></td><td>Registro concepto tecnico</td><td>Profesional IVC</td></tr>
+        <tr><td><span class="estado-badge actuacion">A</span></td><td><strong>En firma / Firmado</strong></td><td>Plantillas + generacion auto</td><td>Profesional, Juridica</td></tr>
+        <tr><td><span class="estado-badge actuacion">A</span></td><td><strong>Firmado (con sello)</strong></td><td>Firma digital + sello tiempo</td><td>Directivo, Juridica</td></tr>
+        <tr><td><span class="estado-badge actuacion">A</span></td><td><strong>Notificado</strong></td><td>Notif electronica + acuse</td><td>Sistema, Externo</td></tr>
+        <tr><td><span class="estado-badge tramite">T</span></td><td><strong>Actualizado</strong></td><td>Integracion RND</td><td>Sistema</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Registrado</strong></td><td>Carga docs financieros</td><td>Club, Profesional</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>En analisis</strong></td><td>Analitica comparativa</td><td>Profesional financiero</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Validado / Observado</strong></td><td>Validacion transferencias</td><td>Profesional IVC</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Validado (contratos)</strong></td><td>Carga + revision contratos</td><td>Juridica</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>En analisis LA/FT</strong></td><td>Cruce info financiera</td><td>Analista LA/FT</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Riesgo alto/medio/bajo</strong></td><td>Matrices de riesgo</td><td>Oficial cumplimiento</td></tr>
+        <tr><td><span class="estado-badge actuacion">A</span></td><td><strong>Generado</strong></td><td>Reportes automaticos</td><td>Profesional IVC</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Planeado</strong></td><td>Programacion anual</td><td>Coordinador</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Programado</strong></td><td>Agenda + citacion</td><td>Auditor</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>En ejecucion</strong></td><td>Visita / inspeccion</td><td>Auditor + Profesional</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>En seguimiento</strong></td><td>Plan mejora + hitos</td><td>Coordinador, Auditor</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Cumplido / Incumplido</strong></td><td>Cierre por hito</td><td>Coordinador</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Abierto / Asignado / En gestion</strong></td><td>Apertura proceso PA</td><td>Juridica, Coordinador</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Decidido / En recurso / Cerrado</strong></td><td>Resolucion sancionatoria</td><td>Direccion, Juridica</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Sancionado / Absuelto</strong></td><td>Aplicacion sancion + reg</td><td>Direccion</td></tr>
+        <tr><td><span class="estado-badge procedimiento">P</span></td><td><strong>Activo / En monitoreo / Analizado</strong></td><td>Monitoreo continuo</td><td>Analista LA/FT</td></tr>
+        <tr><td><span class="estado-badge actuacion">A</span></td><td><strong>Escalado</strong></td><td>Transferencia a otra area</td><td>Profesional</td></tr>
+        <tr><td><span class="estado-badge actuacion">A</span></td><td><strong>Recibido</strong></td><td>Inbox de actuacion</td><td>Profesional</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="s4">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 04</div>
+    <h2 class="section-title">Comparativa V1 → V2 → V3</h2>
+    <p class="section-sub">Evolucion del entendimiento del flujo desde diciembre hasta hoy.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Aspecto</th><th>V1 (Dic 2025)</th><th>V2 (Mayo 2026 PDF)</th><th>V3 (Esta version)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Carriles</strong></td><td>1 (todo unificado)</td><td>2 (Aficionado / Actuaciones)</td><td>2 + roles cruzados explicitos</td></tr>
+        <tr><td><strong>Pasos Lane 1</strong></td><td>12</td><td>19</td><td>19 con tiempos confirmados</td></tr>
+        <tr><td><strong>Diamantes (decisiones)</strong></td><td>1</td><td>4</td><td>4 + cascada notif. 3 ramas</td></tr>
+        <tr><td><strong>Tiempos respuesta</strong></td><td>Sin definir</td><td>Sin definir</td><td><strong>15 d tramite / 10 d recurso</strong></td></tr>
+        <tr><td><strong>Firma renuncia</strong></td><td>No contemplada</td><td>Mencionada sin detalle</td><td>Modal digital con captura</td></tr>
+        <tr><td><strong>Tipologias proceso</strong></td><td>No habia</td><td>Ambiguas</td><td><strong>3 explicitas (T/A/P)</strong></td></tr>
+        <tr><td><strong>Estados sistema</strong></td><td>~13</td><td>~20</td><td><strong>45+ del XLSX SUID</strong></td></tr>
+        <tr><td><strong>Roles</strong></td><td>8-9</td><td>9</td><td><strong>15 del XLSX SUID</strong></td></tr>
+        <tr><td><strong>HU referenciadas</strong></td><td>No habia</td><td>No habia</td><td><strong>15+ HU encontradas</strong></td></tr>
+        <tr><td><strong>Plantillas conocidas</strong></td><td>0</td><td>0</td><td>12 plantillas IVC-FR-*</td></tr>
+        <tr><td><strong>Estado del diseno</strong></td><td>Mockups iniciales</td><td>Re-levantamiento</td><td>Listo para Lo-Fi Lane 1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="s5">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 05</div>
+    <h2 class="section-title">Vista macro · Flujo V2 oficial (2 swim lanes)</h2>
+    <p class="section-sub">El PDF oficial de Danna define 2 carriles paralelos: <strong>Deporte Aficionado y Profesional</strong> (19 pasos, termina en acto administrativo) y <strong>Actuaciones Administrativas</strong> (9 pasos, termina en oficio).</p>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <h3 class="card-title">Diferencias clave entre carriles</h3>
+    <div class="grid-2" style="margin-top:12px">
+      <div>
+        <strong style="color:var(--blue-info)">Lane 1 · Deporte Aficionado</strong>
+        <ul style="margin:8px 0 0 18px;font-size:13px;color:var(--text-secondary);line-height:1.7">
+          <li>Termina en <strong>acto administrativo</strong> con firma de Director</li>
+          <li>Cascada de notificacion (personal / electronica / aviso)</li>
+          <li>Posible renuncia a terminos + recurso de reposicion</li>
+          <li>Actualizacion del Registro Nacional del Deporte (RND)</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color:var(--accent)">Lane 2 · Actuaciones Administrativas</strong>
+        <ul style="margin:8px 0 0 18px;font-size:13px;color:var(--text-secondary);line-height:1.7">
+          <li>Termina en <strong>oficio de respuesta</strong> (no acto admin)</li>
+          <li>Mucho mas corto (9 pasos vs 19)</li>
+          <li>Tipica de PQRSD y consultas</li>
+          <li>Diamante de clasificacion al inicio</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+flowchart LR
+  subgraph Lane1["LANE 1 - DEPORTE AFICIONADO Y PROFESIONAL - 19 pasos"]
+    direction LR
+    A1([Inicio]) --> A2[Radicacion]
+    A2 --> A3[Remision]
+    A3 --> A4[Designar Profesional]
+    A4 --> A5{Validacion 15 dias}
+    A5 -->|Totalmente| A6[Generar acto admin]
+    A5 -->|Parcialmente| A5b[Subsanacion 15d]
+    A5b --> A5
+    A5 -->|No cumple| A5c[Acto no cumplimiento]
+    A6 --> A7[Revision Coordinador]
+    A7 -->|Aprobado| A8[Firma Director]
+    A7 -->|Rechazado| A6
+    A8 --> A9[Definir notificacion]
+    A9 --> A10[Envio al notificado]
+    A10 --> A11{Renuncia terminos?}
+    A11 -->|SI firma digital| A12[Envio acto admin]
+    A11 -->|NO| A13[Espera 10 dias]
+    A12 --> A14[Organizacion oficial]
+    A13 --> A14
+    A14 --> A15{Recursos 10 dias?}
+    A15 -->|SI| A16[Recurso reposicion]
+    A15 -->|NO| A17[Actualizacion RND]
+    A16 --> A17
+    A17 --> A18([Fin])
+  end
+
+  subgraph Lane2["LANE 2 - ACTUACIONES ADMINISTRATIVAS - 9 pasos"]
+    direction LR
+    B1([Inicio]) --> B2[Radicacion]
+    B2 --> B3{Clasificacion}
+    B3 --> B4[Asignar area]
+    B4 --> B5[Revision solicitudes]
+    B5 --> B6[Asignar Profesional]
+    B6 --> B7{Procede gestion?}
+    B7 -->|Si| B8[Gestionar solicitud]
+    B7 -->|No| B8b[Devolucion]
+    B8 --> B9[Emitir oficio respuesta]
+    B9 --> B10([Fin])
+  end
+    </div>
+  </div>
+</section>
+
+<section class="section" id="s6">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 06</div>
+    <h2 class="section-title">Tramite 1 · Otorgamiento de Reconocimiento Deportivo</h2>
+    <p class="section-sub">Organismos objetivo: Ligas / Asociaciones Departamentales. Base normativa: <strong>Decreto 1387/1970</strong>, <strong>Ley 181/1995</strong>, <strong>Resolucion 705/2024</strong>.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3 class="card-title">Documentos requeridos (Decreto 1387/1970 Art 3 · 7 docs)</h3>
+    <div class="grid-4" style="margin-top:14px">
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius-md);border-left:3px solid var(--accent)"><strong>1.</strong> Acta de constitucion</div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius-md);border-left:3px solid var(--accent)"><strong>2.</strong> Lista afiliados</div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius-md);border-left:3px solid var(--accent)"><strong>3.</strong> Estatutos sociales</div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius-md);border-left:3px solid var(--accent)"><strong>4.</strong> Personeria juridica</div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius-md);border-left:3px solid var(--accent)"><strong>5.</strong> Afiliacion internacional</div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius-md);border-left:3px solid var(--accent)"><strong>6.</strong> Inventario de bienes</div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius-md);border-left:3px solid var(--accent)"><strong>7.</strong> Acta sede</div>
+      <div style="background:var(--orange-bg);padding:12px;border-radius:var(--radius-md);border-left:3px solid var(--accent);font-size:12px"><strong>Plantilla worksheet:</strong> IVC-FR-003</div>
+    </div>
+  </div>
+
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+flowchart TD
+  Start([Usuario externo radica]) --> Form[Formulario + 7 docs Decreto 1387]
+  Form --> Rad[Radicacion / Radicado / Ventanilla]
+  Rad --> Rem[Remision a GESDOC]
+  Rem --> Asig[Asignar Profesional]
+  Asig --> Val{Validacion 15 dias habiles / Profesional IVC}
+  Val -->|Totalmente| Gen[Generar Acto / Worksheet IVC-FR-003]
+  Val -->|Parcialmente| Sub[Subsanacion 5-10 dias]
+  Sub --> Val
+  Val -->|No cumple| NoCum[Acto de no cumplimiento]
+  Gen --> Rev{Revision Coordinador}
+  Rev -->|Aprobado| Firma[Firma electronica Director]
+  Rev -->|Rechazado| Gen
+  Firma --> Notif[Notificacion cascada / FR-007 / FR-008 / FR-029 / FR-009]
+  Notif --> Renuncia{Renuncia terminos?}
+  Renuncia -->|SI Firma digital| Envio[Envio acto admin]
+  Renuncia -->|NO| Espera[Espera 10 dias]
+  Envio --> Org[Organizacion oficial]
+  Espera --> Org
+  Org --> Recursos{Recursos reposicion 10 dias?}
+  Recursos -->|SI| Rec[Tramitar recurso]
+  Recursos -->|NO| Actu[Actualizacion RND / Actualizado]
+  Rec --> Actu
+  Actu --> Fin([Fin])
+    </div>
+  </div>
+
+  <h3 style="font-size:16px;font-weight:700;margin:24px 0 12px">Recorrido por rol</h3>
+  <div class="tabs" data-tab-group="tramite1">
+    <button class="tab active" data-tab="t1-usuario">Usuario Externo</button>
+    <button class="tab" data-tab="t1-gesdoc">Gestion Documental</button>
+    <button class="tab" data-tab="t1-coord">Coordinador Interno</button>
+    <button class="tab" data-tab="t1-prof">Profesional IVC</button>
+    <button class="tab" data-tab="t1-rev">Coord IVC Revisor</button>
+    <button class="tab" data-tab="t1-dir">Director IVC</button>
+    <button class="tab" data-tab="t1-sys">Sistema</button>
+  </div>
+
+  <div class="tab-panel active" id="t1-usuario" data-tab-group="tramite1">
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px">Recorrido del Usuario Externo</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Representante legal del organismo deportivo que radica la solicitud.</p>
+      <div class="mermaid">
+flowchart LR
+  U1([Login]) --> U2[Llenar formulario]
+  U2 --> U3[Cargar 7 docs]
+  U3 --> U4[Confirmar radicado]
+  U4 --> U5[Esperar notificacion]
+  U5 --> U6{Renunciar?}
+  U6 -->|Si| U7[Firma digital]
+  U6 -->|No| U8[Esperar 10d]
+  U7 --> U9{Recursos?}
+  U8 --> U9
+  U9 --> U10([Fin])
+      </div>
+      <p style="margin-top:12px;font-size:12px"><strong>Pantallas necesarias:</strong> radicacion, mis tramites, detalle tramite, firma digital modal, recurso reposicion.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="t1-gesdoc" data-tab-group="tramite1">
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px">Encargado de Gestion Documental</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Recibe el radicado y lo enruta. En MVP digital, accion mayormente automatizada.</p>
+      <div class="mermaid">
+flowchart LR
+  G1([Inbox]) --> G2[Validar completitud]
+  G2 --> G3[Asignar consecutivo]
+  G3 --> G4[Remitir Coordinacion]
+  G4 --> G5([Finalizado])
+      </div>
+      <p style="margin-top:12px;font-size:12px"><strong>Pantallas:</strong> bandeja entrada, ficha radicado, asignacion. <strong>Tiempo:</strong> 1-2 dias habiles.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="t1-coord" data-tab-group="tramite1">
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px">Coordinador interno IVC</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Distribuye los tramites entre los Profesionales del equipo.</p>
+      <div class="mermaid">
+flowchart LR
+  C1([Inbox]) --> C2[Ver carga Profesionales]
+  C2 --> C3[Asignar Profesional]
+  C3 --> C4[Notificar asignacion]
+  C4 --> C5([Seguimiento])
+      </div>
+      <p style="margin-top:12px;font-size:12px"><strong>Pantallas:</strong> dashboard carga, asignacion drag-and-drop, vista panoramica de tramites.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="t1-prof" data-tab-group="tramite1">
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px">Profesional IVC (corazon del flujo)</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">15 dias habiles para validar requisitos. Genera worksheet IVC-FR-003 y acto administrativo.</p>
+      <div class="mermaid">
+flowchart LR
+  P1([Inbox]) --> P2[Abrir tramite]
+  P2 --> P3[Worksheet IVC-FR-003]
+  P3 --> P4{Cumple?}
+  P4 -->|Total| P5[Generar Acto]
+  P4 -->|Parcial| P6[Solicitar subsanacion]
+  P4 -->|No| P7[Acto no cumplimiento]
+  P6 --> P2
+  P5 --> P8[Enviar a Coordinador]
+  P7 --> P8
+      </div>
+      <p style="margin-top:12px;font-size:12px"><strong>Pantallas:</strong> worksheet editable, comparador documentos, solicitud subsanacion, generador acto.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="t1-rev" data-tab-group="tramite1">
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px">Coordinador IVC (Revisor)</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Revision tecnica del acto. Aprueba o devuelve con observaciones.</p>
+      <div class="mermaid">
+flowchart LR
+  R1([Inbox]) --> R2[Comparar worksheet acto]
+  R2 --> R3{Decision}
+  R3 -->|Aprobar| R4[Enviar a Director]
+  R3 -->|Devolver| R5[Marcar observaciones]
+  R5 --> R6([Retorna Profesional])
+      </div>
+      <p style="margin-top:12px;font-size:12px"><strong>Pantallas:</strong> inbox revisor, vista comparada, formulario observaciones.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="t1-dir" data-tab-group="tramite1">
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px">Director IVC (firma final)</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Firma electronica del acto administrativo. Validacion juridica final.</p>
+      <div class="mermaid">
+flowchart LR
+  D1([Inbox firma]) --> D2[Revisar acto]
+  D2 --> D3[Firma electronica]
+  D3 --> D4[Acto firmado y sellado]
+  D4 --> D5([Pasa a Notificacion])
+      </div>
+      <p style="margin-top:12px;font-size:12px"><strong>Pantallas:</strong> bandeja firma director, visor acto, captura firma electronica.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="t1-sys" data-tab-group="tramite1">
+    <div class="card">
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px">Sistema (GESDOC + RND)</h4>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Acciones automaticas: notificacion electronica, consecutivos, actualizacion del Registro Nacional del Deporte.</p>
+      <div class="mermaid">
+flowchart LR
+  S1[Consecutivo] --> S2[Generar PDFs]
+  S2 --> S3[Enviar notif]
+  S3 --> S4[Publicar aviso]
+  S4 --> S5[Actualizar RND]
+  S5 --> S6[Auditoria]
+      </div>
+      <p style="margin-top:12px;font-size:12px"><strong>Integraciones:</strong> GESDOC (fuera MVP), RND (post-firma), firma electronica certificada (Certicamara / GSE).</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3 class="card-title">Plantillas usadas en este tramite</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+      <span class="estado-badge tramite">IVC-FR-003 · Worksheet Ligas/Asoc</span>
+      <span class="estado-badge tramite">IVC-FR-007 · Citacion notif personal</span>
+      <span class="estado-badge tramite">IVC-FR-008 · Diligencia notif personal</span>
+      <span class="estado-badge tramite">IVC-FR-009 · Aviso publico</span>
+      <span class="estado-badge tramite">IVC-FR-029 · Autorizacion electronica</span>
+      <span class="estado-badge actuacion">Documento Renuncia 2025</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="s7">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 07</div>
+    <h2 class="section-title">Tramite 2 · Renovacion de Reconocimiento Deportivo</h2>
+    <p class="section-sub">Similar a Otorgamiento, pero con datos pre-cargados, validacion de vigencia y cambios estatutarios.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3 class="card-title">Diferencias clave con Otorgamiento</h3>
+    <ul style="margin-top:10px;font-size:13px;color:var(--text-secondary);line-height:1.7;padding-left:18px">
+      <li><strong>Pre-carga automatica</strong> de datos previos del organismo (de la vigencia anterior)</li>
+      <li><strong>Validacion de vigencia</strong> de los 5 anos anteriores</li>
+      <li><strong>Cambios estatutarios:</strong> actas asambleas, nuevos organos directivos</li>
+      <li><strong>Validacion Resolucion 705/2024:</strong> capacitacion de miembros</li>
+      <li><strong>Vigencia tras firma:</strong> nueva vigencia de 5 anos</li>
+    </ul>
+  </div>
+
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+flowchart TD
+  Start([Organismo solicita renovar]) --> Pre[Sistema pre-carga datos previos]
+  Pre --> Form[Formulario / cambios estatutarios / actas asambleas]
+  Form --> Validacion[Validacion capacitacion Res. 705]
+  Validacion --> Rad[Radicacion / Radicado]
+  Rad --> Rem[Remision a GESDOC]
+  Rem --> Asig[Asignar Profesional]
+  Asig --> Val{Validacion 15 dias / Vigencia anterior}
+  Val -->|Cumple| Gen[Generar Acto Renovacion]
+  Val -->|Parcial| Sub[Subsanacion]
+  Sub --> Val
+  Val -->|No| Neg[Acto de Negacion]
+  Gen --> Revi[Revision Coordinador]
+  Revi --> Firma[Firma Director extiende 5 anos]
+  Firma --> Notif[Notificacion cascada]
+  Notif --> Renuncia{Renuncia terminos?}
+  Renuncia -->|SI firma| Org[Organizacion]
+  Renuncia -->|NO| Espera[Espera 10 dias]
+  Org --> Recursos{Recursos?}
+  Espera --> Recursos
+  Recursos -->|SI| Rec[Tramitar recurso]
+  Recursos -->|NO| Actu[Actualizacion RND / Nueva vigencia 5 anos]
+  Rec --> Actu
+  Actu --> Fin([Fin])
+    </div>
+  </div>
+
+  <h3 style="font-size:16px;font-weight:700;margin:24px 0 12px">Tabla comparativa Otorgamiento vs Renovacion</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Aspecto</th><th>Otorgamiento</th><th>Renovacion</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Es primera vez?</td><td>Si</td><td>No (existente)</td></tr>
+        <tr><td>Pre-carga datos</td><td>No</td><td>Si (de vigencia anterior)</td></tr>
+        <tr><td>Validacion vigencia</td><td>N/A</td><td>Si (5 anos anteriores)</td></tr>
+        <tr><td>Cambios estatutarios</td><td>Iniciales</td><td>Comparar con previos</td></tr>
+        <tr><td>Capacitacion miembros</td><td>Validar Res. 705</td><td>Validar Res. 705</td></tr>
+        <tr><td>Vigencia tras firma</td><td>5 anos desde otorgamiento</td><td>5 anos desde renovacion</td></tr>
+        <tr><td>Worksheet</td><td>IVC-FR-003 (modo Otorg)</td><td>IVC-FR-003 (modo Renov)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="caution-card" style="margin-top:18px">
+    <div class="caution-icon">Preguntas especificas para Danna en Renovacion</div>
+    <ul style="margin-top:10px;font-size:13px;line-height:1.7;padding-left:18px">
+      <li>Como comparamos cambios estatutarios? Diff automatico vs vigencia anterior?</li>
+      <li>Si la capacitacion Res. 705 no esta vigente, se rechaza o se permite subsanar?</li>
+      <li>Como notificamos vencimiento proximo? Email automatico 90/60/30 dias antes?</li>
+      <li>Hay un periodo de gracia tras vencer la vigencia?</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="s8">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 08</div>
+    <h2 class="section-title">State machine V3 · 45+ estados color-coded</h2>
+    <p class="section-sub">Maquina de estados consolidada del XLSX SUID. Cada tipologia tiene su propio universo de estados; ningun estado pertenece a 2 tipologias.</p>
+  </div>
+
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+stateDiagram-v2
+  state "TRAMITE (azul)" as T {
+    [*] --> Radicado
+    Radicado --> EnRevision
+    EnRevision --> AprobadoT
+    EnRevision --> Rechazado
+    AprobadoT --> Actualizado
+    Actualizado --> [*]
+  }
+  state "ACTUACION (verde)" as A {
+    [*] --> PendienteSubsanar
+    PendienteSubsanar --> Subsanado
+    Subsanado --> EnFirma
+    EnFirma --> Firmado
+    Firmado --> Notificado
+    Notificado --> [*]
+    [*] --> EnPruebas
+    EnPruebas --> Generado
+    Generado --> Escalado
+    [*] --> Recibido
+  }
+  state "PROCEDIMIENTO (naranja)" as P {
+    [*] --> Registrado
+    Registrado --> EnAnalisis
+    EnAnalisis --> ValidadoP
+    EnAnalisis --> Observado
+    [*] --> RiesgoAlto
+    [*] --> RiesgoMedio
+    [*] --> RiesgoBajo
+    [*] --> Planeado
+    Planeado --> Programado
+    Programado --> EnEjecucion
+    EnEjecucion --> EnSeguimiento
+    EnSeguimiento --> Cumplido
+    EnSeguimiento --> Incumplido
+    [*] --> Abierto
+    Abierto --> Asignado
+    Asignado --> EnGestion
+    EnGestion --> Decidido
+    Decidido --> EnRecurso
+    EnRecurso --> Cerrado
+    [*] --> Sancionado
+    [*] --> Absuelto
+    [*] --> Activo
+    Activo --> EnMonitoreo
+    EnMonitoreo --> Analizado
+  }
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3 class="card-title">Mapeo a componente UI <code>&lt;EstadoBadge /&gt;</code></h3>
+    <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.6">El componente recibe el estado como prop y deriva color automaticamente del catalogo. Estados nunca cruzan tipologias, lo que permite color-coding 100% confiable.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center">
+      <code style="background:var(--bg);padding:8px 12px;border-radius:var(--radius-md);font-size:12px">&lt;EstadoBadge estado="Radicado" /&gt;</code>
+      <span style="color:var(--text-secondary)">→</span>
+      <span class="estado-badge tramite">Radicado</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center">
+      <code style="background:var(--bg);padding:8px 12px;border-radius:var(--radius-md);font-size:12px">&lt;EstadoBadge estado="En firma" /&gt;</code>
+      <span style="color:var(--text-secondary)">→</span>
+      <span class="estado-badge actuacion">En firma</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center">
+      <code style="background:var(--bg);padding:8px 12px;border-radius:var(--radius-md);font-size:12px">&lt;EstadoBadge estado="En ejecucion" /&gt;</code>
+      <span style="color:var(--text-secondary)">→</span>
+      <span class="estado-badge procedimiento">En ejecucion</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="s9">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 09</div>
+    <h2 class="section-title">Roles consolidados · 15 roles</h2>
+    <p class="section-sub">Lista cerrada del XLSX SUID. Falta confirmar matriz de permisos detallada con Danna.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Rol</th><th>Tipologia(s)</th><th>Pasos donde actua</th><th>Sistema/Persona</th><th>Usuarios estim.</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Usuario externo</strong></td><td>T</td><td>1, 13, 15 (renuncia, recurso)</td><td>Persona externa</td><td>~1500</td></tr>
+        <tr><td>2</td><td><strong>Ventanilla</strong></td><td>T</td><td>1-2 (radicacion)</td><td>Persona</td><td>~5-10</td></tr>
+        <tr><td>3</td><td><strong>Profesional IVC</strong></td><td>T + A + P</td><td>4-7, 9, 11 (corazon)</td><td>Persona</td><td>~20-30</td></tr>
+        <tr><td>4</td><td><strong>Coordinador IVC (interno)</strong></td><td>T + P</td><td>3 (asignar), 7 (revisar)</td><td>Persona</td><td>~3-5</td></tr>
+        <tr><td>5</td><td><strong>Director IVC</strong></td><td>T + P</td><td>8 (firma)</td><td>Persona</td><td>1-2</td></tr>
+        <tr><td>6</td><td><strong>Encargado Gestion Documental</strong></td><td>T + A</td><td>2 (remision GESDOC)</td><td>Persona</td><td>~5</td></tr>
+        <tr><td>7</td><td><strong>Juridica</strong></td><td>A + P</td><td>Validacion contratos, recursos</td><td>Persona</td><td>~5-8</td></tr>
+        <tr><td>8</td><td><strong>Directivo</strong></td><td>A</td><td>Firma + sello</td><td>Persona</td><td>~3-5</td></tr>
+        <tr><td>9</td><td><strong>Profesional financiero</strong></td><td>P</td><td>Validacion docs financieros</td><td>Persona</td><td>~5</td></tr>
+        <tr><td>10</td><td><strong>Analista LA/FT</strong></td><td>P</td><td>Cruces, monitoreo continuo</td><td>Persona</td><td>~3</td></tr>
+        <tr><td>11</td><td><strong>Oficial cumplimiento</strong></td><td>P</td><td>Matrices riesgo</td><td>Persona</td><td>1-2</td></tr>
+        <tr><td>12</td><td><strong>Auditor</strong></td><td>P</td><td>Visita, ejecucion auditoria</td><td>Persona</td><td>~5-8</td></tr>
+        <tr><td>13</td><td><strong>Analista</strong></td><td>P</td><td>Analisis tablero, reportes</td><td>Persona</td><td>~3-5</td></tr>
+        <tr><td>14</td><td><strong>Sistema (automatizado)</strong></td><td>T + A + P</td><td>Notificaciones, RND, plazos</td><td>Sistema</td><td>—</td></tr>
+        <tr><td>15</td><td><strong>Organismo deportivo (entity)</strong></td><td>T + P</td><td>Sujeto de auditoria/sanc.</td><td>Entidad</td><td>~1500</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="s10">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 10 · Nueva</div>
+    <h2 class="section-title">Componentes UI nuevos detectados</h2>
+    <p class="section-sub">Cuatro componentes reutilizables que surgen del audio de Danna y del descubrimiento de tipologias. Estos NO existen aun en la libreria Naowee y deben construirse para E1.</p>
+  </div>
+  <div class="grid-2">
+    <article class="comp-card">
+      <span class="comp-tag">&lt;EstadoBadge /&gt;</span>
+      <h3 class="comp-name">Badge de estado color-coded por tipologia</h3>
+      <p class="comp-desc">Pildora visual que muestra el estado actual del tramite/actuacion/procedimiento. Color, icono y borde se derivan automaticamente del catalogo de estados.</p>
+      <div class="comp-when"><strong>Disparado por:</strong> 45+ estados del XLSX SUID. <strong>Donde aparece:</strong> listas, headers, timeline.</div>
+    </article>
+    <article class="comp-card">
+      <span class="comp-tag">&lt;FirmaConfirmacion /&gt;</span>
+      <h3 class="comp-name">Modal de captura de firma digital</h3>
+      <p class="comp-desc">Modal con captura de firma + sello de tiempo + hash + auditoria inmutable. Reutilizable en cualquier transicion con renuncia o aceptacion de terminos.</p>
+      <div class="comp-when"><strong>Disparado por:</strong> respuesta 3 audio Danna. <strong>Donde aparece:</strong> renuncia a terminos, aceptacion de notificacion, otros.</div>
+    </article>
+    <article class="comp-card">
+      <span class="comp-tag">&lt;SolicitudInfoAdicional /&gt;</span>
+      <h3 class="comp-name">Componente parametrizable de solicitud</h3>
+      <p class="comp-desc">Profesional detalla campo libre + checklist de docs adicionales + plazo otorgado al organismo. Pausa cronometro del tramite hasta respuesta.</p>
+      <div class="comp-when"><strong>Disparado por:</strong> respuesta 4 audio Danna (recurso reposicion). <strong>Donde aparece:</strong> recursos, subsanaciones avanzadas.</div>
+    </article>
+    <article class="comp-card">
+      <span class="comp-tag">&lt;TimelineTramite /&gt;</span>
+      <h3 class="comp-name">Timeline con countdown 15d / 10d</h3>
+      <p class="comp-desc">Vista vertical del tramite con countdown visible (15 dias habiles para validacion / 10 dias para recursos). Alertas automaticas al Profesional a 5 / 2 / 0 dias. Integra con state machine.</p>
+      <div class="comp-when"><strong>Disparado por:</strong> respuestas 1 y 2 audio Danna. <strong>Donde aparece:</strong> detalle tramite, dashboard Profesional.</div>
+    </article>
+  </div>
+
+  <div class="card" style="margin-top:18px;background:var(--blue-bg);border-color:var(--blue-border)">
+    <h3 class="card-title">Servicios backend asociados</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+      <code style="background:var(--surface);padding:6px 12px;border-radius:var(--radius-md);font-size:12px">firmaDigitalService</code>
+      <code style="background:var(--surface);padding:6px 12px;border-radius:var(--radius-md);font-size:12px">plazosLegalesService (dias habiles CO)</code>
+      <code style="background:var(--surface);padding:6px 12px;border-radius:var(--radius-md);font-size:12px">templateEngineService</code>
+      <code style="background:var(--surface);padding:6px 12px;border-radius:var(--radius-md);font-size:12px">notifCascadaService</code>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="s11">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 11</div>
+    <h2 class="section-title">Marco legal y validaciones</h2>
+    <p class="section-sub">14 normas relevantes. 15 validaciones legales automaticas que el sistema debe ejecutar antes de aprobar un tramite.</p>
+  </div>
+  <h3 style="font-size:14px;font-weight:700;margin:0 0 12px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em">Critico para Entrega 1</h3>
+  <div class="grid-3" style="margin-bottom:18px">
+    <div class="card"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">Art 52 C.P. 1991 + Ley 181/1995</h4><p class="card-body">Fundamento constitucional del deporte y Sistema Nacional del Deporte.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">Decreto 1085/2015</h4><p class="card-body">Asambleas, organos directivos, comites, transferencias.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">Decreto 1387/1970</h4><p class="card-body">7 documentos de reconocimiento. Base del worksheet IVC-FR-003.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">Decreto 1529/1990 + 525/1990</h4><p class="card-body">Personeria juridica de asociaciones.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">Resolucion 705/2024</h4><p class="card-body">Capacitacion obligatoria de miembros directivos.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">Ley 1437/2011 (CPACA)</h4><p class="card-body">Notificacion, recursos, plazos. Art 76: 10 dias para recurso reposicion.</p></div>
+  </div>
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 12px;color:var(--blue-info);text-transform:uppercase;letter-spacing:.06em">Importante para Entrega 2</h3>
+  <div class="grid-3" style="margin-bottom:18px">
+    <div class="card"><div class="card-strip" style="background:var(--blue-info)"></div><h4 style="font-weight:700;font-size:14px">Ley 1946/2019 + Decretos 520/2021, 1306/2023</h4><p class="card-body">Regimen del deporte paralimpico.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--blue-info)"></div><h4 style="font-weight:700;font-size:14px">Ley 49/1993 + Ley 845/2003 + Ley 2084/2021</h4><p class="card-body">Regimen disciplinario.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--blue-info)"></div><h4 style="font-weight:700;font-size:14px">Ley 1967/2019 + Decreto 1670/2019</h4><p class="card-body">Min Deporte (contexto institucional).</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--blue-info)"></div><h4 style="font-weight:700;font-size:14px">Decreto Ley 1228/1995</h4><p class="card-body">Reorganizacion del deporte (contexto historico).</p></div>
+  </div>
+</section>
+
+<section class="section" id="s12">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 12</div>
+    <h2 class="section-title">Catalogos maestros · 8 catalogos</h2>
+    <p class="section-sub">Conjunto de tablas de datos maestros que el sistema debe administrar. Dos catalogos nuevos: tipologias y estados.</p>
+  </div>
+  <div class="grid-bento">
+    <div class="card span-2"><div class="card-strip" style="background:var(--azul)"></div><h4 style="font-weight:700;font-size:14px">1. Tipos de organismo</h4><p class="card-body">Ligas, Asociaciones, Federaciones, Clubes (4 tipos base + paralimpico).</p></div>
+    <div class="card span-2"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">2. Tipos de tramite</h4><p class="card-body">~30 tramites identificados en el XLSX. Otorgamiento, renovacion, modificacion, registro de directivos, etc.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--green)"></div><h4 style="font-weight:700;font-size:14px">3. Tipos reunion asamblea</h4><p class="card-body">8 tipos.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--blue-info)"></div><h4 style="font-weight:700;font-size:14px">4. Tipos capacitacion</h4><p class="card-body">Res. 705.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--purple)"></div><h4 style="font-weight:700;font-size:14px">5. Causales ineficacia</h4><p class="card-body">7 causales legales.</p></div>
+    <div class="card"><div class="card-strip" style="background:var(--green)"></div><h4 style="font-weight:700;font-size:14px">6. Categorias deportes</h4><p class="card-body">Convencional / Integrado / Exclusivo / Paralimpico (4).</p></div>
+    <div class="card span-2" style="border:2px solid var(--accent);background:var(--orange-bg)"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">7. Tipologias proceso <span class="tip-pill" style="background:var(--surface);color:var(--accent);border:1px solid var(--orange-border);margin-left:6px">Nuevo</span></h4><p class="card-body">3 tipologias: Tramite / Actuacion / Procedimiento. Fuente: XLSX SUID seccion 13.</p></div>
+    <div class="card span-2" style="border:2px solid var(--accent);background:var(--orange-bg)"><div class="card-strip" style="background:var(--accent)"></div><h4 style="font-weight:700;font-size:14px">8. Estados del sistema <span class="tip-pill" style="background:var(--surface);color:var(--accent);border:1px solid var(--orange-border);margin-left:6px">Nuevo</span></h4><p class="card-body">45+ estados clasificados por tipologia. Fuente principal: <code>&lt;EstadoBadge /&gt;</code>.</p></div>
+  </div>
+</section>
+
+<section class="section" id="s13">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 13</div>
+    <h2 class="section-title">Pantallas E1 · ~32 pantallas estimadas</h2>
+    <p class="section-sub">Inventario tentativo de pantallas para Entrega 1. Status: cuales pueden arrancar Lo-Fi vs cuales estan bloqueadas.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Pantalla</th><th>Rol</th><th>Tipologia</th><th>Lane</th><th>Componentes Naowee</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Login / Onboarding</td><td>Todos</td><td>—</td><td>—</td><td>Form, Toast</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>2</td><td>Radicacion tramite</td><td>Usuario externo</td><td>T</td><td>1</td><td>Wizard, Uploader, FirmaConfirmacion</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>3</td><td>Mis tramites (lista)</td><td>Usuario externo</td><td>T</td><td>1</td><td>Tabla, EstadoBadge, Filtros</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>4</td><td>Detalle tramite externo</td><td>Usuario externo</td><td>T</td><td>1</td><td>TimelineTramite, EstadoBadge</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>5</td><td>Bandeja entrada GESDOC</td><td>Encargado GD</td><td>T</td><td>1</td><td>Tabla, ChipFiltro</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>6</td><td>Dashboard Coord interno</td><td>Coordinador</td><td>T</td><td>1</td><td>KPI cards, Drag-Drop</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>7</td><td>Asignacion Profesional</td><td>Coordinador</td><td>T</td><td>1</td><td>Modal selector, carga visible</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>8</td><td>Worksheet Profesional</td><td>Profesional IVC</td><td>T</td><td>1</td><td>Form complejo, Comparador, TimelineTramite</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>9</td><td>Solicitud subsanacion</td><td>Profesional IVC</td><td>A</td><td>1</td><td>SolicitudInfoAdicional</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>10</td><td>Generador acto admin</td><td>Profesional IVC</td><td>A</td><td>1</td><td>Template engine, Preview</td><td><span class="estado-badge tramite">Bloqueada · plantilla acto final</span></td></tr>
+        <tr><td>11</td><td>Inbox Revisor</td><td>Coord IVC</td><td>T</td><td>1</td><td>Tabla, Vista comparada</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>12</td><td>Vista comparada acto</td><td>Coord IVC</td><td>A</td><td>1</td><td>Diff viewer, Observaciones</td><td><span class="estado-badge tramite">Bloqueada · plantilla acto final</span></td></tr>
+        <tr><td>13</td><td>Bandeja firma Director</td><td>Director</td><td>A</td><td>1</td><td>Tabla, FirmaConfirmacion</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>14</td><td>Visor acto firmado</td><td>Director</td><td>T</td><td>1</td><td>PDF viewer, Auditoria</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>15</td><td>Definir canal notificacion</td><td>Coord GIT</td><td>A</td><td>1</td><td>Selector segmentado</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>16</td><td>Notif personal (FR-007/008)</td><td>Funcionario</td><td>A</td><td>1</td><td>Form, FirmaConfirmacion</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>17</td><td>Notif electronica (FR-029)</td><td>Sistema</td><td>A</td><td>1</td><td>Auto + acuse</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>18</td><td>Aviso publico (FR-009)</td><td>Sistema</td><td>A</td><td>1</td><td>Page publica, Cron</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>19</td><td>Renuncia a terminos</td><td>Usuario externo</td><td>A</td><td>1</td><td>FirmaConfirmacion</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>20</td><td>Recurso de reposicion</td><td>Usuario externo</td><td>A</td><td>1</td><td>Form, RecursoCountdown</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>21</td><td>Tramitar recurso</td><td>Profesional / Juridica</td><td>A</td><td>1</td><td>SolicitudInfoAdicional</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>22</td><td>Vista RND actualizado</td><td>Sistema</td><td>T</td><td>1</td><td>Solo lectura</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>23</td><td>Dashboard Profesional</td><td>Profesional IVC</td><td>T</td><td>1</td><td>KPI, Alertas 15/10d</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>24</td><td>Configuracion org externa</td><td>Org deportivo</td><td>—</td><td>—</td><td>Form, Tabla miembros</td><td><span class="estado-badge actuacion">Ready Lo-Fi</span></td></tr>
+        <tr><td>25</td><td>Radicacion Lane 2</td><td>Usuario externo</td><td>T</td><td>2</td><td>Wizard PQRSD</td><td><span class="estado-badge procedimiento">Decision cliente</span></td></tr>
+        <tr><td>26</td><td>Clasificacion Lane 2</td><td>Coordinador</td><td>T</td><td>2</td><td>Selector tipologia</td><td><span class="estado-badge procedimiento">Decision cliente</span></td></tr>
+        <tr><td>27</td><td>Gestion solicitud Lane 2</td><td>Profesional</td><td>A</td><td>2</td><td>Form, Oficio</td><td><span class="estado-badge procedimiento">Decision cliente</span></td></tr>
+        <tr><td>28</td><td>Oficio respuesta Lane 2</td><td>Profesional</td><td>A</td><td>2</td><td>Generador</td><td><span class="estado-badge procedimiento">Bloqueada · HU-28 PQRSD</span></td></tr>
+        <tr><td>29</td><td>Auditoria expediente</td><td>Auditor</td><td>P</td><td>—</td><td>Timeline largo</td><td><span class="estado-badge procedimiento">Bloqueada · HU-27</span></td></tr>
+        <tr><td>30</td><td>Sancionatorio expediente</td><td>Juridica</td><td>P</td><td>—</td><td>Multi-doc</td><td><span class="estado-badge procedimiento">Bloqueada · HU-26.3</span></td></tr>
+        <tr><td>31</td><td>Monitoreo LA/FT</td><td>Analista LA/FT</td><td>P</td><td>—</td><td>Tablero riesgo</td><td><span class="estado-badge procedimiento">Bloqueada · post-MVP</span></td></tr>
+        <tr><td>32</td><td>Admin de configuracion</td><td>Admin sistema</td><td>—</td><td>—</td><td>Crud catalogos</td><td><span class="estado-badge tramite">Pendiente Danna · rol admin?</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="display:flex;gap:14px;margin-top:14px;font-size:13px;flex-wrap:wrap">
+    <div><span class="estado-badge actuacion">Ready Lo-Fi · ~24</span></div>
+    <div><span class="estado-badge tramite">Bloqueada · plantilla acto · 2</span></div>
+    <div><span class="estado-badge procedimiento">Bloqueada · HU pre-existentes · 6+</span></div>
+  </div>
+</section>
+
+<section class="section" id="s14">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 14</div>
+    <h2 class="section-title">Supuestos pendientes</h2>
+    <p class="section-sub">Tres decisiones que aun no estan en firme y que impactan el alcance final.</p>
+  </div>
+  <div class="grid-3">
+    <article class="caution-card">
+      <div class="caution-icon">Lane 2 en E1?</div>
+      <h4>Bloqueante · Decision cliente</h4>
+      <p class="card-body" style="margin-top:8px">Si Lane 2 entra a E1, +5 pantallas (~25% mas alcance). Si sale, lo movemos a E2.</p>
+      <p class="card-body" style="margin-top:8px"><strong>Pregunta directa a Danna:</strong> el MVP cubre solo Lane 1, o ambos lanes?</p>
+    </article>
+    <article class="caution-card">
+      <div class="caution-icon">Tipologias validadas?</div>
+      <h4>Confirmacion verbal pendiente</h4>
+      <p class="card-body" style="margin-top:8px">Las 3 tipologias (T/A/P) son interpretacion del XLSX. Danna no las menciono explicitamente en el audio.</p>
+      <p class="card-body" style="margin-top:8px"><strong>Pregunta directa:</strong> el equipo del Ministerio usa esa nomenclatura, o es nuestra?</p>
+    </article>
+    <article class="caution-card">
+      <div class="caution-icon">Motor de templates?</div>
+      <h4>Decision tecnica Juanma</h4>
+      <p class="card-body" style="margin-top:8px">La capacidad del motor define si los actos admin se generan en runtime (DOCX-PDF) o si se pre-renderizan.</p>
+      <p class="card-body" style="margin-top:8px"><strong>Pregunta directa a Juanma:</strong> docx-templater + LibreOffice, o HTML + Puppeteer?</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="s15">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 15</div>
+    <h2 class="section-title">Preguntas para Danna · 17 preguntas en 4 categorias</h2>
+    <p class="section-sub">Bloque conversacional con Danna en la sesion. Priorizadas. Las criticas estan marcadas con prioridad alta.</p>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Scope y prioridades
+      </div>
+      <div class="acc-count">5</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>1.1</strong> Cuales son los 2 tramites prioritarios para Entrega 1? Recomendamos Otorgamiento + Renovacion de Reconocimiento Deportivo.</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>1.2</strong> Lane 2 (Actuaciones / PQRSD) entra en Entrega 1, o se mueve a E2?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>1.3</strong> El MVP incluye digitalizacion manual de tramites pre-existentes, o solo nuevos?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>1.4</strong> Existe un rol de admin de configuracion del sistema? (catalogos, plantillas, plazos).</div>
+      <div class="q-item"><span class="q-priority low">Baja</span> <strong>1.5</strong> Hay metricas de aceptacion definidas para E1? (tiempo medio respuesta, % auto-resuelto, etc.)</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        HU pre-existentes (las 5 mas criticas)
+      </div>
+      <div class="acc-count">5</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>2.1</strong> Por favor comparte los .docx de HU-006 (SITOD Radicacion), HU-001 (Asignacion), HU-005 (Cierre). Son criticas para Lane 1.</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>2.2</strong> SITOD es legacy que reemplazamos, o conviven sistemas?</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>2.3</strong> HU-26.3 (Infractores), HU-27 (Auditoria) y HU-28 (PQRSD) son criticas para procedimientos. Cuando las tendremos?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>2.4</strong> La nomenclatura HU-XX.YY indica jerarquia padre-hijo, o modulos paralelos?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>2.5</strong> Existe repositorio (Confluence, SharePoint, Drive) donde vivan las HU?</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Plantillas y actos administrativos
+      </div>
+      <div class="acc-count">4</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>3.1</strong> Necesitamos la plantilla del acto administrativo final (Resolucion). Cuando esta disponible?</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>3.2</strong> Cuales son las plantillas equivalentes para Renovacion vs Otorgamiento? Misma plantilla con campos diferentes, o plantillas distintas?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>3.3</strong> El acto administrativo permite campos dinamicos del worksheet IVC-FR-003, o es completamente libre?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>3.4</strong> Hay un manual de estilo o branding obligatorio para los actos administrativos?</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Tipologias y catalogos
+      </div>
+      <div class="acc-count">3</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>4.1</strong> Validas las 3 tipologias (Tramite / Actuacion / Procedimiento) del XLSX? Es nomenclatura usada por el Ministerio?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>4.2</strong> Los 45+ estados del XLSX son la lista cerrada definitiva, o pueden surgir mas durante implementacion?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>4.3</strong> Existe matriz de transiciones permitidas por rol y estado? (Quien puede mover X a Y).</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="s16">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 16</div>
+    <h2 class="section-title">Preguntas para Juanma · 22 preguntas tecnicas en 5 bloques</h2>
+    <p class="section-sub">Sesion tecnica con tech lead. Bloqueantes de arquitectura, motor de templates, firma electronica y permisos.</p>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Arquitectura e integraciones
+      </div>
+      <div class="acc-count">5</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>1.1</strong> Stack actual: Node + React? Cual base de datos: Postgres? Redis para cache?</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>1.2</strong> GESDOC se integra en E1, E2 o nunca? (Danna confirmo fuera de MVP).</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>1.3</strong> Como conectamos al RND (Registro Nacional del Deporte)? API REST? Cron? Manual?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>1.4</strong> Hay un BUS de eventos para notificar transiciones (Kafka, RabbitMQ)?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>1.5</strong> Donde corre el sistema? Cloud, on-prem del Ministerio?</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Persistencia y modelo de datos
+      </div>
+      <div class="acc-count">5</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>2.1</strong> Tabla unica de "expediente" con discriminador de tipologia, o tablas separadas?</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>2.2</strong> Como versionamos plantillas? Tabla <code>templates</code> con <code>id, code, version, effective_from, effective_to</code>?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>2.3</strong> Auditoria inmutable: append-only event log? Tabla audit_log + hash?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>2.4</strong> Storage para documentos: S3, Azure Blob, file system del Ministerio?</div>
+      <div class="q-item"><span class="q-priority low">Baja</span> <strong>2.5</strong> Hay limite legal de retencion documental (anos)?</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Permisos y seguridad
+      </div>
+      <div class="acc-count">4</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>3.1</strong> RBAC simple (rol → permisos), ABAC (atributos), o hibrido?</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>3.2</strong> Usuarios externos: autenticacion via Ciudadano Digital (Carpeta Ciudadana), o usuario/password propio?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>3.3</strong> Logs de acceso: que se loguea y donde se ven (Kibana, CloudWatch)?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>3.4</strong> Hay requisitos especificos de proteccion de datos personales (Ley 1581)?</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Motor de templates + firma electronica
+      </div>
+      <div class="acc-count">5</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>4.1</strong> Que motor usaremos? Recomendacion: <code>docx-templater</code> + LibreOffice headless para PDF, o HTML + Puppeteer.</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>4.2</strong> Proveedor de firma electronica certificada: Certicamara, GSE, Andes SCD? Hay contrato?</div>
+      <div class="q-item"><span class="q-priority high">Alta</span> <strong>4.3</strong> DOCX a PDF firmado en runtime, o se genera y se almacena en S3?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>4.4</strong> Firma del FR-008 (presencial) se captura con pad digital integrado, o se firma papel + se sube scan?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>4.5</strong> Los worksheets FR-003/037/038/039/047 se editan en sistema (form HTML) o se descargan en Word y se suben?</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="left">
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Performance y migracion
+      </div>
+      <div class="acc-count">3</div>
+    </div>
+    <div class="acc-body">
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>5.1</strong> Volumen estimado: tramites/ano? Concurrencia pico esperada?</div>
+      <div class="q-item"><span class="q-priority med">Media</span> <strong>5.2</strong> Migracion de datos historicos: hay extraccion de SITOD?</div>
+      <div class="q-item"><span class="q-priority low">Baja</span> <strong>5.3</strong> SLA de disponibilidad? (99.5%, 99.9%?)</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="s17">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 17 · Nueva</div>
+    <h2 class="section-title">HU pre-existentes a solicitar a Danna · 15+ HU</h2>
+    <p class="section-sub">El XLSX SUID referencia HU que no tenemos. Sin ellas, estamos disenando sobre supuestos en ~6 pantallas. Email a Danna es prioridad uno tras esta sesion.</p>
+  </div>
+
+  <div class="hu-grid">
+    <div class="hu-card critical">
+      <span class="hu-star">★</span>
+      <div class="hu-code">HU-006</div>
+      <div class="hu-name">SITOD · Radicacion</div>
+      <div class="hu-meta">Critica · Lane 1 / Tramite</div>
+    </div>
+    <div class="hu-card critical">
+      <span class="hu-star">★</span>
+      <div class="hu-code">HU-001</div>
+      <div class="hu-name">Asignacion</div>
+      <div class="hu-meta">Critica · Coordinador</div>
+    </div>
+    <div class="hu-card critical">
+      <span class="hu-star">★</span>
+      <div class="hu-code">HU-005</div>
+      <div class="hu-name">Cierre</div>
+      <div class="hu-meta">Critica · Cierre tramite</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-26</div>
+      <div class="hu-name">Gestion Contratos Laborales</div>
+      <div class="hu-meta">Procedimiento · Juridica</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-26.1</div>
+      <div class="hu-name">Directorio Clubes</div>
+      <div class="hu-meta">Catalogo deportivo</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-26.2</div>
+      <div class="hu-name">Estadios</div>
+      <div class="hu-meta">Catalogo infraestructura</div>
+    </div>
+    <div class="hu-card critical">
+      <span class="hu-star">★</span>
+      <div class="hu-code">HU-26.3</div>
+      <div class="hu-name">Infractores</div>
+      <div class="hu-meta">Critica · Sancionatorio</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-26.4</div>
+      <div class="hu-name">Comisiones Locales</div>
+      <div class="hu-meta">Procedimiento</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-26.5</div>
+      <div class="hu-name">Tablero Reportes</div>
+      <div class="hu-meta">Analytics</div>
+    </div>
+    <div class="hu-card critical">
+      <span class="hu-star">★</span>
+      <div class="hu-code">HU-27</div>
+      <div class="hu-name">Gestion Organizaciones</div>
+      <div class="hu-meta">Critica · Auditoria</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-27.1</div>
+      <div class="hu-name">Participantes</div>
+      <div class="hu-meta">Auditoria</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-27.2</div>
+      <div class="hu-name">Tablero</div>
+      <div class="hu-meta">Analytics</div>
+    </div>
+    <div class="hu-card critical">
+      <span class="hu-star">★</span>
+      <div class="hu-code">HU-28</div>
+      <div class="hu-name">PQRSD</div>
+      <div class="hu-meta">Critica · Lane 2 completo</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-28.1</div>
+      <div class="hu-name">Consulta Organizaciones</div>
+      <div class="hu-meta">PQRSD</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-28.2</div>
+      <div class="hu-name">Consulta Personas</div>
+      <div class="hu-meta">PQRSD</div>
+    </div>
+    <div class="hu-card">
+      <div class="hu-code">HU-28.3</div>
+      <div class="hu-name">Tablero Reporte</div>
+      <div class="hu-meta">Analytics PQRSD</div>
+    </div>
+  </div>
+
+  <div class="caution-card" style="margin-top:18px">
+    <div class="caution-icon">Email para Danna · prioridad uno tras la sesion</div>
+    <p class="card-body" style="margin-top:8px;color:var(--text-primary);font-style:italic">"Hola Danna. Por favor compartenos los .docx de HU-006 (SITOD Radicacion), HU-001 (Asignacion), HU-005 (Cierre), HU-26 a HU-26.5, HU-27 a HU-27.2, HU-28 a HU-28.3. Tambien la plantilla del acto administrativo final (Resolucion). Sin esto, ~30% del scope queda en supuestos."</p>
+  </div>
+</section>
+
+<section class="section" id="s18">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 18</div>
+    <h2 class="section-title">Agenda de la sesion · 90 minutos</h2>
+    <p class="section-sub">Plan de la reunion con Danna + Juanma. Cada bloque tiene un objetivo claro y entrega un acuerdo concreto.</p>
+  </div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-time">0-5'</div>
+      <div class="tl-title">Contexto y objetivo de la sesion</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">5-15'</div>
+      <div class="tl-title">Confirmar las 4 respuestas del audio</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">15-25'</div>
+      <div class="tl-title">Validar las 3 tipologias de proceso</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">25-40'</div>
+      <div class="tl-title">Walkthrough Lane 1 con tiempos confirmados</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">40-50'</div>
+      <div class="tl-title">Walkthrough Lane 2 · entra a E1?</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">50-60'</div>
+      <div class="tl-title">15 HU pre-existentes · disponibilidad</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">60-75'</div>
+      <div class="tl-title">Plantilla acto admin + componentes UI nuevos</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">75-85'</div>
+      <div class="tl-title">Preguntas tecnicas Juanma (top 10)</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">85-90'</div>
+      <div class="tl-title">Acuerdos + siguientes pasos</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="s19">
+  <div class="section-header">
+    <div class="section-eyebrow">Seccion 19</div>
+    <h2 class="section-title">Recomendacion profesional</h2>
+    <p class="section-sub">Donde estamos. Que hacemos esta semana. Que hacemos las siguientes 3.</p>
+  </div>
+  <div class="reco-card">
+    <h3>Lo-Fi a Hi-Fi parcial</h3>
+    <p>Lane 1 Deporte Aficionado puede iniciar Lo-Fi de inmediato con las ~24 pantallas Ready. Hi-Fi se hace al recibir HU pre-existentes + plantilla acto administrativo final. Lane 2 esperamos decision de Danna.</p>
+    <div class="reco-list">
+      <div class="reco-step">
+        <div class="reco-week">Esta semana</div>
+        <div class="reco-text">Ejecutar la sesion de 90 min con Danna + Juanma. Cerrar Lane 2 (in/out). Enviar email formal a Danna pidiendo las 15 HU + plantilla acto admin. Comenzar Lo-Fi de los 4 componentes UI nuevos (EstadoBadge, FirmaConfirmacion, SolicitudInfoAdicional, TimelineTramite).</div>
+      </div>
+      <div class="reco-step">
+        <div class="reco-week">Proxima semana</div>
+        <div class="reco-text">Arrancar Lo-Fi del happy path Lane 1 (radicacion a asignacion a worksheet a revision a firma a notificacion a renuncia a recurso a actualizacion RND). Validar con Danna los 45+ estados del XLSX.</div>
+      </div>
+      <div class="reco-step">
+        <div class="reco-week">2-3 semanas</div>
+        <div class="reco-text">Iniciar Hi-Fi Lane 1 tras recibir HU + plantilla acto admin. Aplicar tokens Naowee (color, tipografia, sombras, radius). Mapear cada pantalla a componentes del catalogo. Preparar prototipo navegable para validacion con stakeholders.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <p>Generado <strong>2026-05-21 · V3</strong> · <strong>Doug Vargas (Head of Product)</strong> <span class="version-pill-foot">ivc-v1.0.0</span></p>
+  <p style="margin-top:6px">Para validacion con: <strong>Danna Arrieta (PM Ministerio)</strong> + <strong>Juan Manuel Armero (Tech Lead)</strong></p>
+  <div class="foot-btn">
+    <a class="btn-link-back" href="index.html">← Volver al resumen ejecutivo</a>
+    <button class="btn-print" onclick="window.print()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Imprimir / Exportar PDF
+    </button>
+  </div>
+</footer>
+<style>
+  .version-pill-foot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #002B5B;
+    color: #fff;
+    border-radius: 9999px;
+    font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+  .version-pill-foot::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #FF7500;
+  }
+  .btn-link-back {
+    color: #d74009;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    margin-right: 16px;
+  }
+  .btn-link-back:hover { text-decoration: underline; }
+</style>
+
+</main>
+
+<script>
+mermaid.initialize({
+  theme: 'base',
+  themeVariables: {
+    primaryColor: '#FF7500',
+    primaryTextColor: '#282834',
+    primaryBorderColor: '#d74009',
+    lineColor: '#646587',
+    tertiaryColor: '#fff3e6',
+    tertiaryBorderColor: '#ffbf75',
+    background: '#ffffff',
+    secondaryColor: '#eef5ff',
+    actorBkg: '#fff3e6',
+    fontSize: '13px',
+    fontFamily: 'Inter, sans-serif'
+  },
+  flowchart: { htmlLabels: true, curve: 'basis', useMaxWidth: true },
+  stateDiagram: { useMaxWidth: true },
+  securityLevel: 'loose',
+  startOnLoad: true
+});
+
+document.querySelectorAll('.nav-item').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+});
+
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(n => n.classList.remove('active'));
+      const active = document.querySelector('.nav-item[href="#' + id + '"]');
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-100px 0px -60% 0px', threshold: 0 });
+sections.forEach(s => observer.observe(s));
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const group = tab.parentElement.dataset.tabGroup;
+    const target = tab.dataset.tab;
+    document.querySelectorAll('.tabs[data-tab-group="' + group + '"] .tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel[data-tab-group="' + group + '"]').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(target).classList.add('active');
+    setTimeout(() => {
+      try { mermaid.run({nodes: document.querySelectorAll('#' + target + ' .mermaid')}); } catch(e) {}
+    }, 50);
+  });
+});
+
+function toggleAcc(header) {
+  header.parentElement.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>

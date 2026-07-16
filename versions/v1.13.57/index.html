@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IVC — Resumen Ejecutivo V3 · Naowee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --naranja:#FF7500; --azul:#002B5B;
+    --text-primary:#282834; --text-secondary:#646587;
+    --accent:#d74009;
+    --green:#1f8923; --green-bg:#e6f4e7; --green-border:#b7dfb9;
+    --surface:#ffffff; --bg:#f5f6fa;
+    --border:#e7e9f3; --border-dark:#d0d4e6;
+    --blue-info:#1f78d1; --blue-bg:#eef5ff;
+    --orange-bg:#fff3e6; --orange-border:#ffbf75;
+    --red-bg:#fff0ee; --red-border:#ffc4bb;
+    --purple:#7c3aed;
+    --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:20px; --radius-full:9999px;
+    --font:'Inter',sans-serif;
+    --shadow-sm:0 1px 4px rgba(0,0,0,.08);
+    --shadow-md:0 4px 16px rgba(0,0,0,.12);
+    --shadow-card:0 0 2px rgba(145,158,171,.2), 0 12px 24px -4px rgba(145,158,171,.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 36px 40px 60px;
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255,117,0,.05) 0%, transparent 38%),
+      linear-gradient(135deg, #ffffff 0%, #fafaf7 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 40px 44px 36px;
+    margin-bottom: 36px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(40,40,52,.05) 1px, transparent 1.5px);
+    background-size: 24px 24px;
+    opacity: .35;
+    pointer-events: none;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,.5) 0%, transparent 80%);
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 36px;
+    align-items: end;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .hero-eyebrow .label {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .hero-eyebrow .v3-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    background: var(--azul);
+    color: #fff;
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+  .hero-title {
+    font-size: clamp(36px, 4.4vw, 56px);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
+    font-weight: 800;
+  }
+  .hero-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.5;
+    max-width: 640px;
+    margin-bottom: 22px;
+  }
+  .hero-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--orange-bg);
+    border: 1px solid var(--orange-border);
+    color: var(--accent);
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .hero-status .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--naranja);
+    box-shadow: 0 0 0 4px rgba(255,117,0,.18);
+    animation: pulse-glow 2s infinite ease-in-out;
+  }
+  .hero-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    text-align: right;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+  }
+  .meta-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+  }
+  .meta-value {
+    font-size: 15px;
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .meta-value.accent { color: var(--accent); }
+
+  /* ============ SECTION HEADER ============ */
+  .section {
+    margin-bottom: 32px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    font-variant-numeric: tabular-nums;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin: 0;
+  }
+  .section-aside {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ============ S1: definition ============ */
+  .definition {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 18px 24px;
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+  }
+  .definition strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ============ S2: metrics ============ */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 22px 22px 18px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 2px rgba(145,158,171,.25), 0 18px 36px -6px rgba(145,158,171,.20);
+  }
+  .metric-card::before {
+    content:'';
+    position: absolute;
+    top: 0; left: 0;
+    width: 32px; height: 3px;
+    background: var(--naranja);
+    border-radius: 0 0 var(--radius-full) 0;
+  }
+  .metric-number {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--naranja);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+  }
+  .metric-label {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .metric-hint {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  /* ============ S3: scope bento ============ */
+  .scope-bento {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 18px;
+  }
+  .scope-in, .scope-out {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 24px 26px;
+    box-shadow: var(--shadow-card);
+  }
+  .scope-in {
+    border-left: 3px solid var(--green);
+  }
+  .scope-out {
+    background: linear-gradient(180deg, var(--surface) 0%, #fafbfd 100%);
+    border-left: 3px solid var(--border-dark);
+  }
+  .scope-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    margin-bottom: 18px;
+  }
+  .scope-title.in { color: var(--green); }
+  .scope-title.out { color: var(--text-secondary); }
+  .scope-title svg { width: 16px; height: 16px; stroke-width: 2; }
+  .scope-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 22px;
+  }
+  .scope-row { display: flex; flex-direction: column; gap: 4px; }
+  .scope-key {
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+  .scope-val {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .scope-val small {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .scope-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    border: 1px solid;
+    letter-spacing: 0.02em;
+  }
+  .pill.azul { background: var(--blue-bg); border-color: #cfe1f7; color: var(--blue-info); }
+  .pill.verde { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
+  .pill.naranja { background: var(--orange-bg); border-color: var(--orange-border); color: var(--accent); }
+  .pill.gris { background: #f1f2f7; border-color: var(--border-dark); color: var(--text-secondary); }
+  .scope-components {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .scope-components ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 18px;
+  }
+  .scope-components li {
+    font-size: 12px;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.4;
+    display: flex;
+    gap: 6px;
+  }
+  .scope-components li code {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .scope-out ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .scope-out li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.45;
+    padding-left: 18px;
+    position: relative;
+  }
+  .scope-out li::before {
+    content: '←';
+    position: absolute;
+    left: 0;
+    color: var(--border-dark);
+    font-weight: 700;
+  }
+
+  /* ============ S4: insights ============ */
+  .insights {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 22px 22px;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 2px rgba(145,158,171,.25), 0 18px 36px -6px rgba(145,158,171,.20);
+  }
+  .insight-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--orange-bg) 0%, #fff 100%);
+    border: 1px solid var(--orange-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--naranja);
+  }
+  .insight-icon svg { width: 20px; height: 20px; stroke-width: 1.8; }
+  .insight-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.3;
+  }
+  .insight-body {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .insight-body em {
+    color: var(--accent);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  /* ============ S5: timeline ============ */
+  .timeline-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 32px 28px 24px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+  }
+  .timeline-wrap::before {
+    content:'';
+    position:absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green) 0%, var(--green) 60%, var(--naranja) 60%, var(--naranja) 72%, var(--border-dark) 72%);
+  }
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    position: relative;
+  }
+  .timeline-line {
+    position: absolute;
+    top: 22px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .timeline-line-progress {
+    position: absolute;
+    top: 22px;
+    left: 10%;
+    width: 56%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--green) 0%, var(--naranja) 100%);
+    z-index: 1;
+  }
+  .timeline-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+  }
+  .tl-circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--border-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-weight: 800;
+    font-size: 13px;
+    transition: all .18s ease;
+  }
+  .timeline-node.done .tl-circle {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .timeline-node.active .tl-circle {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: #fff;
+    box-shadow: 0 0 0 6px rgba(255,117,0,.18);
+    animation: pulse-glow 2.2s infinite ease-in-out;
+  }
+  .tl-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    max-width: 150px;
+    line-height: 1.3;
+  }
+  .tl-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-align: center;
+  }
+  .timeline-node.active .tl-date {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ============ S6 & S7: decisions / risks ============ */
+  .decisions, .risks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .decision-card, .risk-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .decision-card { border-left: 3px solid var(--orange-border); background: linear-gradient(180deg, var(--surface) 0%, #fffaf3 100%); }
+  .risk-card { border-left: 3px solid var(--red-border); background: linear-gradient(180deg, var(--surface) 0%, #fff8f7 100%); }
+  .dr-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .decision-card .dr-head { color: var(--accent); }
+  .risk-card .dr-head { color: #c0392b; }
+  .dr-head svg { width: 14px; height: 14px; stroke-width: 2; }
+  .dr-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .dr-body {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+  }
+  .dr-body em {
+    color: var(--accent);
+    font-style: normal;
+    font-weight: 600;
+  }
+  .dr-body strong { color: var(--text-primary); font-weight: 700; }
+
+  /* ============ S8: actions ============ */
+  .actions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 22px 26px;
+    box-shadow: var(--shadow-card);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+  }
+  .action-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: #fafbfd;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .action-item:hover {
+    background: var(--orange-bg);
+    border-color: var(--orange-border);
+  }
+  .action-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-dark);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .action-text {
+    font-size: 12px;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.45;
+  }
+  .action-text strong {
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .action-text .meta {
+    display: block;
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ============ S9: asks ============ */
+  .asks-card {
+    background: linear-gradient(135deg, #fffaf8 0%, var(--surface) 100%);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-xl);
+    padding: 24px 28px;
+    box-shadow: 0 0 0 4px rgba(215,64,9,.05), var(--shadow-card);
+  }
+  .asks-title {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .asks-title::before {
+    content:'';
+    display:inline-block;
+    width: 18px; height: 2px;
+    background: var(--accent);
+  }
+  .asks-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 28px;
+  }
+  .ask-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.45;
+  }
+  .ask-item svg {
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 3px;
+    stroke-width: 2;
+  }
+
+  /* ============ FOOTER ============ */
+  .footer {
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .footer-link:hover { text-decoration: underline; }
+  .footer-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .footer-meta strong { color: var(--text-primary); font-weight: 700; }
+  .version-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--azul);
+    color: #fff;
+    border-radius: 9999px;
+    font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+  .version-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--naranja);
+  }
+  .print-btn {
+    appearance: none;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    padding: 9px 18px;
+    border-radius: var(--radius-md);
+    font: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .print-btn:hover { opacity: .88; }
+  .print-btn:active { transform: scale(.97); }
+
+  /* ============ ANIMATIONS ============ */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(255,117,0,.18); }
+    50% { box-shadow: 0 0 0 8px rgba(255,117,0,.08); }
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1024px) {
+    .container { padding: 24px 24px 36px; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .scope-bento { grid-template-columns: 1fr; }
+    .insights { grid-template-columns: 1fr; }
+    .decisions, .risks { grid-template-columns: 1fr; }
+    .actions { grid-template-columns: repeat(2, 1fr); }
+    .timeline { grid-template-columns: repeat(5, 1fr); gap: 8px; font-size: 11px; }
+    .hero-title { font-size: 44px; }
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-meta { flex-direction: row; flex-wrap: wrap; align-items: flex-start; text-align: left; }
+    .meta-item { align-items: flex-start; text-align: left; }
+    .asks-grid { grid-template-columns: 1fr; }
+    .scope-grid, .scope-components ul { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .hero-title { font-size: 36px; }
+    .actions { grid-template-columns: 1fr; }
+  }
+
+  /* ============ PRINT ============ */
+  @media print {
+    @page {
+      size: A4 landscape;
+      margin: 0.8cm;
+    }
+    html, body {
+      background: #fff !important;
+      font-size: 9px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .container { max-width: 100%; padding: 0; }
+    .section { margin-bottom: 8px; page-break-inside: avoid; break-inside: avoid; }
+
+    .hero {
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      background-image: none;
+      page-break-inside: avoid;
+    }
+    .hero::after { display: none; }
+    .hero-inner { grid-template-columns: 1.55fr 1fr; gap: 14px; align-items: end; }
+    .hero-eyebrow { margin-bottom: 6px; gap: 6px; }
+    .hero-eyebrow .label { font-size: 8px; letter-spacing: 0.14em; }
+    .hero-eyebrow .v3-badge { font-size: 8px; padding: 1px 6px; }
+    .hero-title { font-size: 26px; margin-bottom: 4px; }
+    .hero-subtitle { font-size: 10px; margin-bottom: 6px; line-height: 1.4; }
+    .hero-status { padding: 2px 8px; font-size: 8px; gap: 5px; }
+    .hero-status .dot { animation: none; width: 6px; height: 6px; }
+    .hero-meta { gap: 6px; }
+    .meta-label { font-size: 7px; letter-spacing: 0.1em; }
+    .meta-value { font-size: 9px; }
+
+    .section-header { margin-bottom: 6px; padding-bottom: 3px; }
+    .section-num, .section-title { font-size: 8px; letter-spacing: 0.14em; }
+    .section-aside { font-size: 8px; }
+
+    .definition { padding: 6px 10px; font-size: 9px; line-height: 1.4; }
+
+    .metrics { gap: 6px; }
+    .metric-card { padding: 8px 10px; box-shadow: none; border-radius: 8px; }
+    .metric-card::before { width: 20px; height: 2px; }
+    .metric-number { font-size: 24px; margin-bottom: 2px; }
+    .metric-label { font-size: 9px; margin-bottom: 1px; }
+    .metric-hint { font-size: 7.5px; line-height: 1.3; }
+
+    .scope-bento { gap: 6px; }
+    .scope-in, .scope-out { padding: 8px 10px; box-shadow: none; border-radius: 8px; }
+    .scope-title { font-size: 8px; letter-spacing: 0.12em; margin-bottom: 6px; gap: 5px; }
+    .scope-title svg { width: 9px; height: 9px; }
+    .scope-grid { gap: 6px 12px; }
+    .scope-key { font-size: 7px; letter-spacing: 0.1em; }
+    .scope-val { font-size: 9px; line-height: 1.3; }
+    .scope-val small { font-size: 8px; }
+    .pill { font-size: 7.5px; padding: 1px 6px; }
+    .scope-components { margin-top: 6px; padding-top: 6px; }
+    .scope-components li { font-size: 8px; line-height: 1.3; }
+    .scope-components li code { font-size: 7.5px; }
+    .scope-out li { font-size: 8.5px; padding-left: 10px; line-height: 1.3; }
+
+    .insights { gap: 6px; }
+    .insight-card { padding: 8px 10px; box-shadow: none; border-radius: 8px; gap: 5px; }
+    .insight-icon { width: 22px; height: 22px; }
+    .insight-icon svg { width: 11px; height: 11px; }
+    .insight-title { font-size: 10px; line-height: 1.25; }
+    .insight-body { font-size: 8px; line-height: 1.35; }
+
+    .timeline-wrap { padding: 10px 12px 8px; box-shadow: none; border-radius: 8px; }
+    .timeline-wrap::before { height: 2px; }
+    .timeline-line, .timeline-line-progress { top: 14px; height: 1.5px; }
+    .tl-circle { width: 28px; height: 28px; font-size: 9px; border-width: 1.5px; }
+    .timeline-node.active .tl-circle { box-shadow: 0 0 0 3px rgba(255,117,0,.18); animation: none; }
+    .timeline-node { gap: 5px; }
+    .tl-label { font-size: 8px; max-width: 100px; }
+    .tl-date { font-size: 7.5px; }
+
+    .decisions, .risks { gap: 6px; }
+    .decision-card, .risk-card { padding: 8px 10px; box-shadow: none; border-radius: 8px; gap: 4px; }
+    .dr-head { font-size: 7.5px; gap: 5px; letter-spacing: 0.1em; }
+    .dr-head svg { width: 9px; height: 9px; }
+    .dr-title { font-size: 9px; line-height: 1.25; }
+    .dr-body { font-size: 8px; line-height: 1.35; }
+
+    .actions { padding: 8px 10px; box-shadow: none; border-radius: 8px; gap: 5px; }
+    .action-item { padding: 6px 8px; gap: 6px; border-radius: 6px; }
+    .action-check { width: 11px; height: 11px; border-width: 1.2px; }
+    .action-text { font-size: 8.5px; line-height: 1.3; }
+    .action-text .meta { font-size: 7px; margin-top: 1px; letter-spacing: 0.04em; }
+
+    .asks-card { padding: 8px 12px; box-shadow: none; border-radius: 8px; border-width: 1.5px; }
+    .asks-title { font-size: 8px; margin-bottom: 6px; gap: 6px; letter-spacing: 0.12em; }
+    .asks-grid { gap: 4px 16px; }
+    .ask-item { font-size: 9px; line-height: 1.3; gap: 5px; }
+    .ask-item svg { width: 10px; height: 10px; margin-top: 1.5px; }
+
+    .footer { margin-top: 8px; padding-top: 6px; }
+    .footer-link, .footer-meta { font-size: 8px; }
+    .footer-link::after { content: ' (' attr(href) ')'; font-size: 7px; color: var(--text-secondary); font-weight: 500; }
+    .print-btn { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-eyebrow">
+          <span class="label">Naowee · Ministerio del Deporte</span>
+          <span class="v3-badge">V3</span>
+        </div>
+        <h1 class="hero-title">IVC <em>—</em> Inspección, Vigilancia y Control · <em>Resumen Ejecutivo</em></h1>
+        <p class="hero-subtitle">Digitalización del proceso del Ministerio del Deporte para gestionar 30 trámites distintos sobre los ~1,200 organismos deportivos del país, reemplazando un proceso manual basado en Word, correo y GESDOC.</p>
+        <span class="hero-status">
+          <span class="dot"></span>
+          FASE: Lo-Fi listo → Hi-Fi parcial
+        </span>
+      </div>
+      <div class="hero-meta">
+        <div class="meta-item">
+          <span class="meta-label">Fecha</span>
+          <span class="meta-value">21 May 2026</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Iteración</span>
+          <span class="meta-value accent">V3 · Post-audio Danna</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Audiencia</span>
+          <span class="meta-value">Danna · Juanma · Doug</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S1: QUE ES IVC ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Qué es IVC</h2>
+      <span class="section-aside">Marco oficial · Resolución 705/2024 + Ley 1445/2011</span>
+    </div>
+    <p class="definition">IVC digitaliza el proceso del Ministerio del Deporte para gestionar <strong>30 trámites distintos</strong> (reconocimiento deportivo, personería jurídica, impugnaciones, sancionatorios, auditorías) sobre los <strong>~1,200 organismos deportivos</strong> del país, reemplazando un proceso manual basado en Word, correo y GESDOC.</p>
+  </section>
+
+  <!-- ============ S2: METRICAS ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Métricas clave del levantamiento</h2>
+      <span class="section-aside">Snapshot 21 May · post-audio Danna + XLSX</span>
+    </div>
+    <div class="metrics">
+      <article class="metric-card">
+        <div class="metric-number">45+</div>
+        <div class="metric-label">Estados mapeados</div>
+        <p class="metric-hint">Trámite + Actuación + Procedimiento</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-number">15</div>
+        <div class="metric-label">Roles identificados</div>
+        <p class="metric-hint">Sistema + 14 personales</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-number">~32</div>
+        <div class="metric-label">Pantallas estimadas E1</div>
+        <p class="metric-hint">+4 vs estimación anterior</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-number">15</div>
+        <div class="metric-label">HU críticas a solicitar</div>
+        <p class="metric-hint">User Stories pre-existentes del SITOD</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ S3: SCOPE ENTREGA 1 ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Scope · Entrega 1</h2>
+      <span class="section-aside">Lo que construimos · Lo que NO entra</span>
+    </div>
+    <div class="scope-bento">
+      <!-- IN -->
+      <div class="scope-in">
+        <div class="scope-title in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12l5 5L20 7"/></svg>
+          Qué construimos
+        </div>
+        <div class="scope-grid">
+          <div class="scope-row">
+            <span class="scope-key">Trámites priorizados</span>
+            <span class="scope-val">Otorgamiento + Renovación<small>Reconocimiento Deportivo</small></span>
+          </div>
+          <div class="scope-row">
+            <span class="scope-key">Organismo objetivo</span>
+            <span class="scope-val">Ligas y Asociaciones<small>Deporte Aficionado</small></span>
+          </div>
+          <div class="scope-row">
+            <span class="scope-key">Tipologías visibles en UI</span>
+            <div class="scope-pills">
+              <span class="pill azul">Trámite</span>
+              <span class="pill verde">Actuación</span>
+              <span class="pill naranja">Procedimiento</span>
+            </div>
+          </div>
+          <div class="scope-row">
+            <span class="scope-key">Roles instanciados</span>
+            <span class="scope-val">8 roles<small>+ Profesional financiero · + Analista LA/FT (provisional)</small></span>
+          </div>
+        </div>
+        <div class="scope-components">
+          <ul>
+            <li><code>&lt;EstadoBadge /&gt;</code> tipología</li>
+            <li><code>&lt;FirmaConfirmacion /&gt;</code> transiciones</li>
+            <li><code>&lt;SolicitudInfoAdicional /&gt;</code> reposición</li>
+            <li><code>&lt;TimelineTramite /&gt;</code> seguimiento</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- OUT -->
+      <div class="scope-out">
+        <div class="scope-title out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Qué NO entra en E1
+        </div>
+        <ul>
+          <li>Sancionatorios completos (audiencias virtuales, pliegos)</li>
+          <li>Control LA/FT y reportes UIAF</li>
+          <li>Auditorías programadas</li>
+          <li>Federaciones · Clubes Profesionales</li>
+          <li>Trámites Lane 2 (impugnaciones, PQRSD) — pendiente</li>
+          <li>Sistema externo de notificación a terceros</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S4: TOP 3 INSIGHTS ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Top 3 insights de esta iteración</h2>
+      <span class="section-aside">Lo que cambió desde V2</span>
+    </div>
+    <div class="insights">
+      <article class="insight-card">
+        <div class="insight-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <h3 class="insight-title">4 bloqueantes cerrados por Danna</h3>
+        <p class="insight-body"><em>15 días hábiles</em> por trámite. <em>10 días</em> para recursos. Firma digital en renuncia a términos. Recurso de reposición con solicitud opcional de docs adicionales. Esto <em>destraba el countdown</em>, el modal de firma y la pantalla de recurso.</p>
+      </article>
+      <article class="insight-card">
+        <div class="insight-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><circle cx="17.5" cy="17.5" r="3.5"/></svg>
+        </div>
+        <h3 class="insight-title">3 tipologías color-coded estructuran la UI</h3>
+        <p class="insight-body"><em>Trámite (azul)</em> son los flujos de radicación. <em>Actuación (verde)</em> las gestiones puntuales del Profesional. <em>Procedimiento (naranja)</em> los expedientes largos como auditorías y sancionatorios. La navegación y los filtros deben respetar esta clasificación.</p>
+      </article>
+      <article class="insight-card">
+        <div class="insight-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>
+        </div>
+        <h3 class="insight-title">15 User Stories ya existen en el SITOD</h3>
+        <p class="insight-body">El XLSX referencia <em>HU-006, HU-26.x, HU-27.x, HU-28.x</em>. Si Danna las comparte, ahorramos <em>2-3 semanas de discovery</em> y bajamos el riesgo de retrabajo. Pedirlas es la <em>acción #1</em>.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ S5: TIMELINE ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Timeline del proyecto</h2>
+      <span class="section-aside">Estado actual · semana 21 / 2026</span>
+    </div>
+    <div class="timeline-wrap">
+      <div class="timeline">
+        <div class="timeline-line"></div>
+        <div class="timeline-line-progress"></div>
+
+        <div class="timeline-node done">
+          <div class="tl-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 7"/></svg>
+          </div>
+          <span class="tl-label">Discovery</span>
+          <span class="tl-date">Completado</span>
+        </div>
+
+        <div class="timeline-node done">
+          <div class="tl-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 7"/></svg>
+          </div>
+          <span class="tl-label">Análisis legal + plantillas</span>
+          <span class="tl-date">Completado</span>
+        </div>
+
+        <div class="timeline-node done">
+          <div class="tl-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 7"/></svg>
+          </div>
+          <span class="tl-label">Audio confirmaciones Danna</span>
+          <span class="tl-date">21 May 2026</span>
+        </div>
+
+        <div class="timeline-node active">
+          <div class="tl-circle">04</div>
+          <span class="tl-label">Sesión con Danna + Juanma</span>
+          <span class="tl-date">ESTA SEMANA</span>
+        </div>
+
+        <div class="timeline-node">
+          <div class="tl-circle">05</div>
+          <span class="tl-label">Hi-Fi parcial Lane 1</span>
+          <span class="tl-date">2-3 sem tras HU</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S6: DECISIONES PENDIENTES ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Decisiones pendientes</h2>
+      <span class="section-aside">A resolver en sesión 90 min</span>
+    </div>
+    <div class="decisions">
+      <article class="decision-card">
+        <div class="dr-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+          Decisión 01
+        </div>
+        <h3 class="dr-title">¿Lane 2 (Actuaciones Administrativas) entra a E1?</h3>
+        <p class="dr-body">Sigue pendiente. Impugnaciones, quejas y PQRSD existen en el scope general pero no se ha decidido si entran a Entrega 1. <em>Decisión: Danna + sponsor.</em></p>
+      </article>
+      <article class="decision-card">
+        <div class="dr-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          Decisión 02
+        </div>
+        <h3 class="dr-title">¿Plantilla del acto administrativo final?</h3>
+        <p class="dr-body"><strong>BLOQUEANTE</strong>: necesitamos la Resolución firmada del Director para diseñar la pantalla de generación de acto. Sin ella, la pantalla queda en blanco.</p>
+      </article>
+      <article class="decision-card">
+        <div class="dr-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12H3M15 6l6 6-6 6M9 18l-6-6 6-6"/></svg>
+          Decisión 03
+        </div>
+        <h3 class="dr-title">¿GESDOC integración real desde día 1?</h3>
+        <p class="dr-body">¿Naowee llama a GESDOC API en E1 o usa stub mientras se valida? Define la arquitectura de radicación. <em>Confirmar con Juanma en sesión técnica.</em></p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ S7: RIESGOS ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">Riesgos actuales</h2>
+      <span class="section-aside">Top 3 críticos · semana 21</span>
+    </div>
+    <div class="risks">
+      <article class="risk-card">
+        <div class="dr-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+          Riesgo 01
+        </div>
+        <h3 class="dr-title">15+ HU pre-existentes sin entregar</h3>
+        <p class="dr-body">Docs .docx del SITOD referenciados en el XLSX. Sin ellas, las pantallas de <em>Auditoría, Sancionatorio y Consultas</em> se diseñan a ciegas.</p>
+      </article>
+      <article class="risk-card">
+        <div class="dr-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+          Riesgo 02
+        </div>
+        <h3 class="dr-title">Matriz Excel sigue parcial</h3>
+        <p class="dr-body">Tiempos preliminares confirmados (<em>15 / 10 días</em>) pero faltan especificaciones por trámite, plantillas Word y tablero de información básica.</p>
+      </article>
+      <article class="risk-card">
+        <div class="dr-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+          Riesgo 03
+        </div>
+        <h3 class="dr-title">Tipologías nuevas no validadas en reunión</h3>
+        <p class="dr-body">La distinción <em>Trámite / Actuación / Procedimiento</em> del XLSX apareció post-reunión. Si Danna lo modifica, redefinimos navegación y filtros.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ S8: PROXIMAS ACCIONES ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2 class="section-title">Próximas acciones</h2>
+      <span class="section-aside">5 movimientos · esta semana</span>
+    </div>
+    <div class="actions">
+      <div class="action-item">
+        <span class="action-check"></span>
+        <span class="action-text"><strong>Solicitar 5 HU críticas a Danna POR ESCRITO</strong><span class="meta">HOY · Doug envía</span></span>
+      </div>
+      <div class="action-item">
+        <span class="action-check"></span>
+        <span class="action-text"><strong>Solicitar plantilla del acto administrativo final</strong><span class="meta">HOY · Doug envía</span></span>
+      </div>
+      <div class="action-item">
+        <span class="action-check"></span>
+        <span class="action-text"><strong>Sesión 90 min con Juanma + Danna</strong><span class="meta">ESTA SEMANA · Doug agenda</span></span>
+      </div>
+      <div class="action-item">
+        <span class="action-check"></span>
+        <span class="action-text"><strong>Decidir Lane 2 in/out de E1</strong><span class="meta">ESTA SEMANA · Doug + sponsor</span></span>
+      </div>
+      <div class="action-item">
+        <span class="action-check"></span>
+        <span class="action-text"><strong>Iniciar Lo-Fi de 4 componentes reutilizables</strong><span class="meta">PARALELO · Doug</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S9: ASKS ============ -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2 class="section-title">Lo que necesitamos de ustedes</h2>
+      <span class="section-aside">Asks priorizados</span>
+    </div>
+    <div class="asks-card">
+      <h3 class="asks-title">Asks para destrabar Hi-Fi</h3>
+      <div class="asks-grid">
+        <div class="ask-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+          Las 5 HU pre-existentes (HU-006, HU-26.3, HU-27, HU-28, HU-001 + HU-005)
+        </div>
+        <div class="ask-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+          Plantilla Word del acto administrativo final firmado por Director
+        </div>
+        <div class="ask-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+          Confirmación: ¿Lane 2 entra o no a Entrega 1?
+        </div>
+        <div class="ask-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+          Disponibilidad de Juanma para sesión técnica 90 min esta semana
+        </div>
+        <div class="ask-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+          Acceso al backlog del SITOD para entender contexto upstream
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="footer-meta">
+      <strong>Generado V3</strong> · 21 May 2026 · Naowee Project · Para distribución interna
+      <span class="version-pill">ivc-v1.3.0</span>
+    </div>
+    <a class="footer-link" href="flujos.html">Ver análisis técnico completo →</a>
+    <button class="print-btn" onclick="window.print()">Imprimir / Exportar PDF</button>
+  </footer>
+</div>
+</body>
+</html>
