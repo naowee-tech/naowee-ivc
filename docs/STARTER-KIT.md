@@ -19,6 +19,18 @@ shared/
 Más, para formularios públicos: el patrón `labelRepeatableCells()` + las reglas
 `@media (max-width:640px)` de `formulario-fase-1.html` (cards repeatable, bottom-sheet).
 
+## Nomenclatura del repo — prefijo `design-` (REGLA DURA)
+Todo repo de **demo / prototipo / UX** de Naowee lleva el prefijo **`design-`**
+(p. ej. `design-naowee-<modulo>`, `design-auth-screens-ui`), para diferenciarlo de
+los repos **productivos** de ingeniería (que van sin prefijo). Como la demo se sirve
+por GitHub Pages, **la URL pública se deriva del nombre del repo**:
+`https://naowee-tech.github.io/design-naowee-<modulo>/`.
+
+> ⚠️ **No renombres un repo con Pages sin barrer sus referencias:** Pages **no redirige**
+> la URL vieja tras un rename (queda **404 permanente**). Si renombras, actualiza en el
+> mismo acto demos-hub, `INVENTARIO-DEMOS-DESIGN.*`, docs y skills. El **demos-hub /
+> inventario es el registro único** de URLs de demo.
+
 ## Bootstrap de un proyecto nuevo
 1. **Copiar** `shared/` (o referenciar el DS CDN si ya promoviste — ver RFC).
 2. **`<head>` canónico** de cada HTML:
@@ -47,5 +59,5 @@ Más, para formularios públicos: el patrón `labelRepeatableCells()` + las regl
 - Cuando un patrón madura → promuévelo al DS (ver `DS-PROMOTION-v1.9.0.md`) y borra el override local.
 - Mantén `DESIGN-PATTERNS.md` como índice vivo al agregar/cambiar patrones.
 
-> Para el futuro: extraer `shared/` + este README a un repo `naowee-starter`
+> Para el futuro: extraer `shared/` + este README a un repo `design-naowee-starter`
 > (template de GitHub) → "Use this template" para cada proyecto nuevo.
